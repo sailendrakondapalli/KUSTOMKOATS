@@ -352,7 +352,7 @@ export default function ProductsPage() {
                 </div>
               )
             ) : products.length === 0 ? (
-              /* Empty state */}
+              /* Empty state */
               <motion.div
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
