@@ -20,7 +20,7 @@ export const useAuthStore = create((set, get) => ({
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: "https://www.royalhoof.com/auth/callback",
+        redirectTo: "https://www.kustomkoats.com/auth/callback",
         queryParams: { access_type: "offline", prompt: "consent" },
       },
     })
@@ -50,7 +50,7 @@ export const useAuthStore = create((set, get) => ({
 
   resetPassword: async (email) => {
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: "https://www.royalhoof.com/auth/callback",
+      redirectTo: "https://www.kustomkoats.com/auth/callback",
     })
     if (error) throw error
   },

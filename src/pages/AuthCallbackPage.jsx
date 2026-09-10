@@ -56,10 +56,10 @@ export default function AuthCallbackPage() {
   }, [])
 
   return (
-    <div className="min-h-screen bg-[#0A0A0A] flex items-center justify-center">
+    <div className="min-h-screen bg-white flex items-center justify-center">
       <div className="text-center">
-        <div className="w-10 h-10 border-2 border-[#D97706] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-        <p className="text-gray-400 text-sm">Signing you in...</p>
+        <div className="w-10 h-10 border-2 border-[#FF0000] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+        <p className="text-gray-600 text-sm">Signing you in...</p>
       </div>
     </div>
   )

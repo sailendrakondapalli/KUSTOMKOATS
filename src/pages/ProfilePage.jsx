@@ -152,7 +152,7 @@ export default function ProfilePage() {
   return (
     <>
       <Helmet>
-        <title>My Profile - Royal Hoof</title>
+        <title>My Profile - Kustom Koats</title>
       </Helmet>
       <div className="max-w-2xl mx-auto px-4 py-8 space-y-6">
         <h1 className="text-3xl font-bold text-[#1C1006]" style={{ fontFamily: 'Georgia, serif' }}>My Profile</h1>
@@ -195,7 +195,7 @@ export default function ProfilePage() {
 
           {loadingAddr ? (
             <div className="flex justify-center py-8">
-              <div className="w-6 h-6 border-2 border-[#D97706] border-t-transparent rounded-full animate-spin" />
+              <div className="w-6 h-6 border-2 border-[#FF0000] border-t-transparent rounded-full animate-spin" />
             </div>
           ) : (
             <div className="space-y-3">

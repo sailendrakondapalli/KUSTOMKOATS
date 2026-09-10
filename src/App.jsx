@@ -43,9 +43,9 @@ const AdminPackages = lazy(() => import('./pages/admin/AdminPackages'))
 
 
 const PageLoader = () => (
-  <div className="min-h-[60vh] flex items-center justify-center" style={{ background: "#2C2C2C" }}>
+  <div className="min-h-[60vh] flex items-center justify-center" style={{ background: "#000000" }}>
     <div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin"
-      style={{ borderColor: "#9A7650", borderTopColor: "transparent" }} />
+      style={{ borderColor: "#DC0000", borderTopColor: "transparent" }} />
   </div>
 )
 
@@ -114,7 +114,7 @@ export default function App() {
 
           {/* Storefront routes */}
           <Route path="/*" element={
-            <div className="min-h-screen flex flex-col" style={{ background: "#2C2C2C" }}>
+            <div className="min-h-screen flex flex-col" style={{ background: "#000000" }}>
               <Navbar />
               <main className="flex-1">
                 <AnimatedRoutes />
@@ -129,33 +129,33 @@ export default function App() {
           toastOptions={{
             duration: 3000,
             style: {
-              background: '#F2EAE0',
-              color: '#734129',
-              border: '1px solid #D4C4B4',
-              boxShadow: '4px 4px 16px #C5B5A5, -2px -2px 8px #F8F3ED',
-              borderRadius: '14px',
+              background: '#1A1A1A',
+              color: '#FFFFFF',
+              border: '1px solid rgba(220, 0, 0, 0.3)',
+              boxShadow: '0 4px 16px rgba(0, 0, 0, 0.5)',
+              borderRadius: '8px',
               fontSize: '15px',
               fontWeight: '500',
               padding: '14px 20px',
               maxWidth: '420px',
               textAlign: 'center',
-              fontFamily: 'Georgia, serif',
+              fontFamily: 'Inter, sans-serif',
             },
             success: {
               style: {
-                background: '#f4faf0',
-                color: '#3a6b2a',
-                border: '1px solid #c0dba0',
+                background: '#1A1A1A',
+                color: '#2ECC71',
+                border: '1px solid rgba(46, 204, 113, 0.3)',
               },
-              iconTheme: { primary: '#5c7a3e', secondary: '#fff' },
+              iconTheme: { primary: '#2ECC71', secondary: '#000' },
             },
             error: {
               style: {
-                background: '#fff1f2',
-                color: '#9f1239',
-                border: '1px solid #fecdd3',
+                background: '#1A1A1A',
+                color: '#DC0000',
+                border: '1px solid rgba(220, 0, 0, 0.3)',
               },
-              iconTheme: { primary: '#e11d48', secondary: '#fff' },
+              iconTheme: { primary: '#DC0000', secondary: '#000' },
             },
           }}
         />

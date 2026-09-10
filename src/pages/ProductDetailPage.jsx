@@ -72,7 +72,7 @@ export default function ProductDetailPage() {
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-[60vh]">
-        <div className="w-8 h-8 border-2 border-[#D97706] border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-[#FF0000] border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
@@ -80,9 +80,9 @@ export default function ProductDetailPage() {
   if (!product) {
     return (
       <div className="text-center py-20">
-        <p className="text-[#4B3420] text-lg">Product not found</p>
-        <button onClick={() => navigate('/products')} className="mt-4 px-6 py-2 bg-[#5D3A1A] text-white rounded-lg text-sm">
-          Browse Horse Riding
+        <p className="text-lg" style={{ color: "#000000", fontFamily: "'Inter', sans-serif" }}>Product not found</p>
+        <button onClick={() => navigate('/products')} className="mt-4 px-6 py-2 rounded-lg text-sm font-semibold" style={{ background: "#FF0000", color: "#FFFFFF", fontFamily: "'Inter', sans-serif" }}>
+          Browse Products
         </button>
       </div>
     )
@@ -90,18 +90,18 @@ export default function ProductDetailPage() {
 
   const images = Array.isArray(product.images) && product.images.length > 0
     ? product.images
-    : ['/Horse Riding-fallback.webp']
+    : ['/product-fallback.webp']
 
   const currentMedia = images[imgIdx]
   const isCurrentVideo = isVideoUrl(currentMedia)
 
   const tags = [
-    { label: product.category, bg: 'bg-[#C8860A]/10', border: 'border-[#C8860A]/30', text: 'text-[#C8860A]' },
+    { label: product.category, bg: 'bg-red-50', border: 'border-red-200', text: 'text-red-600' },
     ...(product.tags || []).slice(0, 3).map((t, i) => {
       const palettes = [
-        { bg: 'bg-[#C8860A]/10', border: 'border-[#C8860A]/30', text: 'text-[#C8860A]' },
-        { bg: 'bg-green-500/10', border: 'border-green-500/30', text: 'text-green-400' },
-        { bg: 'bg-purple-500/10', border: 'border-purple-500/30', text: 'text-purple-400' },
+        { bg: 'bg-red-50', border: 'border-red-200', text: 'text-red-600' },
+        { bg: 'bg-gray-50', border: 'border-gray-200', text: 'text-gray-600' },
+        { bg: 'bg-black/5', border: 'border-black/10', text: 'text-black' },
       ]
       const p = palettes[i % palettes.length]
       return { label: t, ...p }
@@ -111,14 +111,14 @@ export default function ProductDetailPage() {
   return (
     <>
       <Helmet>
-        <title>{product.name} - Buy Online | Royal Hoof</title>
-        <meta name="description" content={`Buy authentic ${product.name} online. ${product.description ? product.description.slice(0, 140) : `Certified ${product.category} Horse Riding from Nepal & India.`} ?${product.price}. Free delivery available.`} />
-        <meta name="keywords" content={`${product.name}, buy ${product.category}, authentic Horse Riding, ${product.tags?.join(', ')}, Horse Riding online india`} />
-        <link rel="canonical" href={`https://www.royalhoof.com/products/${product.id}`} />
-        <meta property="og:title" content={`${product.name} - Royal Hoof`} />
-        <meta property="og:description" content={product.description || `Authentic ${product.category} Horse Riding. Certified and sourced from Nepal & India.`} />
-        <meta property="og:image" content={product.images?.[0] || 'https://www.royalhoof.com/og-image.png'} />
-        <meta property="og:url" content={`https://www.royalhoof.com/products/${product.id}`} />
+        <title>{product.name} - Buy Online | Kustom Koats</title>
+        <meta name="description" content={`Buy ${product.name} online. ${product.description ? product.description.slice(0, 140) : `Premium ${product.category} automotive pearl from Kustom Koats.`} ₹${product.price}. Fast shipping available.`} />
+        <meta name="keywords" content={`${product.name}, buy ${product.category}, automotive pearls, ${product.tags?.join(', ')}, car paint pearls india`} />
+        <link rel="canonical" href={`https://www.kustomkoats.com/products/${product.id}`} />
+        <meta property="og:title" content={`${product.name} - Kustom Koats`} />
+        <meta property="og:description" content={product.description || `Premium ${product.category} automotive pearl. High-quality finish for custom automotive applications.`} />
+        <meta property="og:image" content={product.images?.[0] || 'https://www.kustomkoats.com/og-image.png'} />
+        <meta property="og:url" content={`https://www.kustomkoats.com/products/${product.id}`} />
         <meta property="og:type" content="product" />
         <meta property="product:price:amount" content={String(product.price)} />
         <meta property="product:price:currency" content="INR" />
@@ -127,16 +127,16 @@ export default function ProductDetailPage() {
           "@type": "Product",
           "name": product.name,
           "image": product.images || [],
-          "description": product.description || `Authentic ${product.category} Horse Riding`,
+          "description": product.description || `Premium ${product.category} automotive pearl`,
           "sku": product.custom_id || product.id,
-          "brand": { "@type": "Brand", "name": "Royal Hoof" },
+          "brand": { "@type": "Brand", "name": "Kustom Koats" },
           "offers": {
             "@type": "Offer",
-            "url": `https://www.royalhoof.com/products/${product.id}`,
+            "url": `https://www.kustomkoats.com/products/${product.id}`,
             "priceCurrency": "INR",
             "price": product.price,
             "availability": product.stock > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
-            "seller": { "@type": "Organization", "name": "Royal Hoof" }
+            "seller": { "@type": "Organization", "name": "Kustom Koats" }
           },
           "aggregateRating": {
             "@type": "AggregateRating",
@@ -146,16 +146,16 @@ export default function ProductDetailPage() {
         })}</script>
       </Helmet>
 
-      <div className="max-w-7xl mx-auto px-4 py-8">
+      <div className="max-w-7xl mx-auto px-4 py-8" style={{ background: "#FFFFFF" }}>
         {/* Breadcrumb */}
-        <div className="flex items-center gap-2 text-xs text-[#DDB87A]/60 mb-6">
-          <Link to="/" className="hover:text-[#C8860A] transition-colors">Home</Link>
+        <div className="flex items-center gap-2 text-xs mb-6" style={{ color: "#666666", fontFamily: "'Inter', sans-serif" }}>
+          <Link to="/" className="hover:text-[#FF0000] transition-colors">Home</Link>
           <span>/</span>
-          <Link to="/products" className="hover:text-[#C8860A] transition-colors">All Horse Riding</Link>
+          <Link to="/products" className="hover:text-[#FF0000] transition-colors">All Products</Link>
           <span>/</span>
-          <Link to={`/products?category=${encodeURIComponent(product.category)}`} className="hover:text-[#C8860A] transition-colors">{product.category}</Link>
+          <Link to={`/products?category=${encodeURIComponent(product.category)}`} className="hover:text-[#FF0000] transition-colors">{product.category}</Link>
           <span>/</span>
-          <span className="text-[#DDB87A] truncate max-w-[160px]">{product.name}</span>
+          <span className="truncate max-w-[160px]" style={{ color: "#333333" }}>{product.name}</span>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
@@ -169,7 +169,7 @@ export default function ProductDetailPage() {
                     <video src={currentMedia} autoPlay muted loop playsInline className="w-full h-full object-cover" />
                   ) : (
                     <img src={currentMedia} alt={product.name} className="w-full h-full object-cover"
-                      onError={e => { e.target.src = '/Horse Riding-fallback.webp' }} />
+                      onError={e => { e.target.src = '/product-fallback.webp' }} />
                   )}
                 </motion.div>
               </AnimatePresence>
@@ -192,12 +192,12 @@ export default function ProductDetailPage() {
               <div className="flex gap-2 flex-wrap">
                 {images.map((img, i) => (
                   <button key={i} onClick={() => setImgIdx(i)}
-                    className={`w-16 h-16 rounded-lg overflow-hidden border-2 transition-all ${i === imgIdx ? 'border-[#D97706]' : 'border-transparent opacity-60 hover:opacity-100'}`}>
+                    className={`w-16 h-16 rounded-lg overflow-hidden border-2 transition-all ${i === imgIdx ? 'border-[#FF0000]' : 'border-transparent opacity-60 hover:opacity-100'}`}>
                     {isVideoUrl(img) ? (
                       <video src={img} muted playsInline className="w-full h-full object-cover bg-black" />
                     ) : (
                       <img src={img} alt="" className="w-full h-full object-cover"
-                        onError={e => { e.target.src = '/Horse Riding-fallback.webp' }} />
+                        onError={e => { e.target.src = '/product-fallback.webp' }} />
                     )}
                   </button>
                 ))}
@@ -333,7 +333,7 @@ export default function ProductDetailPage() {
                     ) : (
                       <img src={p.images?.[0]} alt={p.name} loading="lazy"
                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                        onError={e => { e.target.src = '/Horse Riding-fallback.webp' }} />
+                        onError={e => { e.target.src = '/product-fallback.webp' }} />
                     )}
                   </div>
                   <div className="p-3">

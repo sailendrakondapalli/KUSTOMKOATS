@@ -1,43 +1,17 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 
 export default function IntroAnimation({ onComplete }) {
   const [isVisible, setIsVisible] = useState(true)
-  const canvasRef = useRef(null)
 
   useEffect(() => {
-    let dotLottie = null
-
-    const loadDotLottie = async () => {
-      if (canvasRef.current) {
-        try {
-          // Use dynamic import for DotLottie
-          const { DotLottie } = await import('@lottiefiles/dotlottie-web')
-          
-          dotLottie = new DotLottie({
-            canvas: canvasRef.current,
-            src: '/Horse Run.lottie',
-            loop: true,
-            autoplay: true,
-          })
-        } catch (error) {
-          console.error('Failed to load DotLottie:', error)
-        }
-      }
-    }
-
-    loadDotLottie()
-
-    // Auto-complete after 4 seconds
+    // Auto-complete after 3 seconds
     const timer = setTimeout(() => {
       handleComplete()
-    }, 4000)
+    }, 3000)
 
     return () => {
       clearTimeout(timer)
-      if (dotLottie) {
-        dotLottie.destroy()
-      }
     }
   }, [])
 
@@ -56,83 +30,88 @@ export default function IntroAnimation({ onComplete }) {
         transition={{ duration: 0.5 }}
         className="fixed inset-0 z-[100] flex items-center justify-center cursor-pointer"
         style={{ 
-          background: 'linear-gradient(135deg, #5B1E28 0%, #4A1720 25%, #5B1E28 50%, #4A1720 75%, #5B1E28 100%)',
-          backgroundSize: '400% 400%',
-          animation: 'smokeGradient 8s ease infinite'
+          background: '#000000'
         }}
         onClick={handleComplete}
       >
-        <style>{`
-          @keyframes smokeGradient {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-          }
-        `}</style>
-        
         <div className="relative flex flex-col items-center justify-center">
-          {/* Horse Animation */}
+          {/* Animated red glow */}
           <motion.div
             initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 0.6 }}
-            className="flex items-center justify-center"
-          >
-            <canvas 
-              ref={canvasRef}
-              width={400}
-              height={400}
-              style={{ 
-                width: '400px', 
-                height: '400px',
-                maxWidth: '90vw',
-                maxHeight: '90vw',
-                filter: 'brightness(0) invert(1)' // Makes it white
-              }}
-            />
-          </motion.div>
+            animate={{ 
+              scale: [0.8, 1.2, 1],
+              opacity: [0, 0.6, 0]
+            }}
+            transition={{ 
+              duration: 2,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+            className="absolute inset-0 blur-3xl"
+            style={{
+              background: 'radial-gradient(circle, rgba(220,0,0,0.4) 0%, transparent 70%)',
+              width: '400px',
+              height: '400px'
+            }}
+          />
           
           {/* Brand text */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, delay: 2.5 }}
-            className="mt-8 text-center"
+            transition={{ duration: 0.8, delay: 0.3 }}
+            className="relative z-10 text-center"
           >
-            <h1 className="text-5xl md:text-6xl lg:text-7xl font-medium tracking-[0.06em] mb-4" 
+            <h1 className="text-6xl md:text-7xl lg:text-8xl font-bold tracking-wider mb-4" 
                 style={{ 
-                  fontFamily: "'Cinzel', 'Cormorant Garamond', serif",
-                  background: 'linear-gradient(180deg, #8B5A00 0%, #D4AF37 50%, #B8860B 100%)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  backgroundClip: 'text',
-                  textShadow: '0 2px 8px rgba(212, 175, 55, 0.4)',
-                  letterSpacing: '0.06em',
-                  fontWeight: 500
+                  fontFamily: "'Rajdhani', sans-serif",
+                  color: '#FFFFFF',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.1em'
                 }}>
-              ROYAL HOOF
+              KUSTOM
             </h1>
-            <p className="text-xl md:text-2xl tracking-[0.10em] uppercase font-light" 
+            
+            <motion.h2
+              initial={{ opacity: 0, scaleX: 0 }}
+              animate={{ opacity: 1, scaleX: 1 }}
+              transition={{ duration: 0.6, delay: 0.8 }}
+              className="text-5xl md:text-6xl lg:text-7xl font-bold tracking-wider"
+              style={{ 
+                fontFamily: "'Rajdhani', sans-serif",
+                background: 'linear-gradient(90deg, #DC0000 0%, #FF1A1A 50%, #DC0000 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text',
+                textTransform: 'uppercase',
+                letterSpacing: '0.1em'
+              }}>
+              KOATS
+            </motion.h2>
+            
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.6, delay: 1.2 }}
+              className="text-sm md:text-base tracking-[0.3em] uppercase mt-6" 
                style={{ 
-                 fontFamily: "'Cinzel', 'Cormorant Garamond', serif",
-                 color: '#C9972B',
-                 letterSpacing: '0.10em',
-                 textShadow: '1px 1px 4px rgba(0,0,0,0.6)',
-                 fontWeight: 400
+                 fontFamily: "'Inter', sans-serif",
+                 color: '#C0C0C0',
+                 fontWeight: 600
                }}>
-              Horse Riding Academy & Club
-            </p>
-            <p className="text-sm md:text-base tracking-[0.15em] uppercase mt-3" 
-               style={{ 
-                 fontFamily: "'Cinzel', 'Cormorant Garamond', serif",
-                 color: '#C9972B',
-                 letterSpacing: '0.15em',
-                 textShadow: '1px 1px 4px rgba(0,0,0,0.6)',
-                 fontWeight: 400,
-                 fontSize: '0.75rem'
-               }}>
-              ESTD. 2026
-            </p>
+              Automotive Grade Pearls
+            </motion.p>
+            
+            <motion.div
+              initial={{ opacity: 0, width: 0 }}
+              animate={{ opacity: 1, width: '100px' }}
+              transition={{ duration: 0.6, delay: 1.5 }}
+              style={{
+                height: '2px',
+                background: 'linear-gradient(90deg, transparent, #DC0000, transparent)',
+                margin: '1.5rem auto 0'
+              }}
+            />
           </motion.div>
         </div>
       </motion.div>

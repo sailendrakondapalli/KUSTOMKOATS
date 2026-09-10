@@ -7,6 +7,7 @@ import PageTransition from './PageTransition'
 
 // Lazy loaded pages
 const HomePage = lazy(() => import('../pages/HomePage'))
+const ColorsPage = lazy(() => import('../pages/ColorsPage'))
 const ProductsPage = lazy(() => import('../pages/ProductsPage'))
 const ProductDetailPage = lazy(() => import('../pages/ProductDetailPage'))
 const LoginPage = lazy(() => import('../pages/LoginPage'))
@@ -26,9 +27,9 @@ const TestimonialsPage = lazy(() => import('../pages/TestimonialsPage'))
 const FAQPage = lazy(() => import('../pages/FAQPage'))
 
 const PageLoader = () => (
-  <div className="min-h-[60vh] flex items-center justify-center" style={{ background: "#5B1E28" }}>
+  <div className="min-h-[60vh] flex items-center justify-center" style={{ background: "#000000" }}>
     <div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin"
-      style={{ borderColor: "#9A7650", borderTopColor: "transparent" }} />
+      style={{ borderColor: "#FF0000", borderTopColor: "transparent" }} />
   </div>
 )
 
@@ -43,6 +44,15 @@ export default function AnimatedRoutes() {
             <ErrorBoundary>
               <Suspense fallback={<PageLoader />}>
                 <HomePage />
+              </Suspense>
+            </ErrorBoundary>
+          </PageTransition>
+        } />
+        <Route path="/colors" element={
+          <PageTransition>
+            <ErrorBoundary>
+              <Suspense fallback={<PageLoader />}>
+                <ColorsPage />
               </Suspense>
             </ErrorBoundary>
           </PageTransition>

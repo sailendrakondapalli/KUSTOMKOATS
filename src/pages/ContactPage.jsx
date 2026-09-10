@@ -45,14 +45,14 @@ export default function ContactPage() {
 
       toast.success('Message sent! We will get back to you soon.')
 
-      const text = `Hi Royal Hoof! 🐴\n\nName: ${name}\nEmail: ${email}\nPhone: ${phone}\n\nMessage:\n${message}`
+      const text = `Hi Kustom Koats!\n\nName: ${name}\nEmail: ${email}\nPhone: ${phone}\n\nMessage:\n${message}`
       window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}`, "_blank")
 
       setName(""); setEmail(""); setPhone(""); setMessage("")
     } catch (err) {
       console.error('Error submitting contact form:', err)
       toast.error('Could not send message. Redirecting to WhatsApp.')
-      const text = `Hi Royal Hoof! 🐴\n\nName: ${name}\nEmail: ${email}\nPhone: ${phone}\n\nMessage:\n${message}`
+      const text = `Hi Kustom Koats!\n\nName: ${name}\nEmail: ${email}\nPhone: ${phone}\n\nMessage:\n${message}`
       window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}`, "_blank")
     } finally {
       setSubmitting(false)
@@ -68,83 +68,82 @@ export default function ContactPage() {
     },
     {
       icon: <Mail size={20} />,
-      label: 'Website',
-      value: 'www.royalhoof.com',
-      href: 'https://www.royalhoof.com',
+      label: 'Email',
+      value: 'info@kustomkoats.com',
+      href: 'mailto:info@kustomkoats.com',
     },
     {
       icon: <Clock size={20} />,
-      label: 'Hours',
-      value: 'Mon – Sun, 6:00 am – 8:00 pm',
+      label: 'Business Hours',
+      value: 'Mon – Sat, 9:00 AM – 6:00 PM',
       href: null,
     },
     {
       icon: <MapPin size={20} />,
-      label: 'Address',
-      value: 'GIRI FARMS, Uniworld City, Aspen Greens, Nallambakkam, Tamil Nadu',
-      href: 'https://maps.google.com/?q=Nallambakkam,Tamil+Nadu',
+      label: 'Location',
+      value: 'India',
+      href: null,
     },
   ]
 
   const inputClass = `
-    w-full rounded-sm px-4 py-3 text-sm text-[#F3EBDD]
-    placeholder-[#F3EBDD]/30 focus:outline-none transition-all duration-200
+    w-full rounded-lg px-4 py-3 text-sm
+    placeholder-black/40 focus:outline-none focus:ring-2 focus:ring-[#FF0000] transition-all
   `
   const inputStyle = {
-    background: "rgba(255,255,255,0.06)",
-    border: "1px solid rgba(255,255,255,0.12)",
+    background: "#FFFFFF",
+    border: "1px solid rgba(0, 0, 0, 0.1)",
+    color: "#000000",
     fontFamily: "'Inter', sans-serif",
-  }
-  const inputFocusStyle = {
-    borderColor: "rgba(216,199,174,0.5)",
   }
 
   return (
     <>
       <Helmet>
-        <title>Contact Us – Royal Hoof Horse Riding Academy</title>
-        <meta name="description" content="Contact Royal Hoof Horse Riding Academy. Located at GIRI FARMS, Nallambakkam, Tamil Nadu. Call us at +91 90437 00776." />
+        <title>Contact Us – Kustom Koats Automotive Pearls</title>
+        <meta name="description" content="Contact Kustom Koats for premium automotive pearls. Call us at +91 90437 00776 or send us a message." />
       </Helmet>
 
-      {/* Page wrapper — dark theme matching the rest of the site */}
-      <div style={{ background: "#1A1714", minHeight: "100vh" }}>
+      {/* Page wrapper */}
+      <div style={{ background: "#FFFFFF", minHeight: "100vh" }}>
 
         {/* Hero banner */}
         <div style={{
-          background: "linear-gradient(to bottom, #2C2C2C, #1A1714)",
-          padding: "60px 24px 48px",
+          background: "linear-gradient(135deg, #000000 0%, #1A0000 50%, #000000 100%)",
+          padding: "80px 24px 60px",
           textAlign: "center",
-          borderBottom: "1px solid rgba(255,255,255,0.06)",
         }}>
           <p style={{
-            fontFamily: "'Cormorant Garamond', serif",
+            fontFamily: "'Inter', sans-serif",
             fontSize: "0.75rem",
             letterSpacing: "0.25em",
             textTransform: "uppercase",
-            color: "#B8955A",
+            color: "#FF0000",
             marginBottom: "12px",
+            fontWeight: 600
           }}>
             GET IN TOUCH
           </p>
           <h1 style={{
-            fontFamily: "'Cormorant Garamond', serif",
+            fontFamily: "'Rajdhani', 'Inter', sans-serif",
             fontSize: "clamp(2rem, 5vw, 3.25rem)",
-            fontWeight: 600,
-            color: "#F3EBDD",
+            fontWeight: 700,
+            color: "#FFFFFF",
             lineHeight: 1.15,
             marginBottom: "16px",
+            letterSpacing: "0.02em"
           }}>
             Contact Us
           </h1>
           <p style={{
-            color: "#B6A58F",
+            color: "#CCCCCC",
             fontSize: "1rem",
             maxWidth: "480px",
             margin: "0 auto",
             fontFamily: "'Inter', sans-serif",
             lineHeight: 1.6,
           }}>
-            Reach out to Royal Hoof Horse Riding Academy. We're happy to answer any questions about our packages, events, or riding sessions.
+            Have questions about our automotive pearls? We're here to help with product selection, technical support, and orders.
           </p>
         </div>
 
@@ -156,10 +155,10 @@ export default function ContactPage() {
             {/* LEFT — Info cards */}
             <div>
               <h2 style={{
-                fontFamily: "'Cormorant Garamond', serif",
-                fontSize: "1.375rem",
-                fontWeight: 600,
-                color: "#DDD4CF",
+                fontFamily: "'Rajdhani', 'Inter', sans-serif",
+                fontSize: "1.5rem",
+                fontWeight: 700,
+                color: "#000000",
                 marginBottom: "24px",
                 letterSpacing: "0.02em",
               }}>
@@ -169,20 +168,21 @@ export default function ContactPage() {
               <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
                 {contactInfo.map((item, i) => (
                   <div key={i} style={{
-                    background: "rgba(255,255,255,0.04)",
-                    border: "1px solid rgba(255,255,255,0.08)",
-                    borderRadius: "6px",
+                    background: "#FFFFFF",
+                    border: "1px solid rgba(0, 0, 0, 0.1)",
+                    borderRadius: "8px",
                     padding: "18px 20px",
                     display: "flex",
                     alignItems: "flex-start",
                     gap: "16px",
+                    boxShadow: "0 2px 8px rgba(0, 0, 0, 0.05)"
                   }}>
-                    <div style={{ color: "#B8955A", flexShrink: 0, marginTop: "2px" }}>
+                    <div style={{ color: "#FF0000", flexShrink: 0, marginTop: "2px" }}>
                       {item.icon}
                     </div>
                     <div>
                       <p style={{
-                        color: "#B6A58F",
+                        color: "#666666",
                         fontSize: "0.6875rem",
                         letterSpacing: "0.1em",
                         textTransform: "uppercase",
@@ -195,20 +195,20 @@ export default function ContactPage() {
                         <a href={item.href} target={item.href.startsWith('http') ? "_blank" : undefined}
                           rel="noopener noreferrer"
                           style={{
-                            color: "#F3EBDD",
+                            color: "#000000",
                             fontSize: "0.9375rem",
                             fontFamily: "'Inter', sans-serif",
                             textDecoration: "none",
                             lineHeight: 1.5,
                           }}
-                          onMouseEnter={e => e.currentTarget.style.color = "#B8955A"}
-                          onMouseLeave={e => e.currentTarget.style.color = "#F3EBDD"}
+                          onMouseEnter={e => e.currentTarget.style.color = "#FF0000"}
+                          onMouseLeave={e => e.currentTarget.style.color = "#000000"}
                         >
                           {item.value}
                         </a>
                       ) : (
                         <p style={{
-                          color: "#F3EBDD",
+                          color: "#000000",
                           fontSize: "0.9375rem",
                           fontFamily: "'Inter', sans-serif",
                           lineHeight: 1.5,
@@ -235,7 +235,7 @@ export default function ContactPage() {
                     background: "#25D366",
                     color: "#fff",
                     padding: "12px 24px",
-                    borderRadius: "4px",
+                    borderRadius: "8px",
                     fontFamily: "'Inter', sans-serif",
                     fontSize: "0.875rem",
                     fontWeight: 600,
@@ -257,10 +257,10 @@ export default function ContactPage() {
             {/* RIGHT — Contact form */}
             <div>
               <h2 style={{
-                fontFamily: "'Cormorant Garamond', serif",
-                fontSize: "1.375rem",
-                fontWeight: 600,
-                color: "#DDD4CF",
+                fontFamily: "'Rajdhani', 'Inter', sans-serif",
+                fontSize: "1.5rem",
+                fontWeight: 700,
+                color: "#000000",
                 marginBottom: "24px",
                 letterSpacing: "0.02em",
               }}>
@@ -272,12 +272,13 @@ export default function ContactPage() {
                 <div>
                   <label style={{
                     display: "block",
-                    color: "#B6A58F",
+                    color: "#333333",
                     fontSize: "0.75rem",
                     letterSpacing: "0.08em",
                     textTransform: "uppercase",
                     marginBottom: "6px",
                     fontFamily: "'Inter', sans-serif",
+                    fontWeight: 600
                   }}>
                     Name *
                   </label>
@@ -287,22 +288,21 @@ export default function ContactPage() {
                     placeholder="Your full name"
                     className={inputClass}
                     style={inputStyle}
-                    onFocus={e => Object.assign(e.target.style, inputFocusStyle)}
-                    onBlur={e => Object.assign(e.target.style, inputStyle)}
                   />
-                  {errors.name && <p style={{ color: "#f87171", fontSize: "0.75rem", marginTop: "4px" }}>{errors.name}</p>}
+                  {errors.name && <p style={{ color: "#FF0000", fontSize: "0.75rem", marginTop: "4px", fontFamily: "'Inter', sans-serif" }}>{errors.name}</p>}
                 </div>
 
                 {/* Phone */}
                 <div>
                   <label style={{
                     display: "block",
-                    color: "#B6A58F",
+                    color: "#333333",
                     fontSize: "0.75rem",
                     letterSpacing: "0.08em",
                     textTransform: "uppercase",
                     marginBottom: "6px",
                     fontFamily: "'Inter', sans-serif",
+                    fontWeight: 600
                   }}>
                     Phone *
                   </label>
@@ -313,24 +313,23 @@ export default function ContactPage() {
                     placeholder="+91 XXXXX XXXXX"
                     className={inputClass}
                     style={inputStyle}
-                    onFocus={e => Object.assign(e.target.style, inputFocusStyle)}
-                    onBlur={e => Object.assign(e.target.style, inputStyle)}
                   />
-                  {errors.phone && <p style={{ color: "#f87171", fontSize: "0.75rem", marginTop: "4px" }}>{errors.phone}</p>}
+                  {errors.phone && <p style={{ color: "#FF0000", fontSize: "0.75rem", marginTop: "4px", fontFamily: "'Inter', sans-serif" }}>{errors.phone}</p>}
                 </div>
 
                 {/* Email */}
                 <div>
                   <label style={{
                     display: "block",
-                    color: "#B6A58F",
+                    color: "#333333",
                     fontSize: "0.75rem",
                     letterSpacing: "0.08em",
                     textTransform: "uppercase",
                     marginBottom: "6px",
                     fontFamily: "'Inter', sans-serif",
+                    fontWeight: 600
                   }}>
-                    Email <span style={{ color: "#B6A58F", fontWeight: 400 }}>(optional)</span>
+                    Email <span style={{ color: "#666666", fontWeight: 400 }}>(optional)</span>
                   </label>
                   <input
                     type="email"
@@ -339,22 +338,21 @@ export default function ContactPage() {
                     placeholder="your@email.com"
                     className={inputClass}
                     style={inputStyle}
-                    onFocus={e => Object.assign(e.target.style, inputFocusStyle)}
-                    onBlur={e => Object.assign(e.target.style, inputStyle)}
                   />
-                  {errors.email && <p style={{ color: "#f87171", fontSize: "0.75rem", marginTop: "4px" }}>{errors.email}</p>}
+                  {errors.email && <p style={{ color: "#FF0000", fontSize: "0.75rem", marginTop: "4px", fontFamily: "'Inter', sans-serif" }}>{errors.email}</p>}
                 </div>
 
                 {/* Message */}
                 <div>
                   <label style={{
                     display: "block",
-                    color: "#B6A58F",
+                    color: "#333333",
                     fontSize: "0.75rem",
                     letterSpacing: "0.08em",
                     textTransform: "uppercase",
                     marginBottom: "6px",
                     fontFamily: "'Inter', sans-serif",
+                    fontWeight: 600
                   }}>
                     Message *
                   </label>
@@ -364,11 +362,9 @@ export default function ContactPage() {
                     onChange={e => setMessage(e.target.value)}
                     placeholder="How can we help you?"
                     className={inputClass}
-                    style={{ ...inputStyle, resize: "none" }}
-                    onFocus={e => Object.assign(e.target.style, { ...inputStyle, ...inputFocusStyle, resize: "none" })}
-                    onBlur={e => Object.assign(e.target.style, { ...inputStyle, resize: "none" })}
+                    style={{ ...inputStyle, resize: "vertical" }}
                   />
-                  {errors.message && <p style={{ color: "#f87171", fontSize: "0.75rem", marginTop: "4px" }}>{errors.message}</p>}
+                  {errors.message && <p style={{ color: "#FF0000", fontSize: "0.75rem", marginTop: "4px", fontFamily: "'Inter', sans-serif" }}>{errors.message}</p>}
                 </div>
 
                 {/* Submit */}
@@ -376,10 +372,10 @@ export default function ContactPage() {
                   type="submit"
                   disabled={submitting}
                   style={{
-                    background: submitting ? "rgba(216,199,174,0.5)" : "#B8955A",
-                    color: "#5B1E28",
+                    background: submitting ? "rgba(255, 0, 0, 0.5)" : "#FF0000",
+                    color: "#FFFFFF",
                     border: "none",
-                    borderRadius: "4px",
+                    borderRadius: "8px",
                     padding: "13px 28px",
                     fontFamily: "'Inter', sans-serif",
                     fontSize: "0.875rem",
@@ -394,14 +390,14 @@ export default function ContactPage() {
                     transition: "background 0.2s",
                     alignSelf: "flex-start",
                   }}
-                  onMouseEnter={e => { if (!submitting) e.currentTarget.style.background = "#E5D4C1" }}
-                  onMouseLeave={e => { if (!submitting) e.currentTarget.style.background = "#B8955A" }}
+                  onMouseEnter={e => { if (!submitting) e.currentTarget.style.background = "#CC0000" }}
+                  onMouseLeave={e => { if (!submitting) e.currentTarget.style.background = "#FF0000" }}
                 >
                   {submitting ? (
                     <>
                       <div style={{
                         width: "16px", height: "16px",
-                        border: "2px solid #5B1E28",
+                        border: "2px solid #FFFFFF",
                         borderTopColor: "transparent",
                         borderRadius: "50%",
                         animation: "spin 0.7s linear infinite",
@@ -415,24 +411,6 @@ export default function ContactPage() {
               </form>
             </div>
 
-          </div>
-
-          {/* Google Maps embed */}
-          <div style={{
-            marginTop: "56px",
-            borderRadius: "6px",
-            overflow: "hidden",
-            border: "1px solid rgba(255,255,255,0.08)",
-          }}>
-            <iframe
-              title="Royal Hoof Location"
-              src="https://maps.google.com/maps?q=Nallambakkam,Tamil+Nadu,India&output=embed"
-              width="100%"
-              height="320"
-              style={{ display: "block", border: 0 }}
-              loading="lazy"
-              allowFullScreen
-            />
           </div>
 
         </div>
