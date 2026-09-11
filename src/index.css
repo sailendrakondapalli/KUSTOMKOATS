@@ -3,39 +3,39 @@
 
 @layer base {
   :root {
-    /* ── Kustom Koats Clean Color Palette ── */
-    /* Base whites and blacks */
+    /* ── Kustom Koats Dark Theme Color Palette ── */
+    /* Base colors */
     --white:              #FFFFFF;
     --white-dark:         #F8F8F8;
     --white-darker:       #F0F0F0;
     --black:              #000000;
-    --black-light:        #333333;
-    --black-lighter:      #666666;
+    --black-light:        #1A1A1A;
+    --black-lighter:      #2A2A2A;
     
     /* Red accent */
-    --red:                #DC0000;
-    --red-dark:           #B00000;
-    --red-light:          #FF1A1A;
+    --red:                #FF0000;
+    --red-dark:           #CC0000;
+    --red-light:          #FF3333;
     
-    /* Grays */
-    --gray:               #888888;
+    /* Grays for dark theme */
+    --gray:               #999999;
     --gray-light:         #CCCCCC;
-    --gray-lighter:       #E8E8E8;
+    --gray-dark:          #666666;
     
-    /* Functional mappings */
-    --bg:                 #FFFFFF;
-    --bg-secondary:       #F8F8F8;
-    --surface:            #FFFFFF;
-    --surface-light:      #F0F0F0;
-    --text-primary:       #000000;
-    --text-secondary:     #333333;
-    --text-muted:         #666666;
-    --border:             rgba(0,0,0,0.1);
-    --border-light:       rgba(0,0,0,0.05);
+    /* Functional mappings - DARK THEME */
+    --bg:                 #000000;
+    --bg-secondary:       #1A1A1A;
+    --surface:            #1A1A1A;
+    --surface-light:      #2A2A2A;
+    --text-primary:       #FFFFFF;
+    --text-secondary:     #CCCCCC;
+    --text-muted:         #999999;
+    --border:             rgba(255,255,255,0.1);
+    --border-light:       rgba(255,255,255,0.05);
     
     /* Accent colors */
-    --accent:             #DC0000;
-    --accent-hover:       #FF1A1A;
+    --accent:             #FF0000;
+    --accent-hover:       #FF3333;
     
     /* Pearl effect colors */
     --pearl-blue:         #4A90E2;
@@ -50,8 +50,8 @@
     margin: 0;
     padding: 0;
     width: 100%;
-    background-color: #FFFFFF;
-    color: #000000;
+    background-color: #000000;
+    color: #FFFFFF;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -63,15 +63,16 @@
     min-height: 100vh;
     width: 100%;
     max-width: 100%;
+    background: #000000;
   }
 
   ::-webkit-scrollbar { width: 8px; }
-  ::-webkit-scrollbar-track { background: #F8F8F8; }
-  ::-webkit-scrollbar-thumb { background: #DC0000; border-radius: 4px; }
-  ::-webkit-scrollbar-thumb:hover { background: #FF1A1A; }
+  ::-webkit-scrollbar-track { background: #1A1A1A; }
+  ::-webkit-scrollbar-thumb { background: #FF0000; border-radius: 4px; }
+  ::-webkit-scrollbar-thumb:hover { background: #FF3333; }
 
   h1, h2, h3, h4, h5, h6 {
-    color: #000000;
+    color: #FFFFFF;
     font-family: 'Rajdhani', 'Inter', sans-serif;
     font-weight: 700;
     letter-spacing: 0.02em;
@@ -79,33 +80,33 @@
 }
 
 @layer utilities {
-  /* ── Xtreme Kolorz Design System ── */
+  /* ── Kustom Koats Dark Theme Design System ── */
   
-  /* Premium Card Surface */
+  /* Premium Card Surface - DARK */
   .xk-card {
-    background: #FFFFFF;
-    border: 1px solid rgba(0, 0, 0, 0.1);
+    background: #1A1A1A;
+    border: 1px solid rgba(255, 255, 255, 0.1);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
   .xk-card:hover {
-    background: #F8F8F8;
-    border-color: rgba(220, 0, 0, 0.5);
+    background: #2A2A2A;
+    border-color: rgba(255, 0, 0, 0.5);
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 12px rgba(255, 0, 0, 0.2);
   }
 
-  /* Color Card */
+  /* Color Card - DARK */
   .color-card {
-    background: #FFFFFF;
-    border: 1px solid rgba(0, 0, 0, 0.08);
+    background: #1A1A1A;
+    border: 1px solid rgba(255, 255, 255, 0.08);
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
     overflow: hidden;
   }
   .color-card:hover {
-    border-color: rgba(220, 0, 0, 0.6);
+    border-color: rgba(255, 0, 0, 0.6);
     transform: translateY(-4px);
-    box-shadow: 0 10px 40px rgba(220, 0, 0, 0.15);
+    box-shadow: 0 10px 40px rgba(255, 0, 0, 0.3);
   }
   .color-card::before {
     content: '';
@@ -114,7 +115,7 @@
     left: -50%;
     width: 200%;
     height: 200%;
-    background: radial-gradient(circle, rgba(220,0,0,0.05) 0%, transparent 70%);
+    background: radial-gradient(circle, rgba(255,0,0,0.1) 0%, transparent 70%);
     opacity: 0;
     transition: opacity 0.4s;
   }
@@ -124,7 +125,7 @@
 
   /* Button Styles */
   .btn-primary {
-    background: linear-gradient(135deg, #DC0000 0%, #B00000 100%);
+    background: linear-gradient(135deg, #FF0000 0%, #CC0000 100%);
     color: #FFFFFF;
     padding: 0.875rem 2rem;
     font-weight: 600;
@@ -135,9 +136,9 @@
     transition: all 0.3s;
   }
   .btn-primary:hover {
-    background: linear-gradient(135deg, #FF1A1A 0%, #DC0000 100%);
+    background: linear-gradient(135deg, #FF3333 0%, #FF0000 100%);
     transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(220, 0, 0, 0.4);
+    box-shadow: 0 8px 24px rgba(255, 0, 0, 0.4);
   }
 
   .btn-secondary {
@@ -147,13 +148,13 @@
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    border: 2px solid #DC0000;
+    border: 2px solid #FF0000;
     cursor: pointer;
     transition: all 0.3s;
   }
   .btn-secondary:hover {
-    background: #DC0000;
-    border-color: #DC0000;
+    background: #FF0000;
+    border-color: #FF0000;
   }
 
   /* Typography */
@@ -164,6 +165,7 @@
     line-height: 1.1;
     letter-spacing: 0.02em;
     text-transform: uppercase;
+    color: #FFFFFF;
   }
 
   .heading-lg {
@@ -173,6 +175,7 @@
     line-height: 1.2;
     letter-spacing: 0.02em;
     text-transform: uppercase;
+    color: #FFFFFF;
   }
 
   .heading-md {
@@ -182,6 +185,7 @@
     line-height: 1.3;
     letter-spacing: 0.02em;
     text-transform: uppercase;
+    color: #FFFFFF;
   }
 
   .eyebrow {
@@ -190,7 +194,7 @@
     font-weight: 700;
     letter-spacing: 0.15em;
     text-transform: uppercase;
-    color: #DC0000;
+    color: #FF0000;
   }
 
   /* Pearl effect animation */
@@ -243,7 +247,7 @@
   .xk-divider {
     width: 4rem;
     height: 2px;
-    background: linear-gradient(90deg, transparent, #DC0000, transparent);
+    background: linear-gradient(90deg, transparent, #FF0000, transparent);
   }
 
   /* Grid */
@@ -273,33 +277,33 @@
     }
   }
 
-  /* Legacy utilities (for compatibility) */
+  /* Legacy utilities (for compatibility) - DARK */
   .equestrian-card {
-    background: #FFFFFF;
-    border: 1px solid rgba(0, 0, 0, 0.1);
+    background: #1A1A1A;
+    border: 1px solid rgba(255, 255, 255, 0.1);
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   }
   .equestrian-card:hover {
-    background: #F8F8F8;
-    border-color: rgba(220, 0, 0, 0.3);
+    background: #2A2A2A;
+    border-color: rgba(255, 0, 0, 0.3);
     transform: translateY(-4px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 4px 12px rgba(255, 0, 0, 0.2);
   }
 
   .dust-surface {
-    background: #F8F8F8;
+    background: #1A1A1A;
   }
 
   /* Elegant Divider */
   .equestrian-divider {
     border: none;
     height: 1px;
-    background: linear-gradient(to right, transparent, rgba(220, 0, 0, 0.3) 30%, rgba(220, 0, 0, 0.3) 70%, transparent);
+    background: linear-gradient(to right, transparent, rgba(255, 0, 0, 0.3) 30%, rgba(255, 0, 0, 0.3) 70%, transparent);
   }
 
   /* Primary Button */
   .btn-primary-equestrian {
-    background: #DC0000;
+    background: #FF0000;
     color: #FFFFFF;
     font-weight: 600;
     font-size: 0.8125rem;
@@ -312,9 +316,9 @@
     font-family: 'Inter', sans-serif;
   }
   .btn-primary-equestrian:hover {
-    background: #FF1A1A;
+    background: #FF3333;
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(220, 0, 0, 0.3);
+    box-shadow: 0 4px 12px rgba(255, 0, 0, 0.3);
   }
 
   /* Secondary Button */
@@ -333,8 +337,8 @@
   }
   .btn-secondary-equestrian:hover {
     background: rgba(255, 255, 255, 0.1);
-    border-color: #DC0000;
-    color: #DC0000;
+    border-color: #FF0000;
+    color: #FF0000;
   }
 
   /* Eyebrow Label */
@@ -343,7 +347,7 @@
     letter-spacing: 0.25em;
     text-transform: uppercase;
     font-weight: 600;
-    color: #DC0000;
+    color: #FF0000;
     font-family: 'Inter', sans-serif;
   }
 
@@ -383,15 +387,15 @@
     }
   }
 
-  /* Legacy utilities (for admin panel compatibility) */
-  .divine-gradient  { background: linear-gradient(135deg, #F8F8F8, #FFFFFF); }
-  .gold-gradient    { background: linear-gradient(135deg, #DC0000, #FF1A1A); }
-  .text-brown       { color: #000000; }
-  .text-amber       { color: #DC0000; }
-  .bg-surface       { background-color: #F8F8F8; }
-  .bg-surface-2     { background-color: #FFFFFF; }
-  .border-brown     { border-color: rgba(0,0,0,0.1); }
-  .shadow-card      { box-shadow: 0 2px 16px rgba(0,0,0,0.08); }
-  .shadow-card-lg   { box-shadow: 0 8px 32px rgba(0,0,0,0.12); }
-  .shadow-gold      { box-shadow: 0 4px 24px rgba(220, 0, 0, 0.25); }
+  /* Legacy utilities (for admin panel compatibility) - DARK */
+  .divine-gradient  { background: linear-gradient(135deg, #1A1A1A, #000000); }
+  .gold-gradient    { background: linear-gradient(135deg, #FF0000, #FF3333); }
+  .text-brown       { color: #FFFFFF; }
+  .text-amber       { color: #FF0000; }
+  .bg-surface       { background-color: #1A1A1A; }
+  .bg-surface-2     { background-color: #0A0A0A; }
+  .border-brown     { border-color: rgba(255,255,255,0.1); }
+  .shadow-card      { box-shadow: 0 2px 16px rgba(0,0,0,0.5); }
+  .shadow-card-lg   { box-shadow: 0 8px 32px rgba(0,0,0,0.7); }
+  .shadow-gold      { box-shadow: 0 4px 24px rgba(255, 0, 0, 0.25); }
 }

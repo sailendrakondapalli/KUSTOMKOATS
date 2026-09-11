@@ -2,9 +2,7 @@ import { useState, useEffect } from "react"
 import { Link } from "react-router-dom"
 import { motion } from "framer-motion"
 import { Helmet } from "react-helmet-async"
-import { ArrowRight, Shield, CheckCircle, Star, Palette, Sparkles, Zap, Award } from "lucide-react"
-import { CATEGORIES } from "../data/products"
-import { CATEGORY_DESCRIPTIONS, CONTACT_INFO, PRODUCT_INFO } from "../config/contact"
+import { ArrowRight, Shield, CheckCircle, Star, Palette, Sparkles, Zap, Award, TrendingUp, Package } from "lucide-react"
 import { fetchProducts } from "../services/productService"
 import ProductCard from "../components/ProductCard"
 import SkeletonCard from "../components/SkeletonCard"
@@ -38,9 +36,12 @@ function HeroSection() {
         >
           <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold tracking-wider mb-6" 
               style={{ 
-                fontFamily: "'Rajdhani', 'Inter', sans-serif",
+                fontFamily: "'Bebas Neue', sans-serif",
+                fontSize: '79px',
+                lineHeight: '70px',
+                letterSpacing: '1.9px',
+                wordSpacing: '1px',
                 color: '#FFFFFF',
-                letterSpacing: '0.08em',
                 textShadow: '0 4px 20px rgba(0, 0, 0, 0.8), 0 0 30px rgba(255, 0, 0, 0.3)'
               }}>
             KUSTOM KOATS
@@ -52,7 +53,7 @@ function HeroSection() {
                letterSpacing: '0.12em',
                textShadow: '0 2px 10px rgba(0, 0, 0, 0.8)'
              }}>
-            {CONTACT_INFO.company.tagline}
+            Premium Automotive Pearls & Finishes
           </p>
           <p className="text-base md:text-lg max-w-2xl mx-auto" 
              style={{ 
@@ -61,7 +62,7 @@ function HeroSection() {
                lineHeight: '1.8',
                textShadow: '0 2px 10px rgba(0, 0, 0, 0.8)'
              }}>
-            Premium automotive pearls with over 300+ colors. From solid pearls to mind-bending Chroma effects.
+            Transform your ride with over 300+ automotive grade pearl colors. From solid pearls to mind-bending Chroma effects.
           </p>
         </motion.div>
 
@@ -72,7 +73,7 @@ function HeroSection() {
           className="flex flex-col sm:flex-row gap-4"
         >
           <Link 
-            to="/colors"
+            to="/shop/xtreme-kolorz"
             className="inline-flex items-center gap-3 px-8 py-4 rounded-lg font-bold text-lg tracking-wide uppercase transition-all duration-300 hover:scale-105"
             style={{ 
               background: "#FF0000",
@@ -82,10 +83,10 @@ function HeroSection() {
             }}
           >
             <Palette size={22} />
-            Explore Colors
+            Explore Xtreme Kolorz
           </Link>
           <Link 
-            to="/products"
+            to="/shop/xtreme-kolorz"
             className="inline-flex items-center gap-3 px-8 py-4 rounded-lg font-bold text-lg tracking-wide uppercase transition-all duration-300 hover:scale-105"
             style={{ 
               background: "#FFFFFF",
@@ -94,7 +95,7 @@ function HeroSection() {
               fontFamily: "'Inter', sans-serif"
             }}
           >
-            Shop Products
+            Shop Now
             <ArrowRight size={20} />
           </Link>
         </motion.div>
@@ -103,16 +104,205 @@ function HeroSection() {
   )
 }
 
-/* --- Pearl Categories Showcase --- */
-function PearlCategoriesSection() {
-  const categoryImages = {
-    'Solid Pearls': '/categories/solid-pearls.jpg',
-    'Interference Pearls': '/categories/interference-pearls.jpg',
-    'Carbon Pearls': '/categories/carbon-pearls.jpg',
-    'OEM+ Pearls': '/categories/oem-pearls.jpg',
-    'Special Effect Pearls': '/categories/special-effect-pearls.jpg',
-    'Chroma Pearls': '/categories/chroma-pearls.jpg',
-  }
+/* --- Featured Categories Section (After Hero) --- */
+function FeaturedCategoriesSection() {
+  const [categoryProducts, setCategoryProducts] = useState({
+    'Xtreme Wrap': null,
+    'Xtreme Kolorz': null,
+    'Accessories': null
+  })
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const loadCategoryProducts = async () => {
+      setLoading(true)
+      try {
+        // Fetch one product from each category
+        const [wrapProducts, kolorzProducts, accessoryProducts] = await Promise.all([
+          fetchProducts({ category: 'Xtreme Wrap', limit: 1 }),
+          fetchProducts({ category: 'Xtreme Kolorz', limit: 1 }),
+          fetchProducts({ category: 'Accessories', limit: 1 })
+        ])
+        
+        setCategoryProducts({
+          'Xtreme Wrap': wrapProducts[0] || null,
+          'Xtreme Kolorz': kolorzProducts[0] || null,
+          'Accessories': accessoryProducts[0] || null
+        })
+      } catch (error) {
+        console.error('Failed to load category products:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+    loadCategoryProducts()
+  }, [])
+
+  const categories = [
+    {
+      title: "Xtreme Wrap",
+      image: "/categories/image.png",
+      link: "/shop/xtreme-wrap",
+      product: categoryProducts['Xtreme Wrap']
+    },
+    {
+      title: "Xtreme Kolorz",
+      image: "/categories/image.png",
+      link: "/shop/xtreme-kolorz",
+      product: categoryProducts['Xtreme Kolorz']
+    },
+    {
+      title: "Accessories",
+      image: "/categories/image.png",
+      link: "/shop/accessories",
+      product: categoryProducts['Accessories']
+    }
+  ]
+
+  return (
+    <section className={`w-full py-16 ${PX}`} style={{ background: "#FFFFFF" }}>
+      <div className="max-w-7xl mx-auto">
+        {/* Mobile: Horizontal Scroll */}
+        <div className="md:hidden flex gap-6 overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-hide"
+          style={{ 
+            scrollbarWidth: 'none',
+            msOverflowStyle: 'none',
+            WebkitOverflowScrolling: 'touch'
+          }}>
+          {categories.map((category, idx) => {
+            const product = category.product
+            const displayImage = product?.images?.[0] || category.image
+            const targetLink = product ? `/products/${product.id}` : category.link
+            
+            return (
+              <div key={category.title} className="flex-shrink-0 w-[80vw] snap-center">
+                <Link to={targetLink} className="relative group block">
+                  <div className="relative aspect-[4/3] overflow-hidden rounded-lg mb-4">
+                    {loading ? (
+                      <div className="w-full h-full bg-gray-200 animate-pulse" />
+                    ) : (
+                      <img 
+                        src={displayImage}
+                        alt={product?.name || category.title}
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                        onError={(e) => {
+                          e.target.src = category.image
+                        }}
+                      />
+                    )}
+                  </div>
+                  <div className="space-y-3">
+                    <p className="text-xs font-bold uppercase tracking-wider" 
+                      style={{ color: "#FF0000", fontFamily: "'Inter', sans-serif" }}>
+                      {category.title}
+                    </p>
+                    <h3 
+                      className="text-2xl font-bold"
+                      style={{ 
+                        fontFamily: "'Rajdhani', 'Inter', sans-serif", 
+                        color: "#000000" 
+                      }}
+                    >
+                      {product?.name || category.title}
+                    </h3>
+                    {product && (
+                      <p className="text-lg font-bold" style={{ color: "#000000", fontFamily: "'Inter', sans-serif" }}>
+                        ₹{product.price}
+                      </p>
+                    )}
+                    <div
+                      className="inline-block text-sm font-bold tracking-wider uppercase transition-colors group-hover:text-[#FF0000]"
+                      style={{ 
+                        fontFamily: "'Inter', sans-serif",
+                        color: "#000000",
+                        borderBottom: "2px solid #FF0000",
+                        paddingBottom: "2px"
+                      }}
+                    >
+                      {product ? 'VIEW PRODUCT' : 'SHOP NOW'}
+                    </div>
+                  </div>
+                </Link>
+              </div>
+            )
+          })}
+        </div>
+
+        {/* Desktop: Grid */}
+        <div className="hidden md:grid grid-cols-3 gap-8">
+          {categories.map((category, idx) => {
+            const product = category.product
+            const displayImage = product?.images?.[0] || category.image
+            const targetLink = product ? `/products/${product.id}` : category.link
+            
+            return (
+              <ScrollReveal key={category.title} delay={idx * 0.15}>
+                <Link to={targetLink} className="relative group block">
+                  <div className="relative aspect-[4/3] overflow-hidden rounded-lg mb-4">
+                    {loading ? (
+                      <div className="w-full h-full bg-gray-200 animate-pulse" />
+                    ) : (
+                      <img 
+                        src={displayImage}
+                        alt={product?.name || category.title}
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                        onError={(e) => {
+                          e.target.src = category.image
+                        }}
+                      />
+                    )}
+                  </div>
+                  <div className="space-y-3">
+                    <p className="text-xs font-bold uppercase tracking-wider" 
+                      style={{ color: "#FF0000", fontFamily: "'Inter', sans-serif" }}>
+                      {category.title}
+                    </p>
+                    <h3 
+                      className="text-2xl font-bold"
+                      style={{ 
+                        fontFamily: "'Rajdhani', 'Inter', sans-serif", 
+                        color: "#000000" 
+                      }}
+                    >
+                      {product?.name || category.title}
+                    </h3>
+                    {product && (
+                      <p className="text-lg font-bold" style={{ color: "#000000", fontFamily: "'Inter', sans-serif" }}>
+                        ₹{product.price}
+                      </p>
+                    )}
+                    <div
+                      className="inline-block text-sm font-bold tracking-wider uppercase transition-colors group-hover:text-[#FF0000]"
+                      style={{ 
+                        fontFamily: "'Inter', sans-serif",
+                        color: "#000000",
+                        borderBottom: "2px solid #FF0000",
+                        paddingBottom: "2px"
+                      }}
+                    >
+                      {product ? 'VIEW PRODUCT' : 'SHOP NOW'}
+                    </div>
+                  </div>
+                </Link>
+              </ScrollReveal>
+            )
+          })}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+/* --- Xtreme Kolorz Section --- */
+function XtremeKolorzSection() {
+  const categories = [
+    { name: 'Solid+', image: '/categories/solid-pearls.jpg', to: '/shop/xtreme-kolorz?category=solid' },
+    { name: 'Interference+', image: '/categories/interference-pearls.jpg', to: '/shop/xtreme-kolorz?category=interference' },
+    { name: 'Carbon+', image: '/categories/carbon-pearls.jpg', to: '/shop/xtreme-kolorz?category=carbon' },
+    { name: 'OEM+', image: '/categories/oem-pearls.jpg', to: '/shop/xtreme-kolorz?category=oem' },
+    { name: 'Special Effect+', image: '/categories/special-effect-pearls.jpg', to: '/shop/xtreme-kolorz?category=special-effect' },
+    { name: 'Chroma Effect+', image: '/categories/chroma-pearls.jpg', to: '/shop/xtreme-kolorz?category=chroma' },
+  ]
 
   return (
     <section className={`w-full py-20 ${PX}`} style={{ background: "#FFFFFF" }}>
@@ -120,11 +310,11 @@ function PearlCategoriesSection() {
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <p className="text-sm font-bold mb-3 tracking-wider uppercase" style={{ color: "#FF0000", fontFamily: "'Inter', sans-serif" }}>
-              PEARL CATEGORIES
+              XTREME KOLORZ
             </p>
             <h2 className="text-3xl md:text-4xl font-bold mb-4"
               style={{ fontFamily: "'Rajdhani', 'Inter', sans-serif", color: "#000000" }}>
-              Six Distinct Pearl Families
+              Six Pearl Families
             </h2>
             <p className="text-base max-w-2xl mx-auto" style={{ color: "#666666", fontFamily: "'Inter', sans-serif" }}>
               Each category offers unique characteristics and visual effects for automotive applications
@@ -132,16 +322,15 @@ function PearlCategoriesSection() {
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-8">
-            {CATEGORIES.map((category, idx) => (
-              <ScrollReveal key={category} delay={idx * 0.1}>
-                <Link to="/colors" 
+            {categories.map((category, idx) => (
+              <ScrollReveal key={category.name} delay={idx * 0.1}>
+                <Link to={category.to} 
                   className="group block text-center transition-all duration-300 hover:opacity-80"
                 >
-                  {/* Image */}
                   <div className="relative aspect-square mb-4 overflow-hidden rounded-lg">
                     <img 
-                      src={categoryImages[category] || '/categories/placeholder.jpg'} 
-                      alt={category}
+                      src={category.image} 
+                      alt={category.name}
                       className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                       onError={(e) => {
                         e.target.style.display = 'none'
@@ -149,15 +338,150 @@ function PearlCategoriesSection() {
                       }}
                     />
                   </div>
-
-                  {/* Label */}
                   <h3 className="text-sm font-semibold group-hover:text-[#FF0000] transition-colors" 
                     style={{ color: "#000000", fontFamily: "'Inter', sans-serif" }}>
-                    {category}
+                    {category.name}
                   </h3>
                 </Link>
               </ScrollReveal>
             ))}
+          </div>
+        </div>
+      </ScrollReveal>
+    </section>
+  )
+}
+
+/* --- Xtreme Wrap Section --- */
+function XtremeWrapSection() {
+  return (
+    <section className={`w-full py-20 ${PX}`} style={{ background: "#000000" }}>
+      <ScrollReveal>
+        <div className="max-w-7xl mx-auto text-center">
+          <h2 className="text-3xl md:text-4xl font-bold mb-6"
+            style={{ fontFamily: "'Rajdhani', 'Inter', sans-serif", color: "#FFFFFF" }}>
+            Xtreme Wrap
+          </h2>
+          <p className="text-lg mb-8 max-w-2xl mx-auto" style={{ color: "#CCCCCC", fontFamily: "'Inter', sans-serif" }}>
+            Professional grade vinyl wraps with pearl finishes
+          </p>
+          <Link
+            to="/shop/xtreme-wrap"
+            className="inline-flex items-center gap-2 px-8 py-4 rounded-lg font-bold transition-all duration-300 hover:scale-105"
+            style={{ 
+              background: "#FF0000", 
+              color: "#FFFFFF",
+              fontFamily: "'Inter', sans-serif" 
+            }}
+          >
+            Explore Wraps <ArrowRight size={20} />
+          </Link>
+        </div>
+      </ScrollReveal>
+    </section>
+  )
+}
+
+/* --- Accessories Section --- */
+function AccessoriesSection() {
+  return (
+    <section className={`w-full py-20 ${PX}`} style={{ background: "#F8F8F8" }}>
+      <ScrollReveal>
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4"
+              style={{ fontFamily: "'Rajdhani', 'Inter', sans-serif", color: "#000000" }}>
+              Accessories
+            </h2>
+            <p className="text-base max-w-2xl mx-auto" style={{ color: "#666666", fontFamily: "'Inter', sans-serif" }}>
+              Complete your custom finish with professional tools and accessories
+            </p>
+          </div>
+          <div className="text-center">
+            <Link
+              to="/shop/accessories"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-colors"
+              style={{ 
+                border: "2px solid #000000",
+                color: "#000000",
+                fontFamily: "'Inter', sans-serif" 
+              }}
+            >
+              View All Accessories <ArrowRight size={18} />
+            </Link>
+          </div>
+        </div>
+      </ScrollReveal>
+    </section>
+  )
+}
+
+/* --- Kustom Signature Series Section --- */
+function SignatureSeriesSection() {
+  const [products, setProducts] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const loadProducts = async () => {
+      try {
+        // Fetch products - you can filter by a specific tag or just get recent products
+        const data = await fetchProducts({ limit: 8 })
+        setProducts(data)
+      } catch (error) {
+        console.error('Failed to load signature products:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+    loadProducts()
+  }, [])
+
+  return (
+    <section className={`w-full py-20 ${PX}`} style={{ background: "#F8F8F8" }}>
+      <ScrollReveal>
+        <div className="max-w-7xl mx-auto">
+          {/* Section Header */}
+          <div className="text-center mb-16">
+            <h2 
+              className="text-3xl md:text-5xl font-bold mb-2 tracking-wider uppercase"
+              style={{ fontFamily: "'Bebas Neue', sans-serif", color: "#000000", letterSpacing: "3px" }}
+            >
+              KUSTOM SIGNATURE SERIES
+            </h2>
+          </div>
+
+          {/* Products Grid */}
+          {loading ? (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12">
+              {Array(8).fill(0).map((_, i) => <SkeletonCard key={i} />)}
+            </div>
+          ) : products.length > 0 ? (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12">
+              {products.map((product) => (
+                <ProductCard key={product.id} product={product} layout="grid" />
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <p style={{ color: "#666666", fontFamily: "'Inter', sans-serif" }}>
+                No products available
+              </p>
+            </div>
+          )}
+
+          {/* View All Button */}
+          <div className="text-center mt-12">
+            <Link
+              to="/shop/xtreme-kolorz"
+              className="inline-flex items-center gap-2 px-8 py-4 rounded-lg font-bold transition-all duration-300 hover:scale-105"
+              style={{ 
+                background: "#000000", 
+                color: "#FFFFFF",
+                fontFamily: "'Inter', sans-serif" 
+              }}
+            >
+              View All Products <Star size={20} />
+            </Link>
           </div>
         </div>
       </ScrollReveal>
@@ -185,14 +509,14 @@ function FeaturedProductsSection() {
         <div className="flex items-center justify-between mb-12">
           <div>
             <p className="text-sm font-bold mb-2 tracking-wider uppercase" style={{ color: "#FF0000", fontFamily: "'Inter', sans-serif" }}>
-              PRODUCTS
+              ORIGINAL CANDY KOLORZ
             </p>
             <h2 className="text-3xl md:text-4xl font-bold"
               style={{ fontFamily: "'Rajdhani', 'Inter', sans-serif", color: "#000000" }}>
-              Featured Products
+              Signature Candy Finishes
             </h2>
           </div>
-          <Link to="/products" 
+          <Link to="/shop/xtreme-kolorz?category=candy" 
             className="flex items-center gap-2 text-sm font-medium transition-colors hover:gap-3 duration-300"
             style={{ color: "#333333", fontFamily: "'Inter', sans-serif" }}>
             View All <ArrowRight size={16} style={{ color: "#FF0000" }} />
@@ -217,7 +541,156 @@ function FeaturedProductsSection() {
   )
 }
 
-/* --- Why Choose Section --- */
+/* --- Find Your Finish Section --- */
+function FindYourFinishSection() {
+  const finishes = [
+    { name: "Metallic", icon: <Sparkles size={32} />, description: "Classic shimmer with depth" },
+    { name: "Candy", icon: <Palette size={32} />, description: "Transparent color layers" },
+    { name: "Pearl", icon: <Award size={32} />, description: "Multi-dimensional flip" },
+    { name: "Chroma", icon: <Zap size={32} />, description: "Extreme color shifting" },
+  ]
+
+  return (
+    <section className={`w-full py-20 ${PX}`} style={{ background: "#FFFFFF" }}>
+      <ScrollReveal>
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-16">
+            <p className="text-sm font-bold mb-3 tracking-wider uppercase" style={{ color: "#FF0000", fontFamily: "'Inter', sans-serif" }}>
+              FIND YOUR FINISH
+            </p>
+            <h2 className="text-3xl md:text-4xl font-bold"
+              style={{ fontFamily: "'Rajdhani', 'Inter', sans-serif", color: "#000000" }}>
+              Discover Your Perfect Look
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {finishes.map((finish, idx) => (
+              <ScrollReveal key={finish.name} delay={idx * 0.1}>
+                <div className="text-center p-6 rounded-lg transition-all duration-300 hover:shadow-xl"
+                  style={{ background: "#F8F8F8" }}>
+                  <div className="inline-flex items-center justify-center w-16 h-16 rounded-full mb-4"
+                    style={{ background: "rgba(255, 0, 0, 0.05)", color: "#FF0000" }}>
+                    {finish.icon}
+                  </div>
+                  <h3 className="text-lg font-bold mb-3" style={{ color: "#000000", fontFamily: "'Inter', sans-serif" }}>
+                    {finish.name}
+                  </h3>
+                  <p className="text-sm" style={{ color: "#666666", fontFamily: "'Inter', sans-serif" }}>
+                    {finish.description}
+                  </p>
+                </div>
+              </ScrollReveal>
+            ))}
+          </div>
+        </div>
+      </ScrollReveal>
+    </section>
+  )
+}
+
+/* --- Built With Kustom Koats Section --- */
+function BuiltWithKKSection() {
+  return (
+    <section className={`w-full py-20 ${PX}`} style={{ background: "#000000" }}>
+      <ScrollReveal>
+        <div className="max-w-7xl mx-auto text-center">
+          <p className="text-sm font-bold mb-3 tracking-wider uppercase" style={{ color: "#FF0000", fontFamily: "'Inter', sans-serif" }}>
+            SHOWCASE
+          </p>
+          <h2 className="text-3xl md:text-4xl font-bold mb-6"
+            style={{ fontFamily: "'Rajdhani', 'Inter', sans-serif", color: "#FFFFFF" }}>
+            Built With Kustom Koats
+          </h2>
+          <p className="text-lg mb-8 max-w-2xl mx-auto" style={{ color: "#CCCCCC", fontFamily: "'Inter', sans-serif" }}>
+            See what professionals are creating with our premium pearls
+          </p>
+          <Link
+            to="/kulture/projects"
+            className="inline-flex items-center gap-2 px-8 py-4 rounded-lg font-bold transition-all duration-300 hover:scale-105"
+            style={{ 
+              background: "#FF0000", 
+              color: "#FFFFFF",
+              fontFamily: "'Inter', sans-serif" 
+            }}
+          >
+            View Projects <ArrowRight size={20} />
+          </Link>
+        </div>
+      </ScrollReveal>
+    </section>
+  )
+}
+
+/* --- Kustom Kulture Section --- */
+function KustomKultureSection() {
+  return (
+    <section className={`w-full py-20 ${PX}`} style={{ background: "#FFFFFF" }}>
+      <ScrollReveal>
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-12">
+            <p className="text-sm font-bold mb-3 tracking-wider uppercase" style={{ color: "#FF0000", fontFamily: "'Inter', sans-serif" }}>
+              KUSTOM KULTURE
+            </p>
+            <h2 className="text-3xl md:text-4xl font-bold"
+              style={{ fontFamily: "'Rajdhani', 'Inter', sans-serif", color: "#000000" }}>
+              Stories From The Garage
+            </h2>
+          </div>
+          <div className="flex flex-wrap justify-center gap-4">
+            <Link to="/kulture/journal" className="px-6 py-3 rounded-lg font-medium transition-colors"
+              style={{ background: "#F8F8F8", color: "#000000", fontFamily: "'Inter', sans-serif" }}>
+              Kustom Journal
+            </Link>
+            <Link to="/kulture/events" className="px-6 py-3 rounded-lg font-medium transition-colors"
+              style={{ background: "#F8F8F8", color: "#000000", fontFamily: "'Inter', sans-serif" }}>
+              Events
+            </Link>
+            <Link to="/kulture/how-to" className="px-6 py-3 rounded-lg font-medium transition-colors"
+              style={{ background: "#F8F8F8", color: "#000000", fontFamily: "'Inter', sans-serif" }}>
+              How-To Guides
+            </Link>
+            <Link to="/kulture/university" className="px-6 py-3 rounded-lg font-medium transition-colors"
+              style={{ background: "#F8F8F8", color: "#000000", fontFamily: "'Inter', sans-serif" }}>
+              KK University
+            </Link>
+          </div>
+        </div>
+      </ScrollReveal>
+    </section>
+  )
+}
+
+/* --- First Order Discount Section --- */
+function FirstOrderSection() {
+  return (
+    <section className={`w-full py-20 ${PX}`} style={{ background: "#FF0000" }}>
+      <ScrollReveal>
+        <div className="max-w-4xl mx-auto text-center">
+          <h3 className="text-3xl md:text-4xl font-bold mb-6" style={{ fontFamily: "'Rajdhani', 'Inter', sans-serif", color: "#FFFFFF" }}>
+            Get 10% Off Your First Order
+          </h3>
+          <p className="text-lg mb-8" style={{ color: "#FFFFFF", fontFamily: "'Inter', sans-serif" }}>
+            Join our community and receive exclusive discounts on premium automotive pearls
+          </p>
+          <Link
+            to="/shop/xtreme-kolorz"
+            className="inline-flex items-center gap-2 px-8 py-4 rounded-lg font-bold transition-all duration-300 hover:scale-105"
+            style={{ 
+              background: "#FFFFFF", 
+              color: "#000000",
+              fontFamily: "'Inter', sans-serif" 
+            }}
+          >
+            Shop Now <ArrowRight size={20} />
+          </Link>
+        </div>
+      </ScrollReveal>
+    </section>
+  )
+}
+
+/* --- Why Kustom Koats Section --- */
 function WhyChooseSection() {
   const features = [
     {
@@ -243,7 +716,7 @@ function WhyChooseSection() {
   ]
 
   return (
-    <section className={`w-full py-20 ${PX}`} style={{ background: "#FFFFFF" }}>
+    <section className={`w-full py-20 ${PX}`} style={{ background: "#F8F8F8" }}>
       <ScrollReveal>
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
@@ -267,7 +740,7 @@ function WhyChooseSection() {
                   <h3 className="text-lg font-bold mb-3" style={{ color: "#000000", fontFamily: "'Inter', sans-serif" }}>
                     {feature.title}
                   </h3>
-                  <p className="text-sm" style={{ color: "#333333", fontFamily: "'Inter', sans-serif" }}>
+                  <p className="text-sm" style={{ color: "#666666", fontFamily: "'Inter', sans-serif" }}>
                     {feature.description}
                   </p>
                 </div>
@@ -294,13 +767,13 @@ function CTASection() {
           <h3 className="text-3xl md:text-4xl font-bold mb-6" style={{ fontFamily: "'Rajdhani', 'Inter', sans-serif", color: "#000000" }}>
             Ready to Transform Your Project?
           </h3>
-          <p className="text-lg mb-8 max-w-2xl mx-auto" style={{ color: "#333333", fontFamily: "'Inter', sans-serif" }}>
-            Join the partner program for special pricing and technical support, or browse our complete catalog
+          <p className="text-lg mb-8 max-w-2xl mx-auto" style={{ color: "#666666", fontFamily: "'Inter', sans-serif" }}>
+            Join our wholesale program for special pricing and technical support, or browse our complete catalog
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <Link
-              to="/partners"
+              to="/wholesale/why-partner"
               className="inline-flex items-center gap-2 bg-[#FF0000] hover:bg-[#CC0000] text-white px-8 py-4 rounded-lg font-bold transition-all duration-300 hover:scale-105"
               style={{ fontFamily: "'Inter', sans-serif" }}
             >
@@ -329,16 +802,14 @@ export default function HomePage() {
     <>
       <Helmet>
         <title>Kustom Koats - Premium Automotive Grade Pearls | 300+ Colors</title>
-        <meta name="description" content="Explore 300+ automotive grade pearl colors. Solid Pearls, Interference Pearls, Carbon Pearls, OEM+ Pearls, Special Effect Pearls, and Chroma Pearls. Premium quality from Kustom Koats." />
+        <meta name="description" content="Explore 300+ automotive grade pearl colors. Xtreme Kolorz, Xtreme Wrap, Original Candy, and Signature Series. Premium quality from Kustom Koats." />
       </Helmet>
 
       <div className="min-h-screen" style={{ background: "#FFFFFF" }}>
         <HeroSection />
-        <PearlCategoriesSection />
-        <FeaturedProductsSection />
+        <FeaturedCategoriesSection />
+        <SignatureSeriesSection />
         <WhyChooseSection />
-        <CTASection />
-        <ReviewsSection />
       </div>
     </>
   )

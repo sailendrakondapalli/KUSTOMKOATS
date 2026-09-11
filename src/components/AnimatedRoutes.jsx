@@ -26,6 +26,40 @@ const GalleryPage = lazy(() => import('../pages/GalleryPage'))
 const TestimonialsPage = lazy(() => import('../pages/TestimonialsPage'))
 const FAQPage = lazy(() => import('../pages/FAQPage'))
 
+// Shop pages
+const XtremeKolorzPage = lazy(() => import('../pages/shop/XtremeKolorzPage'))
+const XtremeWrapPage = lazy(() => import('../pages/shop/XtremeWrapPage'))
+const AccessoriesPage = lazy(() => import('../pages/shop/AccessoriesPage'))
+const ShopPage = lazy(() => import('../pages/shop/ShopPage'))
+
+// Admin pages
+const AdminProductsPage = lazy(() => import('../pages/admin/AdminProductsPage'))
+const WholesalePage = lazy(() => import('../pages/shop/WholesalePage'))
+
+// Kustom Kulture pages
+const KultureJournalPage = lazy(() => import('../pages/kulture/KultureJournalPage'))
+const KultureNewsPage = lazy(() => import('../pages/kulture/KultureNewsPage'))
+const KultureEventsPage = lazy(() => import('../pages/kulture/KultureEventsPage'))
+const KultureProjectsPage = lazy(() => import('../pages/kulture/KultureProjectsPage'))
+const KultureHowToPage = lazy(() => import('../pages/kulture/KultureHowToPage'))
+const KultureGaragesPage = lazy(() => import('../pages/kulture/KultureGaragesPage'))
+const KultureDetailingPage = lazy(() => import('../pages/kulture/KultureDetailingPage'))
+const KultureAccessoriesPage = lazy(() => import('../pages/kulture/KultureAccessoriesPage'))
+const KultureUniversityPage = lazy(() => import('../pages/kulture/KultureUniversityPage'))
+
+// Wholesale pages
+const WhyPartnerPage = lazy(() => import('../pages/wholesale/WhyPartnerPage'))
+const DealerPage = lazy(() => import('../pages/wholesale/DealerPage'))
+const DistributorPage = lazy(() => import('../pages/wholesale/DistributorPage'))
+const WholesalerPage = lazy(() => import('../pages/wholesale/WholesalerPage'))
+const ApplicationPage = lazy(() => import('../pages/wholesale/ApplicationPage'))
+
+// About pages
+const OurStoryPage = lazy(() => import('../pages/about/OurStoryPage'))
+const OurPhilosophyPage = lazy(() => import('../pages/about/OurPhilosophyPage'))
+const TechnologyPage = lazy(() => import('../pages/about/TechnologyPage'))
+const WhyKustomKoatsPage = lazy(() => import('../pages/about/WhyKustomKoatsPage'))
+
 const PageLoader = () => (
   <div className="min-h-[60vh] flex items-center justify-center" style={{ background: "#000000" }}>
     <div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin"
@@ -39,6 +73,7 @@ export default function AnimatedRoutes() {
   return (
     <AnimatePresence mode="wait">
       <Routes location={location} key={location.pathname}>
+        {/* Home */}
         <Route path="/" element={
           <PageTransition>
             <ErrorBoundary>
@@ -48,6 +83,223 @@ export default function AnimatedRoutes() {
             </ErrorBoundary>
           </PageTransition>
         } />
+        
+        {/* Shop Routes */}
+        <Route path="/shop" element={
+          <PageTransition>
+            <ErrorBoundary>
+              <Suspense fallback={<PageLoader />}>
+                <ShopPage />
+              </Suspense>
+            </ErrorBoundary>
+          </PageTransition>
+        } />
+        <Route path="/shop/xtreme-kolorz" element={
+          <PageTransition>
+            <ErrorBoundary>
+              <Suspense fallback={<PageLoader />}>
+                <XtremeKolorzPage />
+              </Suspense>
+            </ErrorBoundary>
+          </PageTransition>
+        } />
+        <Route path="/shop/xtreme-wrap" element={
+          <PageTransition>
+            <ErrorBoundary>
+              <Suspense fallback={<PageLoader />}>
+                <XtremeWrapPage />
+              </Suspense>
+            </ErrorBoundary>
+          </PageTransition>
+        } />
+        <Route path="/shop/accessories" element={
+          <PageTransition>
+            <ErrorBoundary>
+              <Suspense fallback={<PageLoader />}>
+                <AccessoriesPage />
+              </Suspense>
+            </ErrorBoundary>
+          </PageTransition>
+        } />
+        <Route path="/shop/wholesale" element={
+          <PageTransition>
+            <ErrorBoundary>
+              <Suspense fallback={<PageLoader />}>
+                <WholesalePage />
+              </Suspense>
+            </ErrorBoundary>
+          </PageTransition>
+        } />
+        
+        {/* Kustom Kulture Routes */}
+        <Route path="/kulture/journal" element={
+          <PageTransition>
+            <ErrorBoundary>
+              <Suspense fallback={<PageLoader />}>
+                <KultureJournalPage />
+              </Suspense>
+            </ErrorBoundary>
+          </PageTransition>
+        } />
+        <Route path="/kulture/news" element={
+          <PageTransition>
+            <ErrorBoundary>
+              <Suspense fallback={<PageLoader />}>
+                <KultureNewsPage />
+              </Suspense>
+            </ErrorBoundary>
+          </PageTransition>
+        } />
+        <Route path="/kulture/events" element={
+          <PageTransition>
+            <ErrorBoundary>
+              <Suspense fallback={<PageLoader />}>
+                <KultureEventsPage />
+              </Suspense>
+            </ErrorBoundary>
+          </PageTransition>
+        } />
+        <Route path="/kulture/projects" element={
+          <PageTransition>
+            <ErrorBoundary>
+              <Suspense fallback={<PageLoader />}>
+                <KultureProjectsPage />
+              </Suspense>
+            </ErrorBoundary>
+          </PageTransition>
+        } />
+        <Route path="/kulture/how-to" element={
+          <PageTransition>
+            <ErrorBoundary>
+              <Suspense fallback={<PageLoader />}>
+                <KultureHowToPage />
+              </Suspense>
+            </ErrorBoundary>
+          </PageTransition>
+        } />
+        <Route path="/kulture/garages" element={
+          <PageTransition>
+            <ErrorBoundary>
+              <Suspense fallback={<PageLoader />}>
+                <KultureGaragesPage />
+              </Suspense>
+            </ErrorBoundary>
+          </PageTransition>
+        } />
+        <Route path="/kulture/detailing" element={
+          <PageTransition>
+            <ErrorBoundary>
+              <Suspense fallback={<PageLoader />}>
+                <KultureDetailingPage />
+              </Suspense>
+            </ErrorBoundary>
+          </PageTransition>
+        } />
+        <Route path="/kulture/accessories" element={
+          <PageTransition>
+            <ErrorBoundary>
+              <Suspense fallback={<PageLoader />}>
+                <KultureAccessoriesPage />
+              </Suspense>
+            </ErrorBoundary>
+          </PageTransition>
+        } />
+        <Route path="/kulture/university" element={
+          <PageTransition>
+            <ErrorBoundary>
+              <Suspense fallback={<PageLoader />}>
+                <KultureUniversityPage />
+              </Suspense>
+            </ErrorBoundary>
+          </PageTransition>
+        } />
+        
+        {/* Wholesale Routes */}
+        <Route path="/wholesale/why-partner" element={
+          <PageTransition>
+            <ErrorBoundary>
+              <Suspense fallback={<PageLoader />}>
+                <WhyPartnerPage />
+              </Suspense>
+            </ErrorBoundary>
+          </PageTransition>
+        } />
+        <Route path="/wholesale/dealer" element={
+          <PageTransition>
+            <ErrorBoundary>
+              <Suspense fallback={<PageLoader />}>
+                <DealerPage />
+              </Suspense>
+            </ErrorBoundary>
+          </PageTransition>
+        } />
+        <Route path="/wholesale/distributor" element={
+          <PageTransition>
+            <ErrorBoundary>
+              <Suspense fallback={<PageLoader />}>
+                <DistributorPage />
+              </Suspense>
+            </ErrorBoundary>
+          </PageTransition>
+        } />
+        <Route path="/wholesale/wholesaler" element={
+          <PageTransition>
+            <ErrorBoundary>
+              <Suspense fallback={<PageLoader />}>
+                <WholesalerPage />
+              </Suspense>
+            </ErrorBoundary>
+          </PageTransition>
+        } />
+        <Route path="/wholesale/application" element={
+          <PageTransition>
+            <ErrorBoundary>
+              <Suspense fallback={<PageLoader />}>
+                <ApplicationPage />
+              </Suspense>
+            </ErrorBoundary>
+          </PageTransition>
+        } />
+        
+        {/* About Routes */}
+        <Route path="/about/story" element={
+          <PageTransition>
+            <ErrorBoundary>
+              <Suspense fallback={<PageLoader />}>
+                <OurStoryPage />
+              </Suspense>
+            </ErrorBoundary>
+          </PageTransition>
+        } />
+        <Route path="/about/philosophy" element={
+          <PageTransition>
+            <ErrorBoundary>
+              <Suspense fallback={<PageLoader />}>
+                <OurPhilosophyPage />
+              </Suspense>
+            </ErrorBoundary>
+          </PageTransition>
+        } />
+        <Route path="/about/technology" element={
+          <PageTransition>
+            <ErrorBoundary>
+              <Suspense fallback={<PageLoader />}>
+                <TechnologyPage />
+              </Suspense>
+            </ErrorBoundary>
+          </PageTransition>
+        } />
+        <Route path="/about/why-kustom-koats" element={
+          <PageTransition>
+            <ErrorBoundary>
+              <Suspense fallback={<PageLoader />}>
+                <WhyKustomKoatsPage />
+              </Suspense>
+            </ErrorBoundary>
+          </PageTransition>
+        } />
+        
+        {/* Existing Routes */}
         <Route path="/colors" element={
           <PageTransition>
             <ErrorBoundary>
@@ -75,6 +327,18 @@ export default function AnimatedRoutes() {
             </ErrorBoundary>
           </PageTransition>
         } />
+        
+        {/* Admin Routes */}
+        <Route path="/admin" element={
+          <PageTransition>
+            <ErrorBoundary>
+              <Suspense fallback={<PageLoader />}>
+                <AdminProductsPage />
+              </Suspense>
+            </ErrorBoundary>
+          </PageTransition>
+        } />
+        
         <Route path="/events" element={
           <PageTransition>
             <ErrorBoundary>

@@ -13,6 +13,8 @@ export async function fetchProducts(filters = {}) {
     else if (filters.category) query = query.order('price', { ascending: true })
     else query = query.order('created_at', { ascending: false })
 
+    if (filters.limit) query = query.limit(filters.limit)
+
     const { data, error } = await query
     if (error) { console.error('fetchProducts error:', error.message); return [] }
     return data || []

@@ -13,6 +13,7 @@ export default function Navbar() {
   const [searchQuery, setSearchQuery] = useState("")
   const [suggestions, setSuggestions] = useState([])
   const [scrolled, setScrolled] = useState(false)
+  const [activeDropdown, setActiveDropdown] = useState(null)
   const { user } = useAuthStore()
   const { products, loadProducts } = useAdminStore()
   const { itemCount } = useCartStore()
@@ -90,13 +91,50 @@ export default function Navbar() {
   const iconStyle = "w-10 h-10 flex items-center justify-center text-black hover:text-[#FF0000] transition-colors duration-300"
 
   const navLinks = [
-    { to: "/", label: "Home" },
-    { to: "/colors", label: "Colors" },
-    { to: "/products", label: "Products" },
-    { to: "/about", label: "About" },
-    { to: "/partners", label: "Partners" },
-    { to: "/faq", label: "FAQ" },
-    { to: "/contact", label: "Contact" },
+    { to: "/", label: "HOME" },
+    { 
+      label: "SHOP", 
+      submenu: [
+        { to: "/shop/xtreme-kolorz", label: "Xtreme Kolorz" },
+        { to: "/shop/xtreme-wrap", label: "Xtreme Wrap" },
+        { to: "/shop/accessories", label: "Accessories" },
+        { to: "/shop/wholesale", label: "Wholesale" },
+      ]
+    },
+    { 
+      label: "KUSTOM KULTURE",
+      submenu: [
+        { to: "/kulture/journal", label: "Kustom Journal" },
+        { to: "/kulture/news", label: "News" },
+        { to: "/kulture/events", label: "Events" },
+        { to: "/kulture/projects", label: "Projects" },
+        { to: "/kulture/how-to", label: "How-To" },
+        { to: "/kulture/garages", label: "Garages" },
+        { to: "/kulture/detailing", label: "Detailing" },
+        { to: "/kulture/accessories", label: "Accessories" },
+        { to: "/kulture/university", label: "KK University" },
+      ]
+    },
+    { 
+      label: "WHOLESALE",
+      submenu: [
+        { to: "/wholesale/why-partner", label: "Why Partner With Us" },
+        { to: "/wholesale/dealer", label: "Dealer" },
+        { to: "/wholesale/distributor", label: "Distributor" },
+        { to: "/wholesale/wholesaler", label: "Wholesaler" },
+        { to: "/wholesale/application", label: "Application" },
+      ]
+    },
+    { 
+      label: "ABOUT",
+      submenu: [
+        { to: "/about/story", label: "Our Story" },
+        { to: "/about/philosophy", label: "Our Philosophy" },
+        { to: "/about/technology", label: "Technology / Formulation" },
+        { to: "/about/why-kustom-koats", label: "Why Kustom Koats" },
+      ]
+    },
+    { to: "/contact", label: "CONTACT" },
   ]
 
   // Mobile sidebar rendered via portal so it escapes ALL stacking contexts
@@ -153,33 +191,82 @@ export default function Navbar() {
         {/* Nav links */}
         <nav style={{ flex: 1, overflowY: "auto", padding: "12px 0" }}>
           {navLinks.map(item => (
-            <Link
-              key={item.to}
-              to={item.to}
-              onClick={() => setMenuOpen(false)}
-              style={{
-                display: "block",
-                padding: "13px 24px",
-                color: "#000000",
-                textDecoration: "none",
-                fontFamily: "'Inter', sans-serif",
-                fontSize: "0.9375rem",
-                fontWeight: 500,
-                letterSpacing: "0.02em",
-                borderBottom: "1px solid rgba(0,0,0,0.05)",
-                transition: "background 0.2s, color 0.2s",
-              }}
-              onMouseEnter={e => {
-                e.currentTarget.style.background = "rgba(255,0,0,0.05)"
-                e.currentTarget.style.color = "#FF0000"
-              }}
-              onMouseLeave={e => {
-                e.currentTarget.style.background = "transparent"
-                e.currentTarget.style.color = "#000000"
-              }}
-            >
-              {item.label}
-            </Link>
+            item.submenu ? (
+              <div key={item.label}>
+                <div
+                  style={{
+                    display: "block",
+                    padding: "13px 24px",
+                    color: "#000000",
+                    fontFamily: "'Inter', sans-serif",
+                    fontSize: "0.9375rem",
+                    fontWeight: 600,
+                    letterSpacing: "0.02em",
+                    borderBottom: "1px solid rgba(0,0,0,0.05)",
+                    background: "rgba(0,0,0,0.02)"
+                  }}
+                >
+                  {item.label}
+                </div>
+                {item.submenu.map(subItem => (
+                  <Link
+                    key={subItem.to}
+                    to={subItem.to}
+                    onClick={() => setMenuOpen(false)}
+                    style={{
+                      display: "block",
+                      padding: "11px 24px 11px 40px",
+                      color: "#333333",
+                      textDecoration: "none",
+                      fontFamily: "'Inter', sans-serif",
+                      fontSize: "0.875rem",
+                      fontWeight: 400,
+                      letterSpacing: "0.01em",
+                      borderBottom: "1px solid rgba(0,0,0,0.03)",
+                      transition: "background 0.2s, color 0.2s",
+                    }}
+                    onMouseEnter={e => {
+                      e.currentTarget.style.background = "rgba(255,0,0,0.05)"
+                      e.currentTarget.style.color = "#FF0000"
+                    }}
+                    onMouseLeave={e => {
+                      e.currentTarget.style.background = "transparent"
+                      e.currentTarget.style.color = "#333333"
+                    }}
+                  >
+                    {subItem.label}
+                  </Link>
+                ))}
+              </div>
+            ) : (
+              <Link
+                key={item.to}
+                to={item.to}
+                onClick={() => setMenuOpen(false)}
+                style={{
+                  display: "block",
+                  padding: "13px 24px",
+                  color: "#000000",
+                  textDecoration: "none",
+                  fontFamily: "'Inter', sans-serif",
+                  fontSize: "0.9375rem",
+                  fontWeight: 500,
+                  letterSpacing: "0.02em",
+                  borderBottom: "1px solid rgba(0,0,0,0.05)",
+                  transition: "background 0.2s, color 0.2s",
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.background = "rgba(255,0,0,0.05)"
+                  e.currentTarget.style.color = "#FF0000"
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.background = "transparent"
+                  e.currentTarget.style.color = "#000000"
+                }}
+              >
+                {item.label}
+              </Link>
+            )
           ))}
 
           {/* Admin button inside sidebar */}
@@ -245,11 +332,52 @@ export default function Navbar() {
           {!isOnAdminPanel && (
             <div className="hidden lg:flex items-center gap-1 flex-1 justify-center">
               {navLinks.map(item => (
-                <Link key={item.to} to={item.to} onClick={closeAll}
-                  className="px-5 h-10 flex items-center text-[0.875rem] font-medium tracking-wide text-black/80 hover:text-[#FF0000] transition-colors duration-300"
-                  style={{ fontFamily: "'Inter', sans-serif" }}>
-                  {item.label}
-                </Link>
+                item.submenu ? (
+                  <div 
+                    key={item.label}
+                    className="relative"
+                    onMouseEnter={() => setActiveDropdown(item.label)}
+                    onMouseLeave={() => setActiveDropdown(null)}
+                  >
+                    <button
+                      className="px-5 h-10 flex items-center text-[0.875rem] font-medium tracking-wide text-black/80 hover:text-[#FF0000] transition-colors duration-300"
+                      style={{ fontFamily: "'Inter', sans-serif" }}
+                    >
+                      {item.label}
+                      <svg className="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </button>
+                    {activeDropdown === item.label && (
+                      <div 
+                        className="absolute top-full left-0 mt-0 py-2 w-56 rounded-sm z-50"
+                        style={{ 
+                          background: "#FFFFFF", 
+                          border: "1px solid rgba(0, 0, 0, 0.15)",
+                          boxShadow: "0 8px 24px rgba(0, 0, 0, 0.15)" 
+                        }}
+                      >
+                        {item.submenu.map(subItem => (
+                          <Link
+                            key={subItem.to}
+                            to={subItem.to}
+                            className="block px-4 py-2.5 text-sm text-black hover:bg-[#F8F8F8] hover:text-[#FF0000] transition-colors"
+                            style={{ fontFamily: "'Inter', sans-serif" }}
+                            onClick={closeAll}
+                          >
+                            {subItem.label}
+                          </Link>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <Link key={item.to} to={item.to} onClick={closeAll}
+                    className="px-5 h-10 flex items-center text-[0.875rem] font-medium tracking-wide text-black/80 hover:text-[#FF0000] transition-colors duration-300"
+                    style={{ fontFamily: "'Inter', sans-serif" }}>
+                    {item.label}
+                  </Link>
+                )
               ))}
             </div>
           )}

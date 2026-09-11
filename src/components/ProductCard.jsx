@@ -8,26 +8,26 @@ import { formatINR } from '../utils/format'
 import toast from 'react-hot-toast'
 
 const isVideo = (url) => url && /\.(mp4|mov|webm|ogg)(\?|$)/i.test(url)
-const FALLBACK_IMG = '/Horse Riding-fallback.webp'
+const FALLBACK_IMG = '/categories/image.png'
 
 function TagBadges({ tags }) {
   if (!tags?.length) return null
   return (
     <div className="flex flex-wrap gap-1">
       {tags.includes('certified') && (
-        <span className="flex items-center gap-1 text-[0.625rem] font-semibold px-2 py-0.5 rounded-sm bg-green-900/30 text-green-400 border border-green-700/40"
+        <span className="flex items-center gap-1 text-[0.625rem] font-semibold px-2 py-0.5 rounded-sm bg-green-100 text-green-700 border border-green-200"
           style={{ fontFamily: "'Inter', sans-serif" }}>
           <CheckCircle size={10} /> Certified
         </span>
       )}
-      {tags.includes('nepal') && (
-        <span className="flex items-center gap-1 text-[0.625rem] font-semibold px-2 py-0.5 rounded-sm bg-[#9A7650]/15 text-[#9A7650] border border-[#9A7650]/30"
+      {tags.includes('new') && (
+        <span className="flex items-center gap-1 text-[0.625rem] font-semibold px-2 py-0.5 rounded-sm bg-red-100 text-[#FF0000] border border-red-200"
           style={{ fontFamily: "'Inter', sans-serif" }}>
-          <MapPin size={10} /> Nepal
+          <Sparkles size={10} /> New
         </span>
       )}
       {tags.includes('rare') && (
-        <span className="flex items-center gap-1 text-[0.625rem] font-semibold px-2 py-0.5 rounded-sm bg-purple-900/30 text-purple-400 border border-purple-700/40"
+        <span className="flex items-center gap-1 text-[0.625rem] font-semibold px-2 py-0.5 rounded-sm bg-purple-100 text-purple-700 border border-purple-200"
           style={{ fontFamily: "'Inter', sans-serif" }}>
           <Sparkles size={10} /> Rare
         </span>
@@ -46,27 +46,24 @@ function GridCard({ product, inCart, wishlisted, onAddToCart, onWishlist }) {
     <motion.div
       whileHover={{ y: -6 }}
       transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
-      className="group relative equestrian-card rounded-sm overflow-hidden flex flex-col h-full"
+      className="group relative bg-white border border-gray-200 rounded-lg overflow-hidden flex flex-col h-full hover:border-[#FF0000] hover:shadow-lg transition-all"
     >
       <Link to={`/products/${product.id}`} className="flex flex-col flex-1">
         {/* Image Container */}
-        <div className="relative overflow-hidden aspect-square bg-[#5B1E28] flex-shrink-0 image-zoom-wrapper">
+        <div className="relative overflow-hidden aspect-square bg-[#F8F8F8] flex-shrink-0">
           {mediaIsVideo ? (
             <video src={media} muted loop playsInline autoPlay
-              className="w-full h-full object-cover" />
+              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
           ) : (
             <img src={media} alt={product.name} loading="lazy"
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
               onError={e => { e.target.src = FALLBACK_IMG }} />
           )}
 
-          {/* Overlay on Hover */}
-          <div className="absolute inset-0 bg-gradient-to-t from-[#5B1E28]/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-
           {/* Out of Stock Overlay */}
           {product.stock === 0 && (
-            <div className="absolute inset-0 bg-[#5B1E28]/80 flex items-center justify-center backdrop-blur-sm">
-              <span className="text-[#F3EBDD] text-xs font-semibold bg-[#5B1E28] px-4 py-2 rounded-sm border border-[#B6A58F]/20"
+            <div className="absolute inset-0 bg-black/60 flex items-center justify-center backdrop-blur-sm">
+              <span className="text-white text-xs font-semibold bg-black px-4 py-2 rounded"
                 style={{ fontFamily: "'Inter', sans-serif" }}>
                 Out of Stock
               </span>
@@ -75,7 +72,7 @@ function GridCard({ product, inCart, wishlisted, onAddToCart, onWishlist }) {
 
           {/* Certified Badge */}
           {product.tags?.includes('certified') && (
-            <span className="absolute top-3 left-3 flex items-center gap-1 bg-green-700/90 text-white text-[0.625rem] px-2 py-1 rounded-sm font-semibold backdrop-blur-sm"
+            <span className="absolute top-3 left-3 flex items-center gap-1 bg-green-600 text-white text-[0.625rem] px-2 py-1 rounded font-semibold"
               style={{ fontFamily: "'Inter', sans-serif" }}>
               <CheckCircle size={10} /> Certified
             </span>
@@ -83,7 +80,7 @@ function GridCard({ product, inCart, wishlisted, onAddToCart, onWishlist }) {
           
           {/* New Badge */}
           {!product.tags?.includes('certified') && product.tags?.includes('new') && (
-            <span className="absolute top-3 left-3 bg-[#9A7650] text-[#F3EBDD] text-[0.625rem] px-2 py-1 rounded-sm font-bold backdrop-blur-sm"
+            <span className="absolute top-3 left-3 bg-[#FF0000] text-white text-[0.625rem] px-2 py-1 rounded font-bold"
               style={{ fontFamily: "'Inter', sans-serif" }}>
               New
             </span>
@@ -91,7 +88,7 @@ function GridCard({ product, inCart, wishlisted, onAddToCart, onWishlist }) {
 
           {/* Discount Badge */}
           {origPrice && origPrice > product.price && (
-            <span className="absolute top-3 right-12 bg-green-700/90 text-white text-[0.625rem] font-bold px-2 py-1 rounded-sm backdrop-blur-sm"
+            <span className="absolute top-3 right-12 bg-green-600 text-white text-[0.625rem] font-bold px-2 py-1 rounded"
               style={{ fontFamily: "'Inter', sans-serif" }}>
               -{Math.round(((origPrice - product.price) / origPrice) * 100)}%
             </span>
@@ -99,10 +96,10 @@ function GridCard({ product, inCart, wishlisted, onAddToCart, onWishlist }) {
 
           {/* Wishlist Button */}
           <button onClick={onWishlist}
-            className={`absolute top-3 right-3 p-2 rounded-sm transition-all duration-300 backdrop-blur-sm ${
+            className={`absolute top-3 right-3 p-2 rounded transition-all duration-300 ${
               wishlisted 
                 ? 'bg-red-500 text-white scale-110' 
-                : 'bg-[#5B1E28]/80 text-[#F3EBDD] hover:text-red-400 hover:bg-[#5B1E28]'
+                : 'bg-white/90 text-gray-600 hover:text-red-500 hover:bg-white'
             }`}>
             <Heart size={14} strokeWidth={1.5} fill={wishlisted ? 'currentColor' : 'none'} />
           </button>
@@ -111,14 +108,14 @@ function GridCard({ product, inCart, wishlisted, onAddToCart, onWishlist }) {
         {/* Content */}
         <div className="p-4 flex flex-col flex-1">
           {/* Category */}
-          <p className="text-[0.625rem] text-[#9A7650] mb-2 uppercase tracking-[0.15em] font-semibold"
+          <p className="text-[0.625rem] text-[#FF0000] mb-2 uppercase tracking-[0.15em] font-semibold"
             style={{ fontFamily: "'Inter', sans-serif" }}>
             {product.category}
           </p>
           
           {/* Title */}
-          <h3 className="text-[#F3EBDD] text-sm font-medium line-clamp-2 mb-3 group-hover:text-[#B8955A] transition-colors leading-snug flex-1"
-            style={{ fontFamily: "'Inter', sans-serif" }}>
+          <h3 className="text-sm font-medium line-clamp-2 mb-3 group-hover:text-[#FF0000] transition-colors leading-snug flex-1"
+            style={{ fontFamily: "'Inter', sans-serif", color: "#000000" }}>
             {product.name}
           </h3>
           
@@ -130,21 +127,21 @@ function GridCard({ product, inCart, wishlisted, onAddToCart, onWishlist }) {
           {/* Pricing */}
           <div className="mt-auto">
             <div className="flex items-center gap-2">
-              <span className="text-[#F3EBDD] font-semibold text-base" style={{ fontFamily: "'Inter', sans-serif" }}>
+              <span className="font-semibold text-base" style={{ fontFamily: "'Inter', sans-serif", color: "#000000" }}>
                 {formatINR(product.price)}
               </span>
               {origPrice && origPrice > product.price && (
-                <span className="text-[#B6A58F]/60 text-xs line-through">
+                <span className="text-gray-400 text-xs line-through">
                   {formatINR(origPrice)}
                 </span>
               )}
             </div>
             <p className="text-[0.625rem] mt-1" 
               style={{ 
-                color: product.delivery_charge ? "#B6A58F" : "#4ADE80",
+                color: product.delivery_charge ? "#666666" : "#16a34a",
                 fontFamily: "'Inter', sans-serif" 
               }}>
-              {product.delivery_charge ? `+ ?${product.delivery_charge} delivery` : "Free Delivery"}
+              {product.delivery_charge ? `+ ₹${product.delivery_charge} delivery` : "Free Delivery"}
             </p>
           </div>
         </div>
@@ -153,10 +150,10 @@ function GridCard({ product, inCart, wishlisted, onAddToCart, onWishlist }) {
       {/* Add to Cart Button */}
       <div className="px-4 pb-4">
         <button onClick={onAddToCart} disabled={product.stock === 0}
-          className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-sm text-xs font-semibold transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed uppercase tracking-wider ${
+          className={`w-full flex items-center justify-center gap-2 py-2.5 rounded text-xs font-semibold transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed uppercase tracking-wider ${
             inCart
               ? 'bg-green-700 hover:bg-green-600 text-white'
-              : 'bg-[#B8955A] hover:bg-[#F3EBDD] text-[#5B1E28]'
+              : 'bg-[#FF0000] hover:bg-[#CC0000] text-white'
           }`}
           style={{ fontFamily: "'Inter', sans-serif" }}>
           {inCart ? (
@@ -181,11 +178,11 @@ function ListCard({ product, inCart, wishlisted, onAddToCart, onWishlist }) {
     <motion.div
       whileHover={{ x: 4 }}
       transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
-      className="group relative equestrian-card rounded-sm transition-all duration-300 overflow-hidden">
+      className="group relative bg-white border border-gray-200 rounded-lg transition-all duration-300 overflow-hidden hover:border-[#FF0000] hover:shadow-lg">
       <Link to={`/products/${product.id}`}>
         <div className="flex items-stretch gap-4 p-4">
           {/* Image */}
-          <div className="relative flex-shrink-0 w-28 h-28 rounded-sm overflow-hidden bg-[#5B1E28] image-zoom-wrapper">
+          <div className="relative flex-shrink-0 w-28 h-28 rounded overflow-hidden bg-[#F8F8F8]">
             {mediaIsVideo ? (
               <video src={media} muted loop playsInline autoPlay className="w-full h-full object-cover" />
             ) : (
@@ -194,8 +191,8 @@ function ListCard({ product, inCart, wishlisted, onAddToCart, onWishlist }) {
                 onError={e => { e.target.src = FALLBACK_IMG }} />
             )}
             {product.stock === 0 && (
-              <div className="absolute inset-0 bg-[#5B1E28]/80 flex items-center justify-center backdrop-blur-sm">
-                <span className="text-[0.625rem] font-bold text-[#F3EBDD] bg-[#5B1E28] px-2 py-1 rounded-sm border border-[#B6A58F]/20"
+              <div className="absolute inset-0 bg-black/60 flex items-center justify-center backdrop-blur-sm">
+                <span className="text-[0.625rem] font-bold text-white bg-black px-2 py-1 rounded"
                   style={{ fontFamily: "'Inter', sans-serif" }}>
                   OOS
                 </span>
@@ -207,76 +204,76 @@ function ListCard({ product, inCart, wishlisted, onAddToCart, onWishlist }) {
           <div className="flex-1 min-w-0 flex flex-col justify-between py-1">
             <div className="flex items-center gap-2 mb-1">
               {product.custom_id && (
-                <span className="font-mono text-[0.625rem] text-[#B6A58F] bg-[#5B1E28] px-2 py-0.5 rounded-sm border border-[#B6A58F]/15"
+                <span className="font-mono text-[0.625rem] text-gray-500 bg-gray-100 px-2 py-0.5 rounded border border-gray-200"
                   style={{ fontFamily: "'Courier New', monospace" }}>
                   {product.custom_id}
                 </span>
               )}
-              <span className="text-[0.625rem] text-[#9A7650] font-semibold uppercase tracking-wider px-2 py-0.5 bg-[#9A7650]/10 rounded-sm border border-[#9A7650]/20"
+              <span className="text-[0.625rem] text-[#FF0000] font-semibold uppercase tracking-wider px-2 py-0.5 bg-red-50 rounded border border-red-100"
                 style={{ fontFamily: "'Inter', sans-serif" }}>
                 {product.category}
               </span>
             </div>
             
-            <h3 className="text-[#F3EBDD] text-sm font-medium line-clamp-2 group-hover:text-[#B8955A] transition-colors leading-tight mb-2"
-              style={{ fontFamily: "'Inter', sans-serif" }}>
+            <h3 className="text-sm font-medium line-clamp-2 group-hover:text-[#FF0000] transition-colors leading-tight mb-2"
+              style={{ fontFamily: "'Inter', sans-serif", color: "#000000" }}>
               {product.name}
             </h3>
             
             {product.size && (
-              <p className="text-[#B6A58F] text-xs mb-2" style={{ fontFamily: "'Inter', sans-serif" }}>
-                Size: <span className="font-medium text-[#F3EBDD]">{product.size} mm</span>
+              <p className="text-gray-600 text-xs mb-2" style={{ fontFamily: "'Inter', sans-serif" }}>
+                Size: <span className="font-medium text-black">{product.size} mm</span>
               </p>
             )}
             
             <TagBadges tags={product.tags} />
             
             <div className="flex items-center gap-3 mt-2">
-              <span className="text-[#F3EBDD] font-semibold text-base" style={{ fontFamily: "'Inter', sans-serif" }}>
+              <span className="font-semibold text-base" style={{ fontFamily: "'Inter', sans-serif", color: "#000000" }}>
                 {formatINR(product.price)}
               </span>
               {origPrice && origPrice > product.price && (
-                <span className="text-[#B6A58F]/60 text-xs line-through">
+                <span className="text-gray-400 text-xs line-through">
                   {formatINR(origPrice)}
                 </span>
               )}
               {origPrice && origPrice > product.price && (
-                <span className="text-green-400 text-[0.625rem] font-bold" style={{ fontFamily: "'Inter', sans-serif" }}>
+                <span className="text-green-600 text-[0.625rem] font-bold" style={{ fontFamily: "'Inter', sans-serif" }}>
                   -{Math.round(((origPrice - product.price) / origPrice) * 100)}%
                 </span>
               )}
               <span className={`flex items-center gap-1.5 text-[0.625rem] font-semibold ml-auto ${
-                inStock ? 'text-green-400' : 'text-red-400'
+                inStock ? 'text-green-600' : 'text-red-600'
               }`} style={{ fontFamily: "'Inter', sans-serif" }}>
-                <span className={`w-1.5 h-1.5 rounded-full ${inStock ? 'bg-green-400' : 'bg-red-400'}`} />
+                <span className={`w-1.5 h-1.5 rounded-full ${inStock ? 'bg-green-600' : 'bg-red-600'}`} />
                 {inStock ? 'In Stock' : 'Out of Stock'}
               </span>
             </div>
             
             <p className="text-[0.625rem] mt-1" 
               style={{ 
-                color: product.delivery_charge ? "#B6A58F" : "#4ADE80",
+                color: product.delivery_charge ? "#666666" : "#16a34a",
                 fontFamily: "'Inter', sans-serif" 
               }}>
-              {product.delivery_charge ? `+ ?${product.delivery_charge} delivery` : "Free Delivery"}
+              {product.delivery_charge ? `+ ₹${product.delivery_charge} delivery` : "Free Delivery"}
             </p>
           </div>
 
           {/* Actions */}
           <div className="flex-shrink-0 flex flex-col items-center justify-between py-1 gap-2 pl-2">
             <button onClick={onWishlist}
-              className={`p-2 rounded-sm transition-all duration-300 ${
+              className={`p-2 rounded transition-all duration-300 ${
                 wishlisted 
-                  ? 'bg-red-900/30 text-red-400' 
-                  : 'text-[#F3EBDD]/50 hover:text-red-400 hover:bg-red-900/20'
+                  ? 'bg-red-100 text-red-500' 
+                  : 'text-gray-400 hover:text-red-500 hover:bg-red-50'
               }`}>
               <Heart size={16} strokeWidth={1.5} fill={wishlisted ? 'currentColor' : 'none'} />
             </button>
             <button onClick={onAddToCart} disabled={product.stock === 0}
-              className={`flex items-center gap-1.5 px-4 py-2 rounded-sm text-xs font-semibold transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed whitespace-nowrap uppercase tracking-wider ${
+              className={`flex items-center gap-1.5 px-4 py-2 rounded text-xs font-semibold transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed whitespace-nowrap uppercase tracking-wider ${
                 inCart
                   ? 'bg-green-700 hover:bg-green-600 text-white'
-                  : 'bg-[#B8955A] hover:bg-[#F3EBDD] text-[#5B1E28]'
+                  : 'bg-[#FF0000] hover:bg-[#CC0000] text-white'
               }`}
               style={{ fontFamily: "'Inter', sans-serif" }}>
               {inCart ? (
