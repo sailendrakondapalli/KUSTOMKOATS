@@ -82,13 +82,13 @@ export default function Navbar() {
   }
 
   const navStyle = {
-    background: scrolled ? "#FFFFFF" : (pathname === "/" ? "rgba(255, 255, 255, 0.98)" : "#FFFFFF"),
-    backdropFilter: scrolled || pathname === "/" ? "blur(20px)" : "none",
-    boxShadow: scrolled ? "0 1px 0 rgba(0, 0, 0, 0.1)" : "none",
+    background: "#000000",
+    backdropFilter: "blur(20px)",
+    boxShadow: scrolled ? "0 1px 0 rgba(255, 255, 255, 0.1)" : "none",
     transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
   }
 
-  const iconStyle = "w-10 h-10 flex items-center justify-center text-black hover:text-[#FF0000] transition-colors duration-300"
+  const iconStyle = "w-10 h-10 flex items-center justify-center text-white hover:text-[#FF0000] transition-colors duration-300"
 
   const navLinks = [
     { to: "/", label: "HOME" },
@@ -307,25 +307,12 @@ export default function Navbar() {
         <div className="w-full px-6 lg:px-12 xl:px-20 h-20 flex items-center gap-6">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-3 flex-shrink-0" onClick={closeAll}>
-            <div className="block leading-tight">
-              <div className="font-bold tracking-[0.08em] text-[1.25rem]" 
-                style={{ 
-                  fontFamily: "'Rajdhani', 'Inter', sans-serif",
-                  color: '#000000',
-                  letterSpacing: '0.08em'
-                }}>
-                KUSTOM KOATS
-              </div>
-              <div className="hidden sm:block text-[0.625rem] tracking-[0.12em] uppercase mt-0.5" 
-                style={{ 
-                  fontFamily: "'Inter', sans-serif",
-                  color: '#666666',
-                  fontWeight: 500,
-                  letterSpacing: '0.12em'
-                }}>
-                Automotive Grade Pearls
-              </div>
-            </div>
+            <img 
+              src="/logo.png" 
+              alt="Kustom Koats" 
+              className="h-8 md:h-10 w-auto object-contain"
+              style={{ maxWidth: '200px' }}
+            />
           </Link>
 
           {/* Desktop Navigation */}
@@ -340,7 +327,7 @@ export default function Navbar() {
                     onMouseLeave={() => setActiveDropdown(null)}
                   >
                     <button
-                      className="px-5 h-10 flex items-center text-[0.875rem] font-medium tracking-wide text-black/80 hover:text-[#FF0000] transition-colors duration-300"
+                      className="px-5 h-10 flex items-center text-[0.875rem] font-medium tracking-wide text-white hover:text-[#FF0000] transition-colors duration-300"
                       style={{ fontFamily: "'Inter', sans-serif" }}
                     >
                       {item.label}
@@ -373,7 +360,7 @@ export default function Navbar() {
                   </div>
                 ) : (
                   <Link key={item.to} to={item.to} onClick={closeAll}
-                    className="px-5 h-10 flex items-center text-[0.875rem] font-medium tracking-wide text-black/80 hover:text-[#FF0000] transition-colors duration-300"
+                    className="px-5 h-10 flex items-center text-[0.875rem] font-medium tracking-wide text-white hover:text-[#FF0000] transition-colors duration-300"
                     style={{ fontFamily: "'Inter', sans-serif" }}>
                     {item.label}
                   </Link>
@@ -469,7 +456,7 @@ export default function Navbar() {
             {/* Hamburger button */}
             <button 
               className="lg:hidden p-2 transition-colors"
-              style={{ color: "#000000", background: "none", border: "none", cursor: "pointer" }}
+              style={{ color: "#FFFFFF", background: "none", border: "none", cursor: "pointer" }}
               onClick={() => setMenuOpen(!menuOpen)}
               aria-label="Toggle menu"
             >

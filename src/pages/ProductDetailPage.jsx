@@ -38,10 +38,44 @@ export default function ProductDetailPage() {
         if (error || !data) { setLoading(false); return }
         setProduct(data)
         setLoading(false)
-        addRecentlyViewed(data)
-        // Load related products same category
-        supabase.from('products').select('*').eq('category', data.category).neq('id', id).limit(4)
-          .then(({ data: rel }) => setRelated(rel || []))
+        
+        // Add to recently viewed if function exists
+        if (addRecentlyViewed && typeof addRecentlyViewed === 'function') {
+          addRecentlyViewed(data)
+        }
+        
+        // Load recommended products with fallback strategy
+        const loadRecommended = async () => {
+          console.log('Loading recommended products for:', data.name, 'Category:', data.category)
+          
+          // Priority 1: Same category products
+          const { data: sameCat, error: err1 } = await supabase.from('products')
+            .select('*')
+            .eq('category', data.category)
+            .neq('id', id)
+            .limit(8)
+          
+          console.log('Same category results:', sameCat, 'Error:', err1)
+          let recommended = sameCat || []
+          
+          // Priority 2: If less than 4 from same category, get from other categories
+          if (recommended.length < 4) {
+            const { data: others, error: err2 } = await supabase.from('products')
+              .select('*')
+              .neq('id', id)
+              .limit(8 - recommended.length)
+            
+            console.log('Other products results:', others, 'Error:', err2)
+            if (others && others.length > 0) {
+              recommended = [...recommended, ...others]
+            }
+          }
+          
+          console.log('Final recommended products:', recommended.length, recommended)
+          setRelated(recommended)
+        }
+        
+        loadRecommended()
       })
   }, [id])
 
@@ -356,21 +390,19 @@ export default function ProductDetailPage() {
         {/* Related Products */}
         {related.length > 0 && (
           <section className="mt-16 pt-16 border-t border-gray-200">
-            <div className="flex items-center justify-between mb-8">
-              <h2 className="text-3xl font-bold" style={{ fontFamily: "'Rajdhani', sans-serif", color: "#000000" }}>
-                More From {product.category}
+            <div className="text-center mb-12">
+              <p className="text-sm font-bold mb-3 tracking-wider uppercase" style={{ color: "#FF0000", fontFamily: "'Inter', sans-serif" }}>
+                RECOMMENDED FOR YOU
+              </p>
+              <h2 className="text-3xl md:text-4xl font-bold" style={{ fontFamily: "'Rajdhani', sans-serif", color: "#000000" }}>
+                You May Also Like
               </h2>
-              <Link to={`/shop/xtreme-kolorz?category=${encodeURIComponent(product.category)}`}
-                className="text-sm font-bold uppercase tracking-wider flex items-center gap-2 transition-colors hover:text-[#FF0000]"
-                style={{ color: "#000000", fontFamily: "'Inter', sans-serif" }}>
-                View All <ArrowRight size={16} />
-              </Link>
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
               {related.map(p => (
                 <Link key={p.id} to={`/products/${p.id}`}
-                  className="group bg-white border border-gray-200 rounded-lg overflow-hidden hover:border-[#FF0000] hover:shadow-lg transition-all">
-                  <div className="aspect-square bg-[#F8F8F8] overflow-hidden">
+                  className="group bg-white border border-gray-200 rounded-lg overflow-hidden hover:border-[#FF0000] hover:shadow-xl transition-all">
+                  <div className="aspect-square bg-[#F8F8F8] overflow-hidden relative">
                     {isVideoUrl(p.images?.[0]) ? (
                       <video src={p.images[0]} muted loop playsInline
                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
@@ -379,6 +411,10 @@ export default function ProductDetailPage() {
                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                         onError={e => { e.target.src = '/product-fallback.webp' }} />
                     )}
+                    {/* Category badge */}
+                    <span className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm text-[#FF0000] text-xs font-bold px-3 py-1 rounded-full" style={{ fontFamily: "'Inter', sans-serif" }}>
+                      {p.category}
+                    </span>
                   </div>
                   <div className="p-4">
                     <p className="text-sm font-semibold line-clamp-2 mb-2 group-hover:text-[#FF0000] transition-colors"
@@ -388,9 +424,27 @@ export default function ProductDetailPage() {
                     <p className="text-base font-bold" style={{ color: "#FF0000", fontFamily: "'Inter', sans-serif" }}>
                       {formatINR(p.price)}
                     </p>
+                    {p.original_price && p.original_price > p.price && (
+                      <p className="text-xs text-gray-400 line-through mt-1" style={{ fontFamily: "'Inter', sans-serif" }}>
+                        {formatINR(p.original_price)}
+                      </p>
+                    )}
                   </div>
                 </Link>
               ))}
+            </div>
+            <div className="text-center mt-8">
+              <Link 
+                to={`/shop/xtreme-kolorz?category=${encodeURIComponent(product.category)}`}
+                className="inline-flex items-center gap-2 px-8 py-4 rounded-lg font-bold transition-all duration-300 hover:scale-105"
+                style={{ 
+                  background: "#FF0000", 
+                  color: "#FFFFFF",
+                  fontFamily: "'Inter', sans-serif" 
+                }}
+              >
+                View All {product.category} Products <ArrowRight size={20} />
+              </Link>
             </div>
           </section>
         )}

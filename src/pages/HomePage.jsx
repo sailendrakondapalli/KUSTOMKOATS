@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Link } from "react-router-dom"
 import { motion } from "framer-motion"
 import { Helmet } from "react-helmet-async"
@@ -44,7 +44,7 @@ function HeroSection() {
                 color: '#FFFFFF',
                 textShadow: '0 4px 20px rgba(0, 0, 0, 0.8), 0 0 30px rgba(255, 0, 0, 0.3)'
               }}>
-            KUSTOM KOATS
+            INSPIRED BY PASSION
           </h1>
           <p className="text-xl md:text-2xl tracking-wide uppercase mb-4" 
              style={{ 
@@ -53,7 +53,7 @@ function HeroSection() {
                letterSpacing: '0.12em',
                textShadow: '0 2px 10px rgba(0, 0, 0, 0.8)'
              }}>
-            Premium Automotive Pearls & Finishes
+            MAKE YOUR PRESENCE FEEL IMPOSSIBLE TO IGNORE
           </p>
           <p className="text-base md:text-lg max-w-2xl mx-auto" 
              style={{ 
@@ -62,7 +62,7 @@ function HeroSection() {
                lineHeight: '1.8',
                textShadow: '0 2px 10px rgba(0, 0, 0, 0.8)'
              }}>
-            Transform your ride with over 300+ automotive grade pearl colors. From solid pearls to mind-bending Chroma effects.
+            DISCOVER MORE
           </p>
         </motion.div>
 
@@ -355,14 +355,14 @@ function XtremeKolorzSection() {
 /* --- Xtreme Wrap Section --- */
 function XtremeWrapSection() {
   return (
-    <section className={`w-full py-20 ${PX}`} style={{ background: "#000000" }}>
+    <section className={`w-full py-20 ${PX}`} style={{ background: "#FFFFFF" }}>
       <ScrollReveal>
         <div className="max-w-7xl mx-auto text-center">
           <h2 className="text-3xl md:text-4xl font-bold mb-6"
-            style={{ fontFamily: "'Rajdhani', 'Inter', sans-serif", color: "#FFFFFF" }}>
+            style={{ fontFamily: "'Rajdhani', 'Inter', sans-serif", color: "#000000" }}>
             Xtreme Wrap
           </h2>
-          <p className="text-lg mb-8 max-w-2xl mx-auto" style={{ color: "#CCCCCC", fontFamily: "'Inter', sans-serif" }}>
+          <p className="text-lg mb-8 max-w-2xl mx-auto" style={{ color: "#666666", fontFamily: "'Inter', sans-serif" }}>
             Professional grade vinyl wraps with pearl finishes
           </p>
           <Link
@@ -437,7 +437,7 @@ function SignatureSeriesSection() {
   }, [])
 
   return (
-    <section className={`w-full py-20 ${PX}`} style={{ background: "#F8F8F8" }}>
+    <section className={`w-full py-20 ${PX}`} style={{ background: "#FFFFFF" }}>
       <ScrollReveal>
         <div className="max-w-7xl mx-auto">
           {/* Section Header */}
@@ -450,15 +450,71 @@ function SignatureSeriesSection() {
             </h2>
           </div>
 
-          {/* Products Grid */}
+          {/* Products List - Image + Text Layout */}
           {loading ? (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12">
-              {Array(8).fill(0).map((_, i) => <SkeletonCard key={i} />)}
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 md:gap-8 lg:gap-12">
+              {Array(8).fill(0).map((_, i) => (
+                <div key={i} className="animate-pulse">
+                  <div className="aspect-square bg-gray-200 rounded-lg mb-4"></div>
+                  <div className="h-6 bg-gray-200 rounded mb-2 w-3/4"></div>
+                  <div className="h-4 bg-gray-200 rounded mb-3 w-1/2"></div>
+                  <div className="h-4 bg-gray-200 rounded w-1/3"></div>
+                </div>
+              ))}
             </div>
           ) : products.length > 0 ? (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 md:gap-8 lg:gap-12">
               {products.map((product) => (
-                <ProductCard key={product.id} product={product} layout="grid" />
+                <ScrollReveal key={product.id}>
+                  <Link to={`/products/${product.id}`} className="group block">
+                    {/* Product Image */}
+                    <div className="relative aspect-square overflow-hidden rounded-lg mb-4">
+                      <img 
+                        src={product.images?.[0] || '/categories/image.png'}
+                        alt={product.name}
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                        onError={(e) => {
+                          e.target.src = '/categories/image.png'
+                        }}
+                      />
+                    </div>
+                    
+                    {/* Product Name */}
+                    <h3 
+                      className="text-base md:text-lg lg:text-xl font-bold mb-2 transition-colors group-hover:text-[#FF0000]"
+                      style={{ 
+                        fontFamily: "'Inter', sans-serif", 
+                        color: "#000000",
+                        lineHeight: "1.4"
+                      }}
+                    >
+                      {product.name}
+                    </h3>
+                    
+                    {/* Category */}
+                    <p 
+                      className="text-xs md:text-sm mb-3"
+                      style={{ 
+                        fontFamily: "'Inter', sans-serif", 
+                        color: "#666666"
+                      }}
+                    >
+                      {product.category}
+                    </p>
+                    
+                    {/* Read More Link */}
+                    <div
+                      className="inline-flex items-center gap-2 text-xs md:text-sm font-medium transition-all group-hover:gap-3"
+                      style={{ 
+                        fontFamily: "'Inter', sans-serif", 
+                        color: "#FF0000"
+                      }}
+                    >
+                      Read more 
+                      <ArrowRight size={14} />
+                    </div>
+                  </Link>
+                </ScrollReveal>
               ))}
             </div>
           ) : (
@@ -470,7 +526,7 @@ function SignatureSeriesSection() {
           )}
 
           {/* View All Button */}
-          <div className="text-center mt-12">
+          <div className="text-center mt-16">
             <Link
               to="/shop/xtreme-kolorz"
               className="inline-flex items-center gap-2 px-8 py-4 rounded-lg font-bold transition-all duration-300 hover:scale-105"
@@ -592,17 +648,17 @@ function FindYourFinishSection() {
 /* --- Built With Kustom Koats Section --- */
 function BuiltWithKKSection() {
   return (
-    <section className={`w-full py-20 ${PX}`} style={{ background: "#000000" }}>
+    <section className={`w-full py-20 ${PX}`} style={{ background: "#FFFFFF" }}>
       <ScrollReveal>
         <div className="max-w-7xl mx-auto text-center">
           <p className="text-sm font-bold mb-3 tracking-wider uppercase" style={{ color: "#FF0000", fontFamily: "'Inter', sans-serif" }}>
             SHOWCASE
           </p>
           <h2 className="text-3xl md:text-4xl font-bold mb-6"
-            style={{ fontFamily: "'Rajdhani', 'Inter', sans-serif", color: "#FFFFFF" }}>
+            style={{ fontFamily: "'Rajdhani', 'Inter', sans-serif", color: "#000000" }}>
             Built With Kustom Koats
           </h2>
-          <p className="text-lg mb-8 max-w-2xl mx-auto" style={{ color: "#CCCCCC", fontFamily: "'Inter', sans-serif" }}>
+          <p className="text-lg mb-8 max-w-2xl mx-auto" style={{ color: "#666666", fontFamily: "'Inter', sans-serif" }}>
             See what professionals are creating with our premium pearls
           </p>
           <Link
@@ -692,6 +748,8 @@ function FirstOrderSection() {
 
 /* --- Why Kustom Koats Section --- */
 function WhyChooseSection() {
+  const scrollContainerRef = useRef(null)
+  
   const features = [
     {
       icon: <Award size={32} />,
@@ -715,6 +773,46 @@ function WhyChooseSection() {
     }
   ]
 
+  useEffect(() => {
+    const container = scrollContainerRef.current
+    if (!container) return
+
+    let scrollPosition = 0
+    const scrollSpeed = 1 // pixels per frame
+    const cardWidth = 280 + 24 // card width + gap
+    const totalWidth = cardWidth * features.length
+
+    const scroll = () => {
+      scrollPosition += scrollSpeed
+      
+      // Reset to start when we've scrolled through one full set
+      if (scrollPosition >= totalWidth) {
+        scrollPosition = 0
+      }
+      
+      container.scrollLeft = scrollPosition
+    }
+
+    const intervalId = setInterval(scroll, 30) // ~33fps
+
+    // Pause on hover/touch
+    const handlePointerEnter = () => clearInterval(intervalId)
+    const handlePointerLeave = () => {
+      clearInterval(intervalId)
+      const newIntervalId = setInterval(scroll, 30)
+      return () => clearInterval(newIntervalId)
+    }
+
+    container.addEventListener('mouseenter', handlePointerEnter)
+    container.addEventListener('touchstart', handlePointerEnter)
+
+    return () => {
+      clearInterval(intervalId)
+      container.removeEventListener('mouseenter', handlePointerEnter)
+      container.removeEventListener('touchstart', handlePointerEnter)
+    }
+  }, [features.length])
+
   return (
     <section className={`w-full py-20 ${PX}`} style={{ background: "#F8F8F8" }}>
       <ScrollReveal>
@@ -729,7 +827,41 @@ function WhyChooseSection() {
             </h2>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          {/* Mobile: Auto-scrolling Horizontal Carousel */}
+          <div 
+            ref={scrollContainerRef}
+            className="md:hidden overflow-x-auto pb-4 scrollbar-hide"
+            style={{ 
+              scrollbarWidth: 'none',
+              msOverflowStyle: 'none',
+              WebkitOverflowScrolling: 'touch',
+              scrollBehavior: 'auto'
+            }}>
+            <div className="flex gap-6" style={{ width: 'max-content' }}>
+              {/* Triple duplicate for seamless infinite loop */}
+              {[...features, ...features, ...features].map((feature, idx) => (
+                <div 
+                  key={`feature-${idx}`}
+                  className="flex-shrink-0 text-center p-6"
+                  style={{ width: '280px' }}
+                >
+                  <div className="inline-flex items-center justify-center w-16 h-16 rounded-full mb-4"
+                    style={{ background: "rgba(255, 0, 0, 0.05)", color: "#FF0000" }}>
+                    {feature.icon}
+                  </div>
+                  <h3 className="text-lg font-bold mb-3" style={{ color: "#000000", fontFamily: "'Inter', sans-serif" }}>
+                    {feature.title}
+                  </h3>
+                  <p className="text-sm" style={{ color: "#666666", fontFamily: "'Inter', sans-serif" }}>
+                    {feature.description}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Desktop: Grid */}
+          <div className="hidden md:grid grid-cols-2 lg:grid-cols-4 gap-8">
             {features.map((feature, idx) => (
               <ScrollReveal key={feature.title} delay={idx * 0.1}>
                 <div className="text-center p-6">
