@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Product Fetch</title>
+</head>
+<body>
+    <h1>Product Fetch Test</h1>
+    <div id="results"></div>
+
+    <script type="module">
+        // Replace these with your actual Supabase credentials from .env
+        const SUPABASE_URL = 'YOUR_SUPABASE_URL_HERE'
+        const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY_HERE'
+
+        async function testFetch() {
+            const resultsDiv = document.getElementById('results')
+            
+            try {
+                // Test 1: Fetch ALL products
+                const response1 = await fetch(`${SUPABASE_URL}/rest/v1/products?select=*`, {
+                    headers: {
+                        'apikey': SUPABASE_ANON_KEY,
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+                    }
+                })
+                const allProducts = await response1.json()
+                
+                resultsDiv.innerHTML += `<h2>Test 1: All Products</h2>`
+                resultsDiv.innerHTML += `<p>Found ${allProducts.length} products</p>`
+                resultsDiv.innerHTML += `<pre>${JSON.stringify(allProducts, null, 2)}</pre>`
+                
+                // Test 2: Fetch Xtreme Kolorz products
+                const response2 = await fetch(`${SUPABASE_URL}/rest/v1/products?select=*&category=eq.Xtreme Kolorz`, {
+                    headers: {
+                        'apikey': SUPABASE_ANON_KEY,
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+                    }
+                })
+                const xtremeProducts = await response2.json()
+                
+                resultsDiv.innerHTML += `<h2>Test 2: Xtreme Kolorz Products</h2>`
+                resultsDiv.innerHTML += `<p>Found ${xtremeProducts.length} products</p>`
+                resultsDiv.innerHTML += `<pre>${JSON.stringify(xtremeProducts, null, 2)}</pre>`
+                
+            } catch (error) {
+                resultsDiv.innerHTML += `<p style="color: red;">Error: ${error.message}</p>`
+            }
+        }
+
+        testFetch()
+    </script>
+</body>
+</html>

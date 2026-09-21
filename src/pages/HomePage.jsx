@@ -13,6 +13,57 @@ const PX = "px-6 lg:px-12 xl:px-20"
 
 /* --- Hero Section --- */
 function HeroSection() {
+  // Animation variants for word-by-word reveal
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.08,
+        delayChildren: 0.2
+      }
+    }
+  }
+
+  const wordVariants = {
+    hidden: { 
+      opacity: 0, 
+      y: 25 
+    },
+    visible: { 
+      opacity: 1, 
+      y: 0,
+      transition: {
+        duration: 0.5,
+        ease: [0.22, 1, 0.36, 1]
+      }
+    }
+  }
+
+  // Split text into words for animation - each word on same line
+  const AnimatedWords = ({ text, className, style }) => {
+    const words = text.split(' ')
+    return (
+      <motion.div 
+        className={className}
+        style={style}
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+      >
+        {words.map((word, index) => (
+          <motion.span
+            key={index}
+            variants={wordVariants}
+            style={{ display: 'inline-block', marginRight: '0.25em' }}
+          >
+            {word}
+          </motion.span>
+        ))}
+      </motion.div>
+    )
+  }
+
   return (
     <section className="relative w-full overflow-hidden" style={{ height: "clamp(550px, 85vh, 800px)" }}>
       {/* Video Background */}
@@ -26,77 +77,99 @@ function HeroSection() {
         <source src="/Kustom Koats Hero Page.mov" type="video/mp4" />
       </video>
       
-      {/* Content */}
-      <div className="relative w-full h-full flex flex-col items-center justify-center text-center px-6 sm:px-12">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1 }}
-          className="mb-12"
-        >
-          <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold tracking-wider mb-6" 
+      {/* Content - Left Aligned */}
+      <div className="relative w-full h-full flex flex-col items-start justify-center px-6 sm:px-12 lg:px-16 max-w-7xl">
+        <div className="text-left space-y-0">
+          {/* Small Top Text */}
+          <AnimatedWords
+            text="INSPIRED BY PASSION"
+            className="text-xs md:text-sm font-bold tracking-widest mb-4"
+            style={{ 
+              fontFamily: "'Montserrat', sans-serif",
+              fontWeight: 700,
+              letterSpacing: '0.15em',
+              color: '#FFFFFF',
+              textShadow: '0 2px 10px rgba(0, 0, 0, 0.8)'
+            }}
+          />
+          
+          {/* Main Heading - Stacked Lines */}
+          <div className="space-y-0 mb-8">
+            <AnimatedWords
+              text="MAKE YOUR"
+              className="block text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight leading-none"
               style={{ 
-                fontFamily: "'Bebas Neue', sans-serif",
-                fontSize: '79px',
-                lineHeight: '70px',
-                letterSpacing: '1.9px',
-                wordSpacing: '1px',
+                fontFamily: "'Montserrat', sans-serif",
+                fontWeight: 800,
+                color: '#FFFFFF',
+                textShadow: '0 4px 20px rgba(0, 0, 0, 0.8), 0 0 30px rgba(255, 0, 0, 0.3)',
+                marginBottom: '-0.1em'
+              }}
+            />
+            <AnimatedWords
+              text="PRESENCE"
+              className="block text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight leading-none"
+              style={{ 
+                fontFamily: "'Montserrat', sans-serif",
+                fontWeight: 800,
+                color: '#FFFFFF',
+                textShadow: '0 4px 20px rgba(0, 0, 0, 0.8), 0 0 30px rgba(255, 0, 0, 0.3)',
+                marginBottom: '-0.1em'
+              }}
+            />
+            <AnimatedWords
+              text="FEEL"
+              className="block text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight leading-none"
+              style={{ 
+                fontFamily: "'Montserrat', sans-serif",
+                fontWeight: 800,
+                color: '#FFFFFF',
+                textShadow: '0 4px 20px rgba(0, 0, 0, 0.8), 0 0 30px rgba(255, 0, 0, 0.3)',
+                marginBottom: '-0.1em'
+              }}
+            />
+            <AnimatedWords
+              text="IMPOSSIBLE"
+              className="block text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight leading-none"
+              style={{ 
+                fontFamily: "'Montserrat', sans-serif",
+                fontWeight: 800,
+                color: '#FFFFFF',
+                textShadow: '0 4px 20px rgba(0, 0, 0, 0.8), 0 0 30px rgba(255, 0, 0, 0.3)',
+                marginBottom: '-0.1em'
+              }}
+            />
+            <AnimatedWords
+              text="TO IGNORE"
+              className="block text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight leading-none"
+              style={{ 
+                fontFamily: "'Montserrat', sans-serif",
+                fontWeight: 800,
                 color: '#FFFFFF',
                 textShadow: '0 4px 20px rgba(0, 0, 0, 0.8), 0 0 30px rgba(255, 0, 0, 0.3)'
-              }}>
-            INSPIRED BY PASSION
-          </h1>
-          <p className="text-xl md:text-2xl tracking-wide uppercase mb-4" 
-             style={{ 
-               fontFamily: "'Inter', sans-serif",
-               color: '#FFFFFF',
-               letterSpacing: '0.12em',
-               textShadow: '0 2px 10px rgba(0, 0, 0, 0.8)'
-             }}>
-            MAKE YOUR PRESENCE FEEL IMPOSSIBLE TO IGNORE
-          </p>
-          <p className="text-base md:text-lg max-w-2xl mx-auto" 
-             style={{ 
-               fontFamily: "'Inter', sans-serif",
-               color: '#F0F0F0',
-               lineHeight: '1.8',
-               textShadow: '0 2px 10px rgba(0, 0, 0, 0.8)'
-             }}>
-            DISCOVER MORE
-          </p>
-        </motion.div>
+              }}
+            />
+          </div>
+        </div>
 
+        {/* CTA Button - Left Aligned */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.5 }}
-          className="flex flex-col sm:flex-row gap-4"
+          transition={{ duration: 0.8, delay: 2 }}
         >
           <Link 
             to="/shop/xtreme-kolorz"
-            className="inline-flex items-center gap-3 px-8 py-4 rounded-lg font-bold text-lg tracking-wide uppercase transition-all duration-300 hover:scale-105"
-            style={{ 
-              background: "#FF0000",
-              color: "#FFFFFF",
-              fontFamily: "'Inter', sans-serif",
-              boxShadow: '0 4px 20px rgba(255, 0, 0, 0.3)'
-            }}
-          >
-            <Palette size={22} />
-            Explore Xtreme Kolorz
-          </Link>
-          <Link 
-            to="/shop/xtreme-kolorz"
-            className="inline-flex items-center gap-3 px-8 py-4 rounded-lg font-bold text-lg tracking-wide uppercase transition-all duration-300 hover:scale-105"
+            className="inline-flex items-center gap-3 px-8 py-4 rounded-sm font-bold text-sm tracking-widest uppercase transition-all duration-300 hover:scale-105"
             style={{ 
               background: "#FFFFFF",
               color: "#000000",
-              border: "2px solid rgba(0, 0, 0, 0.2)",
-              fontFamily: "'Inter', sans-serif"
+              fontFamily: "'Montserrat', sans-serif",
+              fontWeight: 700,
+              letterSpacing: '0.1em'
             }}
           >
-            Shop Now
-            <ArrowRight size={20} />
+            DISCOVER MORE
           </Link>
         </motion.div>
       </div>
@@ -177,14 +250,14 @@ function FeaturedCategoriesSection() {
             return (
               <div key={category.title} className="flex-shrink-0 w-[80vw] snap-center">
                 <Link to={targetLink} className="relative group block">
-                  <div className="relative aspect-[4/3] overflow-hidden rounded-lg mb-4">
+                  <div className="relative aspect-[4/3] rounded-lg mb-4 overflow-hidden">
                     {loading ? (
                       <div className="w-full h-full bg-gray-200 animate-pulse" />
                     ) : (
                       <img 
                         src={displayImage}
                         alt={product?.name || category.title}
-                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                         onError={(e) => {
                           e.target.src = category.image
                         }}
@@ -238,14 +311,14 @@ function FeaturedCategoriesSection() {
             return (
               <ScrollReveal key={category.title} delay={idx * 0.15}>
                 <Link to={targetLink} className="relative group block">
-                  <div className="relative aspect-[4/3] overflow-hidden rounded-lg mb-4">
+                  <div className="relative aspect-[4/3] rounded-lg mb-4 overflow-hidden">
                     {loading ? (
                       <div className="w-full h-full bg-gray-200 animate-pulse" />
                     ) : (
                       <img 
                         src={displayImage}
                         alt={product?.name || category.title}
-                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                         onError={(e) => {
                           e.target.src = category.image
                         }}
@@ -305,7 +378,7 @@ function XtremeKolorzSection() {
   ]
 
   return (
-    <section className={`w-full py-20 ${PX}`} style={{ background: "#FFFFFF" }}>
+    <section className={`w-full py-12 ${PX}`} style={{ background: "#FFFFFF" }}>
       <ScrollReveal>
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
@@ -355,7 +428,7 @@ function XtremeKolorzSection() {
 /* --- Xtreme Wrap Section --- */
 function XtremeWrapSection() {
   return (
-    <section className={`w-full py-20 ${PX}`} style={{ background: "#FFFFFF" }}>
+    <section className={`w-full py-12 ${PX}`} style={{ background: "#FFFFFF" }}>
       <ScrollReveal>
         <div className="max-w-7xl mx-auto text-center">
           <h2 className="text-3xl md:text-4xl font-bold mb-6"
@@ -385,7 +458,7 @@ function XtremeWrapSection() {
 /* --- Accessories Section --- */
 function AccessoriesSection() {
   return (
-    <section className={`w-full py-20 ${PX}`} style={{ background: "#F8F8F8" }}>
+    <section className={`w-full py-12 ${PX}`} style={{ background: "#F8F8F8" }}>
       <ScrollReveal>
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12">
@@ -437,7 +510,7 @@ function SignatureSeriesSection() {
   }, [])
 
   return (
-    <section className={`w-full py-20 ${PX}`} style={{ background: "#FFFFFF" }}>
+    <section className={`w-full py-12 ${PX}`} style={{ background: "#FFFFFF" }}>
       <ScrollReveal>
         <div className="max-w-7xl mx-auto">
           {/* Section Header */}
@@ -560,7 +633,7 @@ function FeaturedProductsSection() {
   }, [])
 
   return (
-    <section className={`w-full py-20 ${PX}`} style={{ background: "#F8F8F8" }}>
+    <section className={`w-full py-12 ${PX}`} style={{ background: "#F8F8F8" }}>
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between mb-12">
           <div>
@@ -607,7 +680,7 @@ function FindYourFinishSection() {
   ]
 
   return (
-    <section className={`w-full py-20 ${PX}`} style={{ background: "#FFFFFF" }}>
+    <section className={`w-full py-12 ${PX}`} style={{ background: "#FFFFFF" }}>
       <ScrollReveal>
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
@@ -648,7 +721,7 @@ function FindYourFinishSection() {
 /* --- Built With Kustom Koats Section --- */
 function BuiltWithKKSection() {
   return (
-    <section className={`w-full py-20 ${PX}`} style={{ background: "#FFFFFF" }}>
+    <section className={`w-full py-12 ${PX}`} style={{ background: "#FFFFFF" }}>
       <ScrollReveal>
         <div className="max-w-7xl mx-auto text-center">
           <p className="text-sm font-bold mb-3 tracking-wider uppercase" style={{ color: "#FF0000", fontFamily: "'Inter', sans-serif" }}>
@@ -681,7 +754,7 @@ function BuiltWithKKSection() {
 /* --- Kustom Kulture Section --- */
 function KustomKultureSection() {
   return (
-    <section className={`w-full py-20 ${PX}`} style={{ background: "#FFFFFF" }}>
+    <section className={`w-full py-12 ${PX}`} style={{ background: "#FFFFFF" }}>
       <ScrollReveal>
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12">
@@ -720,7 +793,7 @@ function KustomKultureSection() {
 /* --- First Order Discount Section --- */
 function FirstOrderSection() {
   return (
-    <section className={`w-full py-20 ${PX}`} style={{ background: "#FF0000" }}>
+    <section className={`w-full py-12 ${PX}`} style={{ background: "#FF0000" }}>
       <ScrollReveal>
         <div className="max-w-4xl mx-auto text-center">
           <h3 className="text-3xl md:text-4xl font-bold mb-6" style={{ fontFamily: "'Rajdhani', 'Inter', sans-serif", color: "#FFFFFF" }}>
@@ -814,7 +887,7 @@ function WhyChooseSection() {
   }, [features.length])
 
   return (
-    <section className={`w-full py-20 ${PX}`} style={{ background: "#F8F8F8" }}>
+    <section className={`w-full py-12 ${PX}`} style={{ background: "#F8F8F8" }}>
       <ScrollReveal>
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
@@ -888,7 +961,7 @@ function WhyChooseSection() {
 /* --- CTA Section --- */
 function CTASection() {
   return (
-    <section className={`w-full py-20 ${PX}`} 
+    <section className={`w-full py-12 ${PX}`} 
       style={{ 
         background: "linear-gradient(135deg, #F8F8F8 0%, #FFFFFF 100%)",
         borderTop: "1px solid rgba(0, 0, 0, 0.1)",
@@ -928,6 +1001,88 @@ function CTASection() {
   )
 }
 
+/* --- Fixed Video Background Section --- */
+function FixedVideoSection() {
+  const videoRef = useRef(null)
+  const sectionRef = useRef(null)
+
+  useEffect(() => {
+    const video = videoRef.current
+    if (!video) return
+
+    // Improved autoplay handling
+    const attemptPlay = async () => {
+      try {
+        // Set video properties before playing
+        video.muted = true
+        video.playsInline = true
+        await video.play()
+        console.log('Video playing successfully')
+      } catch (err) {
+        console.log('Initial autoplay prevented, will retry on scroll:', err.message)
+      }
+    }
+
+    // Intersection Observer to ensure play when visible
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && video.paused) {
+          attemptPlay()
+        }
+      },
+      { threshold: 0.1 }
+    )
+
+    if (sectionRef.current) {
+      observer.observe(sectionRef.current)
+    }
+
+    // Initial play attempt
+    attemptPlay()
+
+    return () => {
+      if (sectionRef.current) {
+        observer.unobserve(sectionRef.current)
+      }
+    }
+  }, [])
+
+  return (
+    <section 
+      ref={sectionRef}
+      className="relative w-full overflow-hidden"
+      style={{ 
+        height: 'clamp(600px, 100vh, 1000px)',
+        background: '#000000'
+      }}
+    >
+      {/* Video Background */}
+      <video
+        ref={videoRef}
+        autoPlay
+        loop
+        muted
+        playsInline
+        preload="auto"
+        className="absolute inset-0 w-full h-full object-cover"
+      >
+        <source src="/bgfixedscroll.mp4" type="video/mp4" />
+      </video>
+      
+      {/* Dark overlay for cinematic effect */}
+      <div 
+        className="absolute inset-0"
+        style={{ background: 'rgba(0, 0, 0, 0.4)' }}
+      />
+
+      {/* Optional content overlay */}
+      <div className="relative w-full h-full flex items-center justify-center">
+        {/* You can add text or other content here if needed */}
+      </div>
+    </section>
+  )
+}
+
 /* --- Main Component --- */
 export default function HomePage() {
   return (
@@ -937,12 +1092,14 @@ export default function HomePage() {
         <meta name="description" content="Explore 300+ automotive grade pearl colors. Xtreme Kolorz, Xtreme Wrap, Original Candy, and Signature Series. Premium quality from Kustom Koats." />
       </Helmet>
 
-      <div className="min-h-screen" style={{ background: "#FFFFFF" }}>
+      <div className="min-h-screen">
         <HeroSection />
         <FeaturedCategoriesSection />
         <SignatureSeriesSection />
         <WhyChooseSection />
+        <FixedVideoSection />
       </div>
     </>
   )
 }
+

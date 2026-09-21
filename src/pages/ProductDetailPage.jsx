@@ -103,6 +103,18 @@ export default function ProductDetailPage() {
     }
   }
 
+  const handleBuyNow = () => {
+    // Navigate to checkout with buy now data
+    navigate('/checkout', {
+      state: {
+        buyNow: {
+          product: product,
+          quantity: 1
+        }
+      }
+    })
+  }
+
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-[60vh]">
@@ -193,8 +205,8 @@ export default function ProductDetailPage() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16">
-          {/* Left - media */}
-          <div className="space-y-4">
+          {/* Left - media (sticky) */}
+          <div className="lg:sticky lg:top-8 lg:h-fit space-y-4">
             {/* Main image */}
             <div className="relative aspect-square rounded-lg overflow-hidden bg-[#F8F8F8] border border-gray-200">
               <AnimatePresence mode="wait">
@@ -239,8 +251,9 @@ export default function ProductDetailPage() {
             )}
           </div>
 
-          {/* Right - info */}
-          <div>
+          {/* Right - info (scrollable) */}
+          <div className="lg:min-h-screen">
+            <div className="lg:py-8">
             <p className="text-[#FF0000] text-xs uppercase tracking-[0.15em] font-bold mb-3" style={{ fontFamily: "'Inter', sans-serif" }}>
               {product.category}
             </p>
@@ -339,34 +352,41 @@ export default function ProductDetailPage() {
             )}
 
             {/* Actions */}
-            <div className="flex gap-3 mb-6">
-              <button onClick={handleAddToCart} disabled={product.stock === 0 || addingCart}
-                className={`flex-1 flex items-center justify-center gap-2 py-4 rounded-lg font-bold text-base uppercase tracking-wider transition-all disabled:opacity-40 disabled:cursor-not-allowed ${
-                  inCart ? 'bg-green-700 hover:bg-green-600 text-white' : 'bg-[#FF0000] hover:bg-[#CC0000] text-white shadow-lg hover:shadow-xl'
-                }`}
+            <div className="space-y-3 mb-6">
+              <button onClick={handleBuyNow} disabled={product.stock === 0}
+                className="w-full flex items-center justify-center gap-2 py-4 rounded-lg font-bold text-base uppercase tracking-wider transition-all disabled:opacity-40 disabled:cursor-not-allowed bg-[#FF0000] hover:bg-[#CC0000] text-white shadow-lg hover:shadow-xl"
                 style={{ fontFamily: "'Inter', sans-serif" }}>
-                {addingCart
-                  ? <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  : inCart ? <><ArrowRight size={18} /> View Cart</> : <><ShoppingCart size={18} /> Add to Cart</>
-                }
+                <ArrowRight size={18} /> Buy Now
               </button>
-              <button onClick={handleWishlist}
-                className={`w-14 h-14 rounded-lg border-2 flex items-center justify-center transition-all flex-shrink-0 ${
-                  wishlisted ? 'bg-red-500 border-red-500 text-white scale-105' : 'border-gray-300 text-gray-600 hover:border-red-400 hover:text-red-400'
-                }`}>
-                <Heart size={20} strokeWidth={2} fill={wishlisted ? 'currentColor' : 'none'} />
-              </button>
-              <button onClick={() => {
-                  if (navigator.share) {
-                    navigator.share({ title: product.name, url: window.location.href }).catch(() => {})
-                  } else {
-                    navigator.clipboard.writeText(window.location.href)
-                    toast.success('Link copied!')
+              <div className="flex gap-3">
+                <button onClick={handleAddToCart} disabled={product.stock === 0 || addingCart}
+                  className={`flex-1 flex items-center justify-center gap-2 py-4 rounded-lg font-bold text-base uppercase tracking-wider transition-all disabled:opacity-40 disabled:cursor-not-allowed ${
+                    inCart ? 'bg-green-700 hover:bg-green-600 text-white' : 'bg-black hover:bg-gray-800 text-white'
+                  }`}
+                  style={{ fontFamily: "'Inter', sans-serif" }}>
+                  {addingCart
+                    ? <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    : inCart ? <><ArrowRight size={18} /> View Cart</> : <><ShoppingCart size={18} /> Add to Cart</>
                   }
-                }}
-                className="w-14 h-14 rounded-lg border-2 border-gray-300 text-gray-600 flex items-center justify-center hover:border-[#FF0000] hover:text-[#FF0000] transition-all flex-shrink-0">
-                <Share2 size={20} strokeWidth={2} />
-              </button>
+                </button>
+                <button onClick={handleWishlist}
+                  className={`w-14 h-14 rounded-lg border-2 flex items-center justify-center transition-all flex-shrink-0 ${
+                    wishlisted ? 'bg-red-500 border-red-500 text-white scale-105' : 'border-gray-300 text-gray-600 hover:border-red-400 hover:text-red-400'
+                  }`}>
+                  <Heart size={20} strokeWidth={2} fill={wishlisted ? 'currentColor' : 'none'} />
+                </button>
+                <button onClick={() => {
+                    if (navigator.share) {
+                      navigator.share({ title: product.name, url: window.location.href }).catch(() => {})
+                    } else {
+                      navigator.clipboard.writeText(window.location.href)
+                      toast.success('Link copied!')
+                    }
+                  }}
+                  className="w-14 h-14 rounded-lg border-2 border-gray-300 text-gray-600 flex items-center justify-center hover:border-[#FF0000] hover:text-[#FF0000] transition-all flex-shrink-0">
+                  <Share2 size={20} strokeWidth={2} />
+                </button>
+              </div>
             </div>
 
             {/* Trust badges */}
@@ -383,6 +403,7 @@ export default function ProductDetailPage() {
                   </p>
                 </div>
               ))}
+            </div>
             </div>
           </div>
         </div>

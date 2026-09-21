@@ -16,7 +16,9 @@ export default function XtremeWrapPage() {
 
   const loadProducts = async () => {
     setLoading(true)
+    console.log('XtremeWrapPage: Fetching products with category:', 'Xtreme Wrap')
     const data = await fetchProducts({ category: 'Xtreme Wrap' })
+    console.log('XtremeWrapPage: Received products:', data)
     setProducts(data)
     setLoading(false)
   }
@@ -30,11 +32,11 @@ export default function XtremeWrapPage() {
 
       <div className="min-h-screen" style={{ background: "#FFFFFF" }}>
         {/* Hero */}
-        <section className="relative py-20 px-6 lg:px-12 xl:px-20" style={{ background: "#000000" }}>
+        <section className="relative py-20 px-6 lg:px-12 xl:px-20" style={{ background: "#FFFFFF" }}>
           <div className="max-w-7xl mx-auto">
             <Link 
               to="/"
-              className="inline-flex items-center gap-2 text-white hover:text-[#FF0000] transition-colors mb-8"
+              className="inline-flex items-center gap-2 text-black hover:text-[#FF0000] transition-colors mb-8"
               style={{ fontFamily: "'Inter', sans-serif" }}
             >
               <ArrowLeft size={20} />
@@ -45,13 +47,13 @@ export default function XtremeWrapPage() {
               className="text-4xl md:text-6xl font-bold mb-6"
               style={{ 
                 fontFamily: "'Bebas Neue', sans-serif",
-                color: '#FFFFFF',
+                color: '#000000',
                 letterSpacing: '2px'
               }}
             >
               XTREME WRAP
             </h1>
-            <p className="text-xl max-w-3xl" style={{ color: "#CCCCCC", fontFamily: "'Inter', sans-serif" }}>
+            <p className="text-xl max-w-3xl" style={{ color: "#666666", fontFamily: "'Inter', sans-serif" }}>
               Professional grade vinyl wraps with pearl finishes for complete vehicle transformations. Removable, durable, and stunning.
             </p>
           </div>
@@ -112,10 +114,10 @@ export default function XtremeWrapPage() {
               ) : products.length === 0 ? (
                 <div className="text-center py-16">
                   <p className="text-xl text-gray-500 mb-4" style={{ fontFamily: "'Inter', sans-serif" }}>
-                    No Xtreme Wrap products available yet
+                    No products available yet
                   </p>
                   <p className="text-gray-400" style={{ fontFamily: "'Inter', sans-serif" }}>
-                    Check back soon for new vinyl wrap products!
+                    Check back soon for new products!
                   </p>
                 </div>
               ) : (

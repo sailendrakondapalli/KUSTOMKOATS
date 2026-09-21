@@ -11,11 +11,11 @@ export default function WholesalePage() {
       </Helmet>
 
       <div className="min-h-screen" style={{ background: "#FFFFFF" }}>
-        <section className="relative py-20 px-6 lg:px-12 xl:px-20" style={{ background: "#000000" }}>
+        <section className="relative py-20 px-6 lg:px-12 xl:px-20" style={{ background: "#FFFFFF" }}>
           <div className="max-w-7xl mx-auto">
             <Link 
               to="/"
-              className="inline-flex items-center gap-2 text-white hover:text-[#FF0000] transition-colors mb-8"
+              className="inline-flex items-center gap-2 text-black hover:text-[#FF0000] transition-colors mb-8"
               style={{ fontFamily: "'Inter', sans-serif" }}
             >
               <ArrowLeft size={20} />
@@ -26,13 +26,13 @@ export default function WholesalePage() {
               className="text-4xl md:text-6xl font-bold mb-6"
               style={{ 
                 fontFamily: "'Bebas Neue', sans-serif",
-                color: '#FFFFFF',
+                color: '#000000',
                 letterSpacing: '2px'
               }}
             >
               WHOLESALE
             </h1>
-            <p className="text-lg max-w-2xl" style={{ color: "#CCCCCC", fontFamily: "'Inter', sans-serif" }}>
+            <p className="text-lg max-w-2xl" style={{ color: "#666666", fontFamily: "'Inter', sans-serif" }}>
               Special pricing for dealers, distributors, and wholesale partners
             </p>
           </div>

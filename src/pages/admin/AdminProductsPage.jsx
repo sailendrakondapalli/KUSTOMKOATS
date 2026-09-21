@@ -819,6 +819,7 @@ export default function AdminProductsPage() {
                           <option value="Xtreme Kolorz">Xtreme Kolorz</option>
                           <option value="Xtreme Wrap">Xtreme Wrap</option>
                           <option value="Accessories">Accessories</option>
+                          <option value="Wholesale">Wholesale</option>
                         </select>
                       </div>
 

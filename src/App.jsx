@@ -6,6 +6,7 @@ import Navbar from './components/Navbar'
 import Footer from './components/Footer'
 import ErrorBoundary from './components/ErrorBoundary'
 import IntroAnimation from './components/IntroAnimation'
+import IntroVideo from './components/IntroVideo'
 import AnimatedRoutes from './components/AnimatedRoutes'
 import { useAuthStore } from './store/authStore'
 import { useCartStore } from './store/cartStore'
@@ -54,6 +55,9 @@ export default function App() {
   return (
     <LanguageProvider>
     <HelmetProvider>
+      {/* Intro Video - Plays before website loads */}
+      <IntroVideo />
+      
       {/* Intro Animation */}
       {showIntro && <IntroAnimation onComplete={handleIntroComplete} />}
       
@@ -62,7 +66,7 @@ export default function App() {
         <Routes>
           {/* Storefront routes */}
           <Route path="/*" element={
-            <div className="min-h-screen flex flex-col" style={{ background: "#000000" }}>
+            <div className="min-h-screen flex flex-col">
               <Navbar />
               <main className="flex-1">
                 <AnimatedRoutes />

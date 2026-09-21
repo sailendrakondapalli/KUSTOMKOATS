@@ -30,7 +30,17 @@ export default function Navbar() {
   }, [])
 
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 20)
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY
+      
+      // Always show navbar, change style based on scroll
+      if (currentScrollY > 100) {
+        setScrolled(true)
+      } else {
+        setScrolled(false)
+      }
+    }
+    
     window.addEventListener("scroll", handleScroll)
     return () => window.removeEventListener("scroll", handleScroll)
   }, [])
@@ -82,13 +92,17 @@ export default function Navbar() {
   }
 
   const navStyle = {
-    background: "#000000",
+    position: scrolled ? "sticky" : "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    background: scrolled ? "#FFFFFF" : "rgba(255, 255, 255, 0.95)",
     backdropFilter: "blur(20px)",
-    boxShadow: scrolled ? "0 1px 0 rgba(255, 255, 255, 0.1)" : "none",
+    boxShadow: scrolled ? "0 2px 8px rgba(0, 0, 0, 0.1)" : "0 2px 8px rgba(0, 0, 0, 0.05)",
     transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
   }
 
-  const iconStyle = "w-10 h-10 flex items-center justify-center text-white hover:text-[#FF0000] transition-colors duration-300"
+  const iconStyle = `w-10 h-10 flex items-center justify-center ${scrolled ? 'text-black' : 'text-black'} hover:text-[#FF0000] transition-colors duration-300`
 
   const navLinks = [
     { to: "/", label: "HOME" },
@@ -302,18 +316,18 @@ export default function Navbar() {
 
   return (
     <>
-      <nav className="sticky top-0 w-full" style={{ ...navStyle, zIndex: 50 }}>
-        {/* MAIN ROW */}
-        <div className="w-full px-6 lg:px-12 xl:px-20 h-20 flex items-center gap-6">
-          {/* Logo */}
-          <Link to="/" className="flex items-center gap-3 flex-shrink-0" onClick={closeAll}>
+      <nav className="w-full px-6 lg:px-12 xl:px-20 h-20 flex items-center gap-6" style={{ ...navStyle, zIndex: 50 }}>
+        {/* Logo */}
+        <Link to="/" className="flex items-center gap-3 flex-shrink-0" onClick={closeAll}>
+          <div className="bg-black rounded-lg p-2 shadow-md">
             <img 
               src="/logo.png" 
               alt="Kustom Koats" 
-              className="h-8 md:h-10 w-auto object-contain"
-              style={{ maxWidth: '200px' }}
+              className="h-6 md:h-8 w-auto object-contain"
+              style={{ maxWidth: '180px', filter: 'brightness(0) invert(1)' }}
             />
-          </Link>
+          </div>
+        </Link>
 
           {/* Desktop Navigation */}
           {!isOnAdminPanel && (
@@ -327,7 +341,7 @@ export default function Navbar() {
                     onMouseLeave={() => setActiveDropdown(null)}
                   >
                     <button
-                      className="px-5 h-10 flex items-center text-[0.875rem] font-medium tracking-wide text-white hover:text-[#FF0000] transition-colors duration-300"
+                      className={`px-5 h-10 flex items-center text-[0.875rem] font-medium tracking-wide text-black hover:text-[#FF0000] transition-colors duration-300`}
                       style={{ fontFamily: "'Inter', sans-serif" }}
                     >
                       {item.label}
@@ -360,7 +374,7 @@ export default function Navbar() {
                   </div>
                 ) : (
                   <Link key={item.to} to={item.to} onClick={closeAll}
-                    className="px-5 h-10 flex items-center text-[0.875rem] font-medium tracking-wide text-white hover:text-[#FF0000] transition-colors duration-300"
+                    className={`px-5 h-10 flex items-center text-[0.875rem] font-medium tracking-wide text-black hover:text-[#FF0000] transition-colors duration-300`}
                     style={{ fontFamily: "'Inter', sans-serif" }}>
                     {item.label}
                   </Link>
@@ -456,7 +470,7 @@ export default function Navbar() {
             {/* Hamburger button */}
             <button 
               className="lg:hidden p-2 transition-colors"
-              style={{ color: "#FFFFFF", background: "none", border: "none", cursor: "pointer" }}
+              style={{ color: "#000000", background: "none", border: "none", cursor: "pointer" }}
               onClick={() => setMenuOpen(!menuOpen)}
               aria-label="Toggle menu"
             >
@@ -471,7 +485,6 @@ export default function Navbar() {
               )}
             </button>
           </div>
-        </div>
       </nav>
 
       {/* Mobile sidebar rendered at document.body level via portal */}
@@ -479,3 +492,5 @@ export default function Navbar() {
     </>
   )
 }
+
+

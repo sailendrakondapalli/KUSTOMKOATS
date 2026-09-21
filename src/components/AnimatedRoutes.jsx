@@ -14,6 +14,7 @@ const LoginPage = lazy(() => import('../pages/LoginPage'))
 const CartPage = lazy(() => import('../pages/CartPage'))
 const CheckoutPage = lazy(() => import('../pages/CheckoutPage'))
 const OrdersPage = lazy(() => import('../pages/OrdersPage'))
+const OrderSuccessPage = lazy(() => import('../pages/OrderSuccessPage'))
 const WishlistPage = lazy(() => import('../pages/WishlistPage'))
 const ProfilePage = lazy(() => import('../pages/ProfilePage'))
 const AuthCallbackPage = lazy(() => import('../pages/AuthCallbackPage'))
@@ -34,6 +35,7 @@ const ShopPage = lazy(() => import('../pages/shop/ShopPage'))
 
 // Admin pages
 const AdminProductsPage = lazy(() => import('../pages/admin/AdminProductsPage'))
+const AdminOrdersPage = lazy(() => import('../pages/admin/AdminOrdersPage'))
 const WholesalePage = lazy(() => import('../pages/shop/WholesalePage'))
 
 // Kustom Kulture pages
@@ -339,6 +341,16 @@ export default function AnimatedRoutes() {
           </PageTransition>
         } />
         
+        <Route path="/admin/orders" element={
+          <PageTransition>
+            <ErrorBoundary>
+              <Suspense fallback={<PageLoader />}>
+                <AdminOrdersPage />
+              </Suspense>
+            </ErrorBoundary>
+          </PageTransition>
+        } />
+        
         <Route path="/events" element={
           <PageTransition>
             <ErrorBoundary>
@@ -422,13 +434,11 @@ export default function AnimatedRoutes() {
         } />
         <Route path="/checkout" element={
           <PageTransition>
-            <ProtectedRoute>
-              <ErrorBoundary>
-                <Suspense fallback={<PageLoader />}>
-                  <CheckoutPage />
-                </Suspense>
-              </ErrorBoundary>
-            </ProtectedRoute>
+            <ErrorBoundary>
+              <Suspense fallback={<PageLoader />}>
+                <CheckoutPage />
+              </Suspense>
+            </ErrorBoundary>
           </PageTransition>
         } />
         <Route path="/orders" element={
@@ -440,6 +450,15 @@ export default function AnimatedRoutes() {
                 </Suspense>
               </ErrorBoundary>
             </ProtectedRoute>
+          </PageTransition>
+        } />
+        <Route path="/order-success" element={
+          <PageTransition>
+            <ErrorBoundary>
+              <Suspense fallback={<PageLoader />}>
+                <OrderSuccessPage />
+              </Suspense>
+            </ErrorBoundary>
           </PageTransition>
         } />
         <Route path="/wishlist" element={

@@ -45,7 +45,7 @@ export default function ColorsPage() {
     <>
       <Helmet>
         <title>Color Catalog - Kustom Koats | 300+ Automotive Pearls</title>
-        <meta name="description" content="Explore over 300 automotive grade pearl colors including Solid Pearls, Interference Pearls, Carbon Pearls, OEM+ Pearls, Special Effect Pearls, and Chroma Pearls" />
+        <meta name="description" content="Explore over 300 automotive grade pearl colors for custom finishes. Premium quality Xtreme Kolorz pearls for professional automotive applications." />
       </Helmet>
 
       <div className="min-h-screen" style={{ background: "#FFFFFF" }}>
@@ -60,7 +60,7 @@ export default function ColorsPage() {
               Explore Over 300+ Automotive Grade Pearl Colors
             </p>
             <p className="text-base max-w-3xl mx-auto" style={{ color: "#666666", fontFamily: "'Inter', sans-serif" }}>
-              From solid pearls to color-shifting Chroma effects, discover the perfect finish for your project
+              From solid pearls to color-shifting effects, discover the perfect finish for your project
             </p>
           </div>
         </section>

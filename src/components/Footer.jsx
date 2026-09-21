@@ -17,7 +17,7 @@ export default function Footer() {
               {CONTACT_INFO.company.tagline}
             </p>
             <p className="text-sm leading-relaxed mb-6" style={{ color: "#333333", fontFamily: "'Inter', sans-serif" }}>
-              Premium automotive grade pearls for professional finishes. Over 300+ colors including Solid Pearls, Interference Pearls, Carbon Pearls, OEM+ Pearls, Special Effect Pearls, and Chroma Pearls.
+              Premium automotive grade pearls, vinyl wraps, and accessories for professional custom finishes. Specializing in Xtreme Kolorz pearls, Xtreme Wrap vinyl films, and professional automotive accessories.
             </p>
             
             {/* Contact Information */}
@@ -43,24 +43,22 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* Pearl Categories */}
+          {/* Product Categories */}
           <div>
-            <h4 className="text-sm font-bold mb-4 tracking-wider uppercase" style={{ color: "#000000", fontFamily: "'Inter', sans-serif" }}>Pearl Categories</h4>
+            <h4 className="text-sm font-bold mb-4 tracking-wider uppercase" style={{ color: "#000000", fontFamily: "'Inter', sans-serif" }}>Product Categories</h4>
             <ul className="space-y-3">
               {[
-                "Solid Pearls",
-                "Interference Pearls", 
-                "Carbon Pearls",
-                "OEM+ Pearls",
-                "Special Effect",
-                "Chroma Pearls"
-              ].map(category => (
-                <li key={category}>
-                  <Link to="/colors" className="text-sm transition-colors duration-300" 
+                { to: "/shop/xtreme-kolorz", label: "Xtreme Kolorz" },
+                { to: "/shop/xtreme-wrap", label: "Xtreme Wrap" },
+                { to: "/shop/accessories", label: "Accessories" },
+                { to: "/shop/wholesale", label: "Wholesale" }
+              ].map(item => (
+                <li key={item.to}>
+                  <Link to={item.to} className="text-sm transition-colors duration-300" 
                     style={{ color: "#333333", fontFamily: "'Inter', sans-serif" }}
                     onMouseEnter={e => e.currentTarget.style.color = "#FF0000"}
                     onMouseLeave={e => e.currentTarget.style.color = "#333333"}>
-                    {category}
+                    {item.label}
                   </Link>
                 </li>
               ))}

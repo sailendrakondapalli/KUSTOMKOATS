@@ -1,8 +1,28 @@
+import { useState, useEffect } from "react"
 import { Helmet } from "react-helmet-async"
 import { Link } from "react-router-dom"
 import { ArrowLeft, Sprout, Pipette, Ruler, Droplet, PackageCheck, Wrench } from "lucide-react"
+import { fetchProducts } from "../../services/productService"
+import ProductCard from "../../components/ProductCard"
+import SkeletonCard from "../../components/SkeletonCard"
 
 export default function AccessoriesPage() {
+  const [products, setProducts] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    loadProducts()
+  }, [])
+
+  const loadProducts = async () => {
+    setLoading(true)
+    console.log('AccessoriesPage: Fetching products with category:', 'Accessories')
+    const data = await fetchProducts({ category: 'Accessories' })
+    console.log('AccessoriesPage: Received products:', data)
+    setProducts(data)
+    setLoading(false)
+  }
+
   const categories = [
     {
       icon: <Sprout size={32} />,
@@ -51,11 +71,11 @@ export default function AccessoriesPage() {
 
       <div className="min-h-screen" style={{ background: "#FFFFFF" }}>
         {/* Hero */}
-        <section className="relative py-20 px-6 lg:px-12 xl:px-20" style={{ background: "#000000" }}>
+        <section className="relative py-20 px-6 lg:px-12 xl:px-20" style={{ background: "#FFFFFF" }}>
           <div className="max-w-7xl mx-auto">
             <Link 
               to="/"
-              className="inline-flex items-center gap-2 text-white hover:text-[#FF0000] transition-colors mb-8"
+              className="inline-flex items-center gap-2 text-black hover:text-[#FF0000] transition-colors mb-8"
               style={{ fontFamily: "'Inter', sans-serif" }}
             >
               <ArrowLeft size={20} />
@@ -66,13 +86,13 @@ export default function AccessoriesPage() {
               className="text-4xl md:text-6xl font-bold mb-6"
               style={{ 
                 fontFamily: "'Bebas Neue', sans-serif",
-                color: '#FFFFFF',
+                color: '#000000',
                 letterSpacing: '2px'
               }}
             >
               ACCESSORIES
             </h1>
-            <p className="text-xl max-w-3xl" style={{ color: "#CCCCCC", fontFamily: "'Inter', sans-serif" }}>
+            <p className="text-xl max-w-3xl" style={{ color: "#666666", fontFamily: "'Inter', sans-serif" }}>
               Complete your custom finish with professional tools and accessories. Everything you need for perfect application.
             </p>
           </div>
@@ -132,6 +152,51 @@ export default function AccessoriesPage() {
                 </div>
               ))}
             </div>
+          </div>
+        </section>
+
+        {/* Products Section */}
+        <section className="py-20 px-6 lg:px-12 xl:px-20" style={{ background: "#F8F8F8" }}>
+          <div className="max-w-7xl mx-auto">
+            <div className="text-center mb-16">
+              <p className="text-sm font-bold mb-3 tracking-wider uppercase" style={{ color: "#FF0000", fontFamily: "'Inter', sans-serif" }}>
+                SHOP NOW
+              </p>
+              <h2 className="text-3xl md:text-4xl font-bold mb-4"
+                style={{ fontFamily: "'Rajdhani', sans-serif", color: "#000000" }}>
+                Accessories & Tools
+              </h2>
+            </div>
+
+            {loading ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {[...Array(8)].map((_, i) => (
+                  <SkeletonCard key={i} />
+                ))}
+              </div>
+            ) : products.length === 0 ? (
+              <div className="text-center py-16">
+                <p className="text-xl mb-4" style={{ color: "#666666", fontFamily: "'Inter', sans-serif" }}>
+                  No products available yet
+                </p>
+                <p className="text-sm" style={{ color: "#999999", fontFamily: "'Inter', sans-serif" }}>
+                  Check back soon for new products!
+                </p>
+              </div>
+            ) : (
+              <>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
+                  {products.map(product => (
+                    <ProductCard key={product.id} product={product} />
+                  ))}
+                </div>
+                <div className="text-center">
+                  <p style={{ color: "#666666", fontFamily: "'Inter', sans-serif" }}>
+                    Showing {products.length} product{products.length !== 1 ? 's' : ''}
+                  </p>
+                </div>
+              </>
+            )}
           </div>
         </section>
 

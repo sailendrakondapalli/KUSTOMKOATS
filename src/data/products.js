@@ -1,12 +1,10 @@
 ﻿// Static category and tag defaults used across the app
 
 export const CATEGORIES = [
-  "Solid Pearls",
-  "Interference Pearls",
-  "Carbon Pearls",
-  "OEM+ Pearls",
-  "Special Effect Pearls",
-  "Chroma Pearls"
+  "Xtreme Kolorz",
+  "Xtreme Wrap",
+  "Accessories",
+  "Wholesale"
 ]
 
 export const TAGS = ["metallic", "pearl", "color-shift", "premium", "automotive"]

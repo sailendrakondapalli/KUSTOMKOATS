@@ -1,21 +1,15 @@
 import { useState, useEffect, useRef } from "react"
 import { useNavigate, useLocation } from "react-router-dom"
 import { motion } from "framer-motion"
-import { MapPin, Plus, Check, CheckCircle, Upload, Copy, Smartphone, AlertCircle, Loader2, Zap, Ticket, X as XIcon, Lock } from "lucide-react"
+import { MapPin, Plus, Check, CheckCircle, Upload, Copy, Smartphone, AlertCircle, Loader2, Zap, Ticket, X as XIcon, Lock, CreditCard } from "lucide-react"
 import { useCartStore } from "../store/cartStore"
 import { useAuthStore } from "../store/authStore"
-import { saveOrder } from "../services/orderService"
+import { createRazorpayOrder, createPendingOrder, verifyRazorpayPayment } from '../services/orderService'
 import { fetchAddresses, saveAddress } from "../services/addressService"
 import { fetchActiveCodes, fetchUsedCodeIds, validatePromoCode, recordPromoUse, calcItemDiscount, checkEligibility } from "../services/promoService"
 import { supabase } from "../lib/supabase"
 import { formatINR } from "../utils/format"
 import toast from "react-hot-toast"
-
-const UPI_ID = "royalhoof@upi"
-const ADMIN_WHATSAPP = "919043700776"
-// Generate QR dynamically from UPI ID using Google Charts API
-const getQRUrl = (upiId, amount) =>
-  `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(`upi://pay?pa=${upiId}&pn=Royal Hoof+Store&am=${Math.ceil(amount)}&cu=INR&tn=Royal Hoof+Store+Order`)}`
 
 const EMPTY_ADDR = { label: "Home", full_name: "", phone: "", address1: "", address2: "", city: "", state: "", pincode: "", is_default: false }
 
@@ -100,7 +94,6 @@ export default function CheckoutPage() {
     : (selectedFromCart || cartItems)
 
   const total = items.reduce((s, i) => s + (i.products?.price || 0) * i.quantity, 0)
-  const fileRef = useRef(null)
 
   // Promo code state
   const [promoInput, setPromoInput] = useState("")
@@ -152,34 +145,56 @@ export default function CheckoutPage() {
   const [showNewForm, setShowNewForm] = useState(false)
   const [loading, setLoading] = useState(true)
   const [step, setStep] = useState("address") // address | payment | success
-  const [screenshot, setScreenshot] = useState(null)
-  const [screenshotPreview, setScreenshotPreview] = useState(null)
-  const [upiRef, setUpiRef] = useState("")
-  const [orderSeries, setOrderSeries] = useState("NS0")
-  const [submitting, setSubmitting] = useState(false)
   const [savingAddr, setSavingAddr] = useState(false)
-  const [qrRevealed, setQrRevealed] = useState(false)
+  const [paying, setPaying] = useState(false)
+  
+  // Guest checkout state
+  const [guestName, setGuestName] = useState('')
+  const [guestEmail, setGuestEmail] = useState('')
+  const [guestPhone, setGuestPhone] = useState('')
+  
+  // Validation functions
+  const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+  const validatePhone = (phone) => /^\d{10}$/.test(phone)
 
   useEffect(() => {
-    if (!user?.id) return
-    const userId = user.id
-    fetchAddresses(userId).then(addrs => {
-      setAddresses(addrs)
-      // Only set default if nothing is selected yet - prevents resetting on re-render or tab focus
-      setSelectedId(prev => {
-        if (prev && addrs.find(a => a.id === prev)) return prev
-        const def = addrs.find(a => a.is_default) || addrs[0]
-        return def ? def.id : null
-      })
-      if (addrs.length === 0) setShowNewForm(true)
+    // For logged-in users, fetch saved addresses
+    if (user?.id) {
+      const userId = user.id
+      fetchAddresses(userId).then(addrs => {
+        setAddresses(addrs)
+        // Only set default if nothing is selected yet - prevents resetting on re-render or tab focus
+        setSelectedId(prev => {
+          if (prev && addrs.find(a => a.id === prev)) return prev
+          const def = addrs.find(a => a.is_default) || addrs[0]
+          return def ? def.id : null
+        })
+        if (addrs.length === 0) setShowNewForm(true)
+        setLoading(false)
+      }).catch(() => setLoading(false))
+    } else {
+      // For guest users, start with empty addresses and show form
+      setAddresses([])
+      setShowNewForm(true)
       setLoading(false)
-    }).catch(() => setLoading(false))
+    }
   }, [user?.id])
 
   const handleSaveNew = async (form) => {
     setSavingAddr(true)
     try {
-      const newAddr = await saveAddress(user.id, form)
+      let newAddr
+      if (user?.id) {
+        // For logged-in users, save to database
+        newAddr = await saveAddress(user.id, form)
+      } else {
+        // For guest users, create temporary address object
+        newAddr = {
+          id: `temp_${Date.now()}`,
+          ...form,
+          user_id: null
+        }
+      }
       const updated = form.is_default ? [newAddr, ...addresses.map(a => ({ ...a, is_default: false }))] : [...addresses, newAddr]
       setAddresses(updated)
       setSelectedId(newAddr.id)
@@ -187,6 +202,155 @@ export default function CheckoutPage() {
       toast.success("Address saved")
     } catch (e) { toast.error(e.message || "Failed") }
     finally { setSavingAddr(false) }
+  }
+
+  const handleRazorpayPayment = async () => {
+    try {
+      setPaying(true)
+      
+      // Validate
+      if (!selectedId && addresses.length === 0) {
+        toast.error('Please add a delivery address')
+        setPaying(false)
+        return
+      }
+      
+      if (!user && (!guestName || !guestEmail || !guestPhone)) {
+        toast.error('Please fill all guest details')
+        setPaying(false)
+        return
+      }
+      
+      if (!user && !validateEmail(guestEmail)) {
+        toast.error('Please enter a valid email')
+        setPaying(false)
+        return
+      }
+      
+      if (!user && !validatePhone(guestPhone)) {
+        toast.error('Please enter a valid 10-digit phone number')
+        setPaying(false)
+        return
+      }
+      
+      const addr = addresses.find(a => a.id === selectedId)
+      if (!addr) {
+        toast.error('Please select an address')
+        setPaying(false)
+        return
+      }
+      
+      const shipping = getShippingCost(addr)
+      const discount = appliedPromo?.discountAmount || 0
+      const grandTotal = Math.ceil(total + shipping - discount)
+      
+      // Step 1: Create Razorpay order via Edge Function
+      const razorpayOrder = await createRazorpayOrder(grandTotal, `order_${Date.now()}`)
+      
+      // Step 2: Create pending order in database
+      const dbOrder = await createPendingOrder({
+        userId: user?.id || null,
+        guestEmail: user?.email || guestEmail,
+        guestName: user ? user.user_metadata?.full_name : guestName,
+        guestPhone: user ? user.user_metadata?.phone : guestPhone,
+        items,
+        total: grandTotal,
+        address: addr,
+        razorpayOrderId: razorpayOrder.id,
+        orderNotes: null
+      })
+      
+      // Step 3: Open Razorpay checkout
+      const options = {
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+        amount: razorpayOrder.amount,
+        currency: razorpayOrder.currency,
+        name: 'Royal Hoof Store',
+        description: `Order for ${items.length} item(s)`,
+        order_id: razorpayOrder.id,
+        
+        // Success handler
+        handler: async function (response) {
+          try {
+            // Step 4: Verify payment on backend
+            await verifyRazorpayPayment({
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+              order_id: dbOrder.id
+            })
+            
+            // Step 5: Clear cart and redirect to success
+            if (!isBuyNow) {
+              if (selectedFromCart) {
+                for (const item of selectedFromCart) {
+                  await removeFromCart(item.id || item.product_id, user?.id)
+                }
+              } else {
+                await clearCart(user?.id)
+              }
+            }
+            
+            // Record promo usage
+            if (appliedPromo?.promo) {
+              await recordPromoUse({
+                codeId: appliedPromo.promo.id,
+                userId: user?.id,
+                orderId: dbOrder.id
+              })
+            }
+            
+            toast.success('Payment successful!')
+            navigate('/order-success', { state: { orderId: dbOrder.id } })
+            
+          } catch (error) {
+            console.error('Payment verification failed:', error)
+            toast.error('Payment verification failed. Please contact support.')
+            setPaying(false)
+          }
+        },
+        
+        // Payment modal options
+        modal: {
+          ondismiss: function() {
+            toast.error('Payment cancelled. You can retry anytime.')
+            setPaying(false)
+          }
+        },
+        
+        // Prefill customer details
+        prefill: {
+          name: user ? user.user_metadata?.full_name : guestName,
+          email: user?.email || guestEmail,
+          contact: user ? user.user_metadata?.phone : guestPhone
+        },
+        
+        // Theme
+        theme: {
+          color: '#5D3A1A' // Brand color
+        },
+        
+        // Notes
+        notes: {
+          address: JSON.stringify(addr)
+        }
+      }
+      
+      const razorpay = new window.Razorpay(options)
+      
+      razorpay.on('payment.failed', function (response) {
+        console.error('Payment failed:', response.error)
+        toast.error(`Payment failed: ${response.error.description}`)
+        setPaying(false)
+      })
+      
+      razorpay.open()
+      
+    } catch (error) {
+      console.error('Payment initiation failed:', error)
+      toast.error(error.message || 'Failed to initiate payment')
+      setPaying(false)
+    }
   }
 
   const handleScreenshotChange = (e) => {
@@ -336,6 +500,60 @@ export default function CheckoutPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-4">
           {step === "address" && (
+            <>
+              {!user && (
+                <div className="bg-white border border-[#E5D8C8] rounded-xl p-5 shadow-sm">
+                  <h2 className="text-[#1C1006] font-semibold mb-4">Guest Checkout</h2>
+                  <div className="space-y-3">
+                    <div>
+                      <label className="text-xs text-[#4B3420] mb-1 block font-medium">
+                        Full Name <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={guestName}
+                        onChange={(e) => setGuestName(e.target.value)}
+                        placeholder="Enter your full name"
+                        className="w-full bg-white border border-[#E5D8C8] rounded-lg px-3 py-2.5 text-sm text-[#1C1006] placeholder-[#8B6A4A] focus:outline-none focus:border-[#5D3A1A]"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="text-xs text-[#4B3420] mb-1 block font-medium">
+                        Email <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="email"
+                        value={guestEmail}
+                        onChange={(e) => setGuestEmail(e.target.value)}
+                        placeholder="your.email@example.com"
+                        className="w-full bg-white border border-[#E5D8C8] rounded-lg px-3 py-2.5 text-sm text-[#1C1006] placeholder-[#8B6A4A] focus:outline-none focus:border-[#5D3A1A]"
+                      />
+                      {guestEmail && !validateEmail(guestEmail) && (
+                        <p className="text-xs text-red-500 mt-1">Please enter a valid email</p>
+                      )}
+                    </div>
+                    
+                    <div>
+                      <label className="text-xs text-[#4B3420] mb-1 block font-medium">
+                        Phone Number <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="tel"
+                        value={guestPhone}
+                        onChange={(e) => setGuestPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
+                        placeholder="10-digit mobile number"
+                        maxLength={10}
+                        className="w-full bg-white border border-[#E5D8C8] rounded-lg px-3 py-2.5 text-sm text-[#1C1006] placeholder-[#8B6A4A] focus:outline-none focus:border-[#5D3A1A]"
+                      />
+                      {guestPhone && !validatePhone(guestPhone) && (
+                        <p className="text-xs text-red-500 mt-1">Please enter 10-digit mobile number</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+              
             <div className="bg-white border border-[#E5D8C8] rounded-xl p-5 shadow-sm">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-[#1C1006] font-semibold flex items-center gap-2"><MapPin size={16} className="text-[#D97706]" /> Delivery Address</h2>
@@ -365,6 +583,7 @@ export default function CheckoutPage() {
                 Continue to Payment &rarr;
               </button>
             </div>
+            </>
           )}
 
           {step === "payment" && (() => {
@@ -372,152 +591,64 @@ export default function CheckoutPage() {
             const shipping = getShippingCost(selectedAddr)
             const discount = appliedPromo?.discountAmount || 0
             const grandTotal = Math.ceil(total + shipping - discount)
-            const upiDeepLink = `upi://pay?pa=${UPI_ID}&pn=Royal Hoof+Store&am=${grandTotal}&cu=INR&tn=Royal Hoof+Store+Order`
             return (
               <div className="space-y-4">
-                {/* Header card */}
-                <div className="rounded-2xl overflow-hidden shadow-sm">
-                  <div className="bg-[#5D3A1A] px-6 py-5 text-center">
-                    <Smartphone size={28} className="text-[#D97706] mx-auto mb-2" />
-                    <h2 className="text-white font-bold text-xl">Pay via UPI</h2>
-                    <p className="text-orange-200 text-sm">Scan QR or use UPI ID below</p>
+                {/* Payment Info Card */}
+                <div className="bg-white border border-[#E5D8C8] rounded-xl p-6 shadow-sm">
+                  <div className="text-center mb-6">
+                    <div className="w-16 h-16 bg-[#5D3A1A]/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <CreditCard size={32} className="text-[#5D3A1A]" />
+                    </div>
+                    <h2 className="text-2xl font-bold text-[#1C1006] mb-2">Secure Payment</h2>
+                    <p className="text-[#4B3420] text-sm">Pay securely with Razorpay</p>
                   </div>
-
-                  <div className="bg-white px-6 py-6 space-y-5">
-                    {/* Amount */}
-                    <div className="text-center">
-                      <p className="text-[#4B3420] text-sm font-medium mb-1">Amount to Pay</p>
-                      <p className="text-[#5D3A1A] text-5xl font-bold" style={{ fontFamily: "Cinzel, serif" }}>
-                        ?{grandTotal.toLocaleString("en-IN")}
-                      </p>
-                    </div>
-
-                    {/* QR Code */}
-                    <div className="flex flex-col items-center gap-2">
-                      <div className="bg-white p-3 rounded-2xl border-2 border-[#E5D8C8] shadow-sm inline-block">
-                        <img src={getQRUrl(UPI_ID, grandTotal)} alt="UPI QR Code" className="w-48 h-48 object-contain" />
-                      </div>
-                      <p className="text-[#4B3420] text-sm font-medium">Scan with any UPI app</p>
-                      {/* App logos */}
-                      <div className="flex items-center gap-3 mt-1">
-                        {["GPay","PhonePe","Paytm","BHIM"].map(app => (
-                          <span key={app} className="text-xs font-bold text-[#5D3A1A] bg-[#EEF2FF] border border-[#C7D2FE] px-3 py-1.5 rounded-lg">{app}</span>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Divider */}
-                    <div className="flex items-center gap-3">
-                      <div className="flex-1 h-px bg-[#C7D2FE]" />
-                      <span className="text-[#4B3420] text-xs font-medium">Or pay using UPI ID</span>
-                      <div className="flex-1 h-px bg-[#C7D2FE]" />
-                    </div>
-
-                    {/* UPI ID row */}
-                    <div className="flex items-center gap-2 bg-[#EEF2FF] border border-[#C7D2FE] rounded-xl px-4 py-3">
-                      <p className="flex-1 text-[#5D3A1A] font-mono text-sm font-bold">{UPI_ID}</p>
-                      <button
-                        onClick={() => { navigator.clipboard.writeText(UPI_ID); toast.success("UPI ID copied!") }}
-                        className="flex items-center gap-1.5 px-4 py-2 bg-[#5D3A1A] text-white text-xs font-bold rounded-lg hover:bg-[#7A4E28] transition-all shadow-sm">
-                        <Copy size={12} /> Copy
-                      </button>
-                    </div>
-
-                    {/* Open UPI App button */}
-                    <a href={upiDeepLink}
-                      className="flex items-center justify-center gap-2 w-full py-3 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-xl transition-all text-sm">
-                      <Zap size={15} /> Open UPI App (amount auto-filled)
-                    </a>
-                    <p className="text-[#8B6A4A] text-xs text-center -mt-2">
-                      Tap above to open your UPI app with ?{grandTotal.toLocaleString("en-IN")} pre-filled. If copying the UPI ID manually, enter the amount <strong>?{grandTotal.toLocaleString("en-IN")}</strong> yourself.
-                    </p>
-
-                    {/* How to pay */}
-                    <div className="bg-[#DBEAFE] border border-[#93C5FD] rounded-xl p-4">
-                      <p className="text-[#1E3A8A] text-sm font-bold mb-2">How to pay:</p>
-                      <ol className="text-[#1E40AF] text-sm space-y-1.5 list-decimal list-inside">
-                        <li>Scan the QR code or tap "Open UPI App" above</li>
-                        <li>Amount ?{grandTotal.toLocaleString("en-IN")} will be auto-filled - confirm and pay</li>
-                        <li>If entering UPI ID manually, type the amount ?{grandTotal.toLocaleString("en-IN")} yourself</li>
-                        <li>Take a screenshot of the success screen</li>
-                        <li>Upload it below to confirm your order</li>
-                      </ol>
+                  
+                  <div className="bg-[#F5F0EB] rounded-xl p-4 mb-6">
+                    <div className="flex justify-between items-center">
+                      <span className="text-[#4B3420] font-medium">Total Amount</span>
+                      <span className="text-3xl font-bold text-[#5D3A1A]">{formatINR(grandTotal)}</span>
                     </div>
                   </div>
-                </div>
-
-                {/* Screenshot upload card */}
-                <div className="bg-white border border-[#E5D8C8] rounded-2xl p-5 shadow-sm space-y-4">
-                  <h3 className="text-[#1C1006] font-semibold text-base flex items-center gap-2">
-                    <Upload size={15} className="text-[#D97706]" /> Upload Payment Screenshot <span className="text-red-500">*</span>
-                  </h3>
-
-                  {/* What screenshot must show */}
-                  <div className="bg-[#FFF5F2] border border-[#FFCAB8] rounded-2xl p-4 space-y-2">
-                    <p className="text-[#C0392B] text-sm font-bold flex items-center gap-1.5">
-                      <span className="text-base">??</span> Screenshot must clearly show:
-                    </p>
-                    <ul className="space-y-1.5 ml-1">
-                      {[
-                        `Payment Success message`,
-                        `Amount: ?${grandTotal.toLocaleString("en-IN")}`,
-                        `Paid to: ${UPI_ID}`,
-                        `Transaction ID / UTR number`,
-                      ].map((text, i) => (
-                        <li key={i} className="text-[#A04000] text-sm font-medium flex items-center gap-2">
-                          <span className="inline-flex items-center justify-center w-5 h-5 bg-[#34D399] rounded text-white text-xs font-bold flex-shrink-0">?</span> {text}
-                        </li>
-                      ))}
-                    </ul>
-                    <div className="border-t border-[#FFCAB8] pt-2 mt-1">
-                      <p className="text-[#C0392B] text-sm font-semibold flex items-center gap-1.5">
-                        <span className="text-base">??</span> Wrong or unclear screenshots will be rejected and order cancelled.
-                      </p>
+                  
+                  <div className="space-y-3 mb-6">
+                    <div className="flex items-center gap-2 text-sm text-[#4B3420]">
+                      <Check size={16} className="text-green-600" />
+                      <span>UPI, Cards, Net Banking, Wallets</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-[#4B3420]">
+                      <Check size={16} className="text-green-600" />
+                      <span>Secure SSL encrypted payment</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-[#4B3420]">
+                      <Check size={16} className="text-green-600" />
+                      <span>Instant order confirmation</span>
                     </div>
                   </div>
-
-                  {/* UPI Transaction Reference */}
-                  <div>
-                    <label className="text-xs text-[#4B3420] mb-1 block font-medium">UPI Transaction Reference (optional)</label>
-                    <input value={upiRef} onChange={e => setUpiRef(e.target.value)} placeholder="e.g. 123456789012"
-                      className="w-full bg-white border border-[#E5D8C8] rounded-lg px-3 py-2.5 text-sm text-[#1C1006] placeholder-[#8B6A4A] focus:outline-none focus:border-[#5D3A1A]" />
-                  </div>
-
-                  {/* File upload area */}
-                  <label className="flex flex-col items-center justify-center gap-2 p-6 border-2 border-dashed border-[#E5D8C8] hover:border-[#D97706]/50 rounded-xl cursor-pointer transition-all bg-[#FAFAFA]">
-                    <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleScreenshotChange} />
-                    {screenshotPreview ? (
-                      <div className="relative">
-                        <img src={screenshotPreview} alt="Screenshot preview" className="h-36 rounded-lg border border-[#E5D8C8] object-cover" />
-                        <button type="button" onClick={e => { e.preventDefault(); setScreenshot(null); setScreenshotPreview(null) }}
-                          className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs shadow">-</button>
-                      </div>
+                  
+                  <button
+                    onClick={handleRazorpayPayment}
+                    disabled={paying || !selectedId || loading}
+                    className="w-full py-4 bg-[#5D3A1A] text-white font-bold rounded-xl hover:bg-[#7A4E28] transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-base shadow-lg">
+                    {paying ? (
+                      <>
+                        <Loader2 size={18} className="animate-spin" />
+                        Processing Payment...
+                      </>
                     ) : (
                       <>
-                        <div className="w-12 h-12 rounded-xl bg-[#F5F0EB] flex items-center justify-center">
-                          <Upload size={20} className="text-[#D97706]" />
-                        </div>
-                        <p className="text-[#4B3420] text-sm font-medium">Click to upload payment screenshot</p>
-                        <p className="text-[#8B6A4A] text-xs">PNG, JPG - max 10MB</p>
+                        <CreditCard size={18} />
+                        Pay {formatINR(grandTotal)}
                       </>
                     )}
-                  </label>
-                </div>
-
-                {/* CTA */}
-                <div className="space-y-2">
-                  <button onClick={handleSubmitOrder} disabled={submitting || !screenshot}
-                    className="w-full py-4 bg-[#5D3A1A] text-white font-bold rounded-xl hover:bg-[#7A4E28] transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-base shadow-lg">
-                    {submitting
-                      ? <><Loader2 size={18} className="animate-spin" /> Placing Order...</>
-                      : <><CheckCircle size={18} /> I've Paid - Confirm Order</>
-                    }
                   </button>
-                  <p className="text-[#4B3420] text-xs text-center font-medium">Your order will be confirmed after admin verifies the payment</p>
+                  
+                  <p className="text-[#8B6A4A] text-xs text-center mt-4">
+                    By proceeding, you agree to our terms and conditions
+                  </p>
                 </div>
 
                 <button onClick={() => setStep("address")} className="flex items-center gap-1 text-xs text-[#8B6A4A] hover:text-[#5D3A1A] transition-colors">
-                  &larr; Back to checkout
+                  &larr; Back to address
                 </button>
               </div>
             )

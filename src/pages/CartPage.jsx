@@ -246,12 +246,11 @@ export default function CartPage() {
 
           <button
             onClick={handleCheckout}
-            disabled={hasOutOfStock || !user || selectedItems.length === 0}
+            disabled={hasOutOfStock || selectedItems.length === 0}
             className="w-full flex items-center justify-center gap-2 py-3 bg-[#5D3A1A] text-white font-semibold rounded-lg hover:bg-[#7A4E28] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Proceed to Checkout <ArrowRight size={16} />
           </button>
-          {!user && <p className="text-[#8B6A4A] text-xs text-center mt-2">Please login to checkout</p>}
           {hasOutOfStock && <p className="text-red-500 text-xs text-center mt-2">Remove out-of-stock items to proceed</p>}
         </div>
       </div>
