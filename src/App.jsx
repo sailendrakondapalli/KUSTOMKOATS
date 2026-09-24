@@ -29,7 +29,7 @@ const PageLoader = () => (
 
 const AdminLoader = () => (
   <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#111111' }}>
-    <div style={{ width: 32, height: 32, border: '3px solid #FF0000', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+    <div className="w-8 h-8 rounded-full border-4 border-red-600 border-t-transparent animate-spin" />
   </div>
 )
 
