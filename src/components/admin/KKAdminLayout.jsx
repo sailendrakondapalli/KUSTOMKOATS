@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import {
-  LayoutDashboard, Package, Tag, ShoppingBag, Users,
-  Store, Menu, X, ChevronRight, Handshake
+  Package, Tag, ShoppingBag, Users,
+  Store, Menu, X, ChevronRight, Handshake,
+  BarChart2
 } from 'lucide-react'
 
 const NAV_ITEMS = [
-  { path: '/admin',            label: 'Dashboard',   icon: LayoutDashboard, exact: true },
+  { path: '/admin',            label: 'Dashboard',   icon: BarChart2,    exact: true },
   { path: '/admin/products',   label: 'Products',    icon: Package },
   { path: '/admin/categories', label: 'Categories',  icon: Tag },
   { path: '/admin/orders',     label: 'Orders',      icon: ShoppingBag },
