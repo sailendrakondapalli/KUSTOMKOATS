@@ -121,6 +121,7 @@ export default function Navbar() {
     { 
       label: "KUSTOM KULTURE",
       submenu: [
+        { to: "/kustom-kultor", label: "Blog" },
         { to: "/kulture/journal", label: "Kustom Journal" },
         { to: "/kulture/news", label: "News" },
         { to: "/kulture/events", label: "Events" },

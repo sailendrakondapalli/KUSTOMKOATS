@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router-dom'
 import {
   Package, Tag, ShoppingBag, Users,
   Store, Menu, X, ChevronRight, Handshake,
-  BarChart2
+  BarChart2, FileText
 } from 'lucide-react'
 
 const NAV_ITEMS = [
@@ -13,6 +13,7 @@ const NAV_ITEMS = [
   { path: '/admin/orders',     label: 'Orders',      icon: ShoppingBag },
   { path: '/admin/customers',  label: 'Customers',   icon: Users },
   { path: '/admin/wholesale',  label: 'Wholesale',   icon: Handshake },
+  { path: '/admin/blog',       label: 'Blog',        icon: FileText },
 ]
 
 export default function KKAdminLayout({ children }) {

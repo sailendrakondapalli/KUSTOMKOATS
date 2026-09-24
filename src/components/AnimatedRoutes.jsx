@@ -60,6 +60,10 @@ const OurPhilosophyPage = lazy(() => import('../pages/about/OurPhilosophyPage'))
 const TechnologyPage = lazy(() => import('../pages/about/TechnologyPage'))
 const WhyKustomKoatsPage = lazy(() => import('../pages/about/WhyKustomKoatsPage'))
 
+// Blog pages
+const KustomKultorPage = lazy(() => import('../pages/KustomKultorPage'))
+const BlogPostPage = lazy(() => import('../pages/BlogPostPage'))
+
 const PageLoader = () => (
   <div className="min-h-[60vh] flex items-center justify-center" style={{ background: "#000000" }}>
     <div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin"
@@ -209,6 +213,26 @@ export default function AnimatedRoutes() {
             <ErrorBoundary>
               <Suspense fallback={<PageLoader />}>
                 <KultureUniversityPage />
+              </Suspense>
+            </ErrorBoundary>
+          </PageTransition>
+        } />
+        
+        {/* Blog Routes */}
+        <Route path="/kustom-kultor" element={
+          <PageTransition>
+            <ErrorBoundary>
+              <Suspense fallback={<PageLoader />}>
+                <KustomKultorPage />
+              </Suspense>
+            </ErrorBoundary>
+          </PageTransition>
+        } />
+        <Route path="/blog/:slug" element={
+          <PageTransition>
+            <ErrorBoundary>
+              <Suspense fallback={<PageLoader />}>
+                <BlogPostPage />
               </Suspense>
             </ErrorBoundary>
           </PageTransition>
