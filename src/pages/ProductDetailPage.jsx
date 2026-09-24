@@ -54,21 +54,36 @@ export default function ProductDetailPage() {
         // Fetch technical details
         const loadTechDetails = async () => {
           setTechLoading(true)
-          const [barsRes, specsRes] = await Promise.all([
-            supabase
-              .from('product_technical_bars')
-              .select('*')
-              .eq('product_id', data.id)
-              .order('sort_order', { ascending: true }),
-            supabase
-              .from('product_specifications')
-              .select('*')
-              .eq('product_id', data.id)
-              .order('sort_order', { ascending: true }),
-          ])
-          setTechBars(barsRes.data || [])
-          setTechSpecs(specsRes.data || [])
-          setTechLoading(false)
+          try {
+            const [barsRes, specsRes] = await Promise.all([
+              supabase
+                .from('product_technical_bars')
+                .select('*')
+                .eq('product_id', data.id)
+                .order('sort_order', { ascending: true }),
+              supabase
+                .from('product_specifications')
+                .select('*')
+                .eq('product_id', data.id)
+                .order('sort_order', { ascending: true }),
+            ])
+
+            if (barsRes.error) console.error('techBars fetch error:', barsRes.error.message)
+            if (specsRes.error) console.error('techSpecs fetch error:', specsRes.error.message)
+
+            const bars = barsRes.data || []
+            const specs = specsRes.data || []
+
+            console.log('Tech bars fetched:', bars.length, 'for product_id:', data.id)
+            console.log('Tech specs fetched:', specs.length, 'for product_id:', data.id)
+
+            setTechBars(bars)
+            setTechSpecs(specs)
+          } catch (err) {
+            console.error('loadTechDetails error:', err.message)
+          } finally {
+            setTechLoading(false)
+          }
         }
         loadTechDetails()
 
