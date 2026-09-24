@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { useNavigate, useLocation } from "react-router-dom"
+import { useNavigate, useLocation, Link } from "react-router-dom"
 import { motion, AnimatePresence } from "framer-motion"
 import { Eye, EyeOff, Mail, Lock, User, ArrowLeft } from "lucide-react"
 import { useAuthStore } from "../store/authStore"
@@ -18,20 +18,24 @@ function GoogleIcon() {
   )
 }
 
+// ── Shared input style ──
+const inputCls = "w-full bg-[#F8F8F8] border border-[#E5E5E5] rounded-lg pl-10 pr-4 py-3 text-sm text-black placeholder-gray-400 focus:outline-none focus:border-[#FF0000] transition-colors"
+
 export default function LoginPage() {
-  const [mode, setMode] = useState("login") // "login" | "signup" | "forgot"
-  const [form, setForm] = useState({ name: "", email: "", password: "" })
-  const [errors, setErrors] = useState({})
-  const [showPass, setShowPass] = useState(false)
-  const [loading, setLoading] = useState(false)
+  const [mode, setMode]           = useState("login") // "login" | "signup" | "forgot"
+  const [form, setForm]           = useState({ name: "", email: "", password: "" })
+  const [errors, setErrors]       = useState({})
+  const [showPass, setShowPass]   = useState(false)
+  const [loading, setLoading]     = useState(false)
   const [googleLoading, setGoogleLoading] = useState(false)
   const [resetSent, setResetSent] = useState(false)
   const [signupDone, setSignupDone] = useState(false)
+
   const { signIn, signUp, signInWithGoogle, resetPassword } = useAuthStore()
   const { mergeLocalCart, loadCart } = useCartStore()
   const { loadWishlist } = useWishlistStore()
-  const navigate = useNavigate()
-  const location = useLocation()
+  const navigate  = useNavigate()
+  const location  = useLocation()
   const from = location.state?.from?.pathname || "/"
 
   const handleGoogle = async () => {
@@ -71,7 +75,6 @@ export default function LoginPage() {
       } else {
         await signUp(form.email, form.password, form.name)
         setSignupDone(true)
-        return // stay on page, show confirmation screen
       }
     } catch (err) {
       toast.error(err.message || "Authentication failed")
@@ -89,146 +92,215 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-12">
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-md">
+    <div className="min-h-screen flex items-center justify-center px-4 py-16"
+      style={{ background: "#FFFFFF", paddingTop: "100px" }}>
+      <motion.div
+        initial={{ opacity: 0, y: 24 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+        className="w-full max-w-md"
+      >
+        {/* Logo / Brand */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-[#5D3A1A] mb-2" style={{ fontFamily: "Georgia, serif" }}>?? Royal Hoof</h1>
-          <p className="text-[#4B3420] text-sm">
-            {mode === "login" ? "Welcome back" : mode === "signup" ? "Create your account" : "Reset your password"}
+          <Link to="/" className="inline-block mb-4">
+            <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl"
+              style={{ background: "#FF0000" }}>
+              <span style={{ color: "#FFFFFF", fontFamily: "'Rajdhani', sans-serif", fontSize: "1.75rem", fontWeight: 800, lineHeight: 1 }}>K</span>
+            </div>
+          </Link>
+          <h1 className="text-2xl font-bold" style={{ fontFamily: "'Rajdhani', sans-serif", color: "#000000", letterSpacing: "0.04em" }}>
+            KUSTOM KOATS
+          </h1>
+          <p className="text-sm mt-1" style={{ color: "#888888", fontFamily: "'Inter', sans-serif" }}>
+            {mode === "login"  ? "Welcome back — sign in to continue"
+            : mode === "signup" ? "Create your account"
+            : "Reset your password"}
           </p>
         </div>
 
-        <div className="bg-white border border-[#E5D8C8] rounded-2xl p-8 shadow-md">
+        {/* Card */}
+        <div className="rounded-2xl p-8" style={{ background: "#FFFFFF", border: "1px solid #E5E5E5", boxShadow: "0 8px 32px rgba(0,0,0,0.06)" }}>
 
-          {/* Sign Up Confirmation */}
+          {/* ── Signup confirmation ── */}
           {signupDone ? (
             <div className="text-center py-4">
-              <div className="w-14 h-14 bg-[#5D3A1A]/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Mail size={26} className="text-[#5D3A1A]" />
+              <div className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4"
+                style={{ background: "#FFF0F0" }}>
+                <Mail size={26} style={{ color: "#FF0000" }} />
               </div>
-              <p className="text-[#1C1006] font-bold text-lg mb-2">Check your email</p>
-              <p className="text-[#4B3420] text-sm mb-1">
+              <p className="font-bold text-lg mb-2" style={{ color: "#000000", fontFamily: "'Inter', sans-serif" }}>Check your email</p>
+              <p className="text-sm mb-1" style={{ color: "#666666", fontFamily: "'Inter', sans-serif" }}>
                 We sent a confirmation link to
               </p>
-              <p className="text-[#5D3A1A] font-semibold text-sm mb-4">{form.email}</p>
-              <p className="text-[#8B6A4A] text-xs mb-6">
-                Please open that email and click the confirmation link to activate your account. Once confirmed, come back here and sign in.
+              <p className="font-semibold text-sm mb-4" style={{ color: "#FF0000", fontFamily: "'Inter', sans-serif" }}>{form.email}</p>
+              <p className="text-xs mb-6" style={{ color: "#999999", fontFamily: "'Inter', sans-serif" }}>
+                Click the link in that email to activate your account, then come back to sign in.
               </p>
               <button onClick={() => switchMode("login")}
-                className="w-full py-3 bg-[#5D3A1A] text-white font-semibold rounded-lg hover:bg-[#7A4E28] transition-all text-sm">
+                className="w-full py-3 rounded-xl font-bold text-sm transition-all hover:opacity-90"
+                style={{ background: "#FF0000", color: "#FFFFFF", fontFamily: "'Inter', sans-serif" }}>
                 Go to Sign In
               </button>
             </div>
           ) : (
             <AnimatePresence mode="wait">
-            {mode === "forgot" ? (
-              <motion.div key="forgot" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
-                <button onClick={() => switchMode("login")} className="flex items-center gap-1.5 text-[#4B3420] hover:text-[#5D3A1A] text-sm mb-5 transition-colors">
-                  <ArrowLeft size={15} /> Back to Sign In
-                </button>
-                {resetSent ? (
-                  <div className="text-center py-4">
-                    <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                      <Mail size={22} className="text-green-500" />
+
+              {/* ── Forgot password ── */}
+              {mode === "forgot" ? (
+                <motion.div key="forgot" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
+                  <button onClick={() => switchMode("login")}
+                    className="flex items-center gap-1.5 text-sm mb-5 transition-colors hover:text-[#FF0000]"
+                    style={{ color: "#666666", fontFamily: "'Inter', sans-serif" }}>
+                    <ArrowLeft size={15} /> Back to Sign In
+                  </button>
+                  {resetSent ? (
+                    <div className="text-center py-4">
+                      <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <Mail size={22} className="text-green-500" />
+                      </div>
+                      <p className="font-semibold mb-1" style={{ color: "#000000", fontFamily: "'Inter', sans-serif" }}>Check your email</p>
+                      <p className="text-sm" style={{ color: "#666666", fontFamily: "'Inter', sans-serif" }}>
+                        We sent a reset link to <span className="font-semibold" style={{ color: "#FF0000" }}>{form.email}</span>
+                      </p>
+                      <button onClick={() => switchMode("login")}
+                        className="mt-6 w-full py-3 rounded-xl font-bold text-sm hover:opacity-90 transition-all"
+                        style={{ background: "#FF0000", color: "#FFFFFF", fontFamily: "'Inter', sans-serif" }}>
+                        Back to Sign In
+                      </button>
                     </div>
-                    <p className="text-[#1C1006] font-semibold mb-1">Check your email</p>
-                    <p className="text-[#8B6A4A] text-sm">We sent a password reset link to <span className="font-medium text-[#5D3A1A]">{form.email}</span></p>
-                    <button onClick={() => switchMode("login")} className="mt-5 w-full py-3 bg-[#5D3A1A] text-white font-semibold rounded-lg hover:bg-[#7A4E28] transition-all text-sm">
-                      Back to Sign In
+                  ) : (
+                    <form onSubmit={handleSubmit} className="space-y-4">
+                      <p className="text-sm mb-4" style={{ color: "#666666", fontFamily: "'Inter', sans-serif" }}>
+                        Enter your email and we'll send you a reset link.
+                      </p>
+                      <div>
+                        <label className="text-xs font-semibold mb-1 block" style={{ color: "#333333", fontFamily: "'Inter', sans-serif" }}>Email</label>
+                        <div className="relative">
+                          <Mail size={15} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: "#AAAAAA" }} />
+                          <input type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
+                            placeholder="your@email.com" className={inputCls} />
+                        </div>
+                        {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
+                      </div>
+                      <button type="submit" disabled={loading}
+                        className="w-full py-3 rounded-xl font-bold text-sm disabled:opacity-60 flex items-center justify-center gap-2 hover:opacity-90 transition-all"
+                        style={{ background: "#FF0000", color: "#FFFFFF", fontFamily: "'Inter', sans-serif" }}>
+                        {loading && <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />}
+                        Send Reset Link
+                      </button>
+                    </form>
+                  )}
+                </motion.div>
+
+              ) : (
+                /* ── Login / Signup ── */
+                <motion.div key="auth" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }}>
+
+                  {/* Google */}
+                  <button onClick={handleGoogle} disabled={googleLoading}
+                    className="w-full flex items-center justify-center gap-3 py-3 rounded-xl font-semibold text-sm transition-all disabled:opacity-60 mb-5 hover:bg-gray-50"
+                    style={{ background: "#FFFFFF", border: "1px solid #E5E5E5", color: "#000000", fontFamily: "'Inter', sans-serif", boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}>
+                    {googleLoading
+                      ? <div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
+                      : <GoogleIcon />}
+                    Continue with Google
+                  </button>
+
+                  {/* Divider */}
+                  <div className="flex items-center gap-3 mb-5">
+                    <div className="flex-1 h-px" style={{ background: "#EEEEEE" }} />
+                    <span className="text-xs" style={{ color: "#AAAAAA", fontFamily: "'Inter', sans-serif" }}>or use email</span>
+                    <div className="flex-1 h-px" style={{ background: "#EEEEEE" }} />
+                  </div>
+
+                  {/* Sign In / Sign Up tabs */}
+                  <div className="flex rounded-xl p-1 mb-5" style={{ background: "#F5F5F5" }}>
+                    <button onClick={() => switchMode("login")}
+                      className="flex-1 py-2 text-sm font-medium rounded-lg transition-all"
+                      style={{
+                        background: mode === "login" ? "#FF0000" : "transparent",
+                        color: mode === "login" ? "#FFFFFF" : "#666666",
+                        fontFamily: "'Inter', sans-serif"
+                      }}>
+                      Sign In
+                    </button>
+                    <button onClick={() => switchMode("signup")}
+                      className="flex-1 py-2 text-sm font-medium rounded-lg transition-all"
+                      style={{
+                        background: mode === "signup" ? "#FF0000" : "transparent",
+                        color: mode === "signup" ? "#FFFFFF" : "#666666",
+                        fontFamily: "'Inter', sans-serif"
+                      }}>
+                      Sign Up
                     </button>
                   </div>
-                ) : (
+
                   <form onSubmit={handleSubmit} className="space-y-4">
-                    <p className="text-[#4B3420] text-sm mb-4">Enter your email and we'll send you a link to reset your password.</p>
+                    {mode === "signup" && (
+                      <div>
+                        <label className="text-xs font-semibold mb-1 block" style={{ color: "#333333", fontFamily: "'Inter', sans-serif" }}>Full Name</label>
+                        <div className="relative">
+                          <User size={15} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: "#AAAAAA" }} />
+                          <input type="text" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+                            placeholder="Your name" className={inputCls} />
+                        </div>
+                        {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
+                      </div>
+                    )}
+
                     <div>
-                      <label className="text-xs text-[#4B3420] mb-1 block font-medium">Email</label>
+                      <label className="text-xs font-semibold mb-1 block" style={{ color: "#333333", fontFamily: "'Inter', sans-serif" }}>Email</label>
                       <div className="relative">
-                        <Mail size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8B6A4A]" />
-                        <input type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} placeholder="your@email.com"
-                          className="w-full bg-[#FAFAFA] border border-[#E5D8C8] rounded-lg pl-9 pr-4 py-3 text-sm text-[#1C1006] placeholder-[#8B6A4A] focus:outline-none focus:border-[#5D3A1A]" />
+                        <Mail size={15} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: "#AAAAAA" }} />
+                        <input type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
+                          placeholder="your@email.com" className={inputCls} />
                       </div>
                       {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
                     </div>
+
+                    <div>
+                      <div className="flex items-center justify-between mb-1">
+                        <label className="text-xs font-semibold" style={{ color: "#333333", fontFamily: "'Inter', sans-serif" }}>Password</label>
+                        {mode === "login" && (
+                          <button type="button" onClick={() => switchMode("forgot")}
+                            className="text-xs hover:underline"
+                            style={{ color: "#FF0000", fontFamily: "'Inter', sans-serif" }}>
+                            Forgot password?
+                          </button>
+                        )}
+                      </div>
+                      <div className="relative">
+                        <Lock size={15} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: "#AAAAAA" }} />
+                        <input type={showPass ? "text" : "password"} value={form.password} onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
+                          placeholder="Min. 8 characters"
+                          className={inputCls + " pr-10"} />
+                        <button type="button" onClick={() => setShowPass(!showPass)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 hover:text-black transition-colors"
+                          style={{ color: "#AAAAAA" }}>
+                          {showPass ? <EyeOff size={15} /> : <Eye size={15} />}
+                        </button>
+                      </div>
+                      {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password}</p>}
+                    </div>
+
                     <button type="submit" disabled={loading}
-                      className="w-full py-3 bg-[#5D3A1A] text-white font-semibold rounded-lg hover:bg-[#7A4E28] transition-all disabled:opacity-60 flex items-center justify-center gap-2">
+                      className="w-full py-3 rounded-xl font-bold text-sm disabled:opacity-60 flex items-center justify-center gap-2 hover:opacity-90 transition-all mt-2"
+                      style={{ background: "#FF0000", color: "#FFFFFF", fontFamily: "'Inter', sans-serif" }}>
                       {loading && <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />}
-                      Send Reset Link
+                      {mode === "login" ? "Sign In" : "Create Account"}
                     </button>
                   </form>
-                )}
-              </motion.div>
-            ) : (
-              <motion.div key="auth" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }}>
-                {/* Google Sign In */}
-                <button onClick={handleGoogle} disabled={googleLoading}
-                  className="w-full flex items-center justify-center gap-3 py-3 bg-white hover:bg-[#FAFAFA] text-[#1C1006] font-semibold rounded-lg transition-all disabled:opacity-60 border border-[#E5D8C8] shadow-sm mb-5">
-                  {googleLoading ? <div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" /> : <GoogleIcon />}
-                  Continue with Google
-                </button>
 
-                <div className="flex items-center gap-3 mb-5">
-                  <div className="flex-1 h-px bg-[#E5D8C8]" />
-                  <span className="text-[#8B6A4A] text-xs">or use email</span>
-                  <div className="flex-1 h-px bg-[#E5D8C8]" />
-                </div>
-
-                {/* Sign In / Sign Up tabs */}
-                <div className="flex bg-[#F5F0EB] rounded-lg p-1 mb-5">
-                  <button onClick={() => switchMode("login")} className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${mode === "login" ? "bg-[#5D3A1A] text-white" : "text-[#4B3420] hover:text-[#5D3A1A]"}`}>Sign In</button>
-                  <button onClick={() => switchMode("signup")} className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${mode === "signup" ? "bg-[#5D3A1A] text-white" : "text-[#4B3420] hover:text-[#5D3A1A]"}`}>Sign Up</button>
-                </div>
-
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  {mode === "signup" && (
-                    <div>
-                      <label className="text-xs text-[#4B3420] mb-1 block font-medium">Full Name</label>
-                      <div className="relative">
-                        <User size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8B6A4A]" />
-                        <input type="text" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="Your name"
-                          className="w-full bg-[#FAFAFA] border border-[#E5D8C8] rounded-lg pl-9 pr-4 py-3 text-sm text-[#1C1006] placeholder-[#8B6A4A] focus:outline-none focus:border-[#5D3A1A]" />
-                      </div>
-                      {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
-                    </div>
-                  )}
-                  <div>
-                    <label className="text-xs text-[#4B3420] mb-1 block font-medium">Email</label>
-                    <div className="relative">
-                      <Mail size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8B6A4A]" />
-                      <input type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} placeholder="your@email.com"
-                        className="w-full bg-[#FAFAFA] border border-[#E5D8C8] rounded-lg pl-9 pr-4 py-3 text-sm text-[#1C1006] placeholder-[#8B6A4A] focus:outline-none focus:border-[#5D3A1A]" />
-                    </div>
-                    {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
-                  </div>
-                  <div>
-                    <div className="flex items-center justify-between mb-1">
-                      <label className="text-xs text-[#4B3420] font-medium">Password</label>
-                      {mode === "login" && (
-                        <button type="button" onClick={() => switchMode("forgot")} className="text-xs text-[#5D3A1A] hover:underline">
-                          Forgot password?
-                        </button>
-                      )}
-                    </div>
-                    <div className="relative">
-                      <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8B6A4A]" />
-                      <input type={showPass ? "text" : "password"} value={form.password} onChange={e => setForm(f => ({ ...f, password: e.target.value }))} placeholder="Min. 8 characters"
-                        className="w-full bg-[#FAFAFA] border border-[#E5D8C8] rounded-lg pl-9 pr-10 py-3 text-sm text-[#1C1006] placeholder-[#8B6A4A] focus:outline-none focus:border-[#5D3A1A]" />
-                      <button type="button" onClick={() => setShowPass(!showPass)} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8B6A4A] hover:text-[#4B3420]">
-                        {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
-                      </button>
-                    </div>
-                    {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password}</p>}
-                  </div>
-                  <button type="submit" disabled={loading}
-                    className="w-full py-3 bg-[#5D3A1A] text-white font-semibold rounded-lg hover:bg-[#7A4E28] transition-all disabled:opacity-60 flex items-center justify-center gap-2">
-                    {loading && <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />}
-                    {mode === "login" ? "Sign In" : "Create Account"}
-                  </button>
-                </form>
-              </motion.div>
-            )}
-          </AnimatePresence>
+                </motion.div>
+              )}
+            </AnimatePresence>
           )}
         </div>
+
+        {/* Back to store */}
+        <p className="text-center mt-6 text-xs" style={{ color: "#AAAAAA", fontFamily: "'Inter', sans-serif" }}>
+          <Link to="/" className="hover:text-[#FF0000] transition-colors">← Back to Kustom Koats</Link>
+        </p>
       </motion.div>
     </div>
   )
