@@ -1,8 +1,9 @@
 import { useState, useRef, useEffect } from "react"
+import { useState, useRef, useEffect } from "react"
 import { Link, useLocation, useNavigate } from "react-router-dom"
 import { motion, AnimatePresence } from "framer-motion"
 import {
-  LayoutDashboard, ShoppingBag, BarChart3, Users, Bell, Menu, X,
+  BarChart2, ShoppingBag, BarChart3, Users, Bell, Menu, X,
   LogOut, ChevronRight, AlertTriangle, Store, Calendar, MessageSquare,
   Image, Gift, FileText
 } from "lucide-react"
@@ -11,11 +12,11 @@ import { useAdminStore } from "../../store/adminStore"
 import { supabase } from "../../lib/supabase"
 import toast from "react-hot-toast"
 
-// Royal Hoof dark theme palette
+// Royal Hoof dark theme palette (legacy - kept for reference)
 // bg: #1A1714  sidebar: #2C2C2C  card: #5B1E28  accent: #B8955A  text: #F3EBDD
 
 const NAV = [
-  { path: "/admin", label: "Dashboard", icon: LayoutDashboard },
+  { path: "/admin", label: "Dashboard", icon: BarChart2 },
   { path: "/admin/events", label: "Events", icon: Calendar },
   { path: "/admin/packages", label: "Packages", icon: Gift },
   { path: "/admin/gallery", label: "Gallery", icon: Image },

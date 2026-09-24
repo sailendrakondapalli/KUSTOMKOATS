@@ -772,7 +772,7 @@ export default function AdminProductsPage() {
   useEffect(() => { loadAll() }, [])
 
   const TABS = [
-    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { id: 'dashboard', label: 'Dashboard', icon: BarChart2 },
     { id: 'products',  label: 'Products',  icon: Package },
   ]
 
