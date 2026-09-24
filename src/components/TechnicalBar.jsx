@@ -1,5 +1,5 @@
 /**
- * TechnicalBar — Interactive horizontal gradient bar with a circular indicator.
+ * TechnicalBar — Read-only display matching the reference image.
  *
  * Props:
  *   title         {string}   — e.g. "Color Vibe"
@@ -9,92 +9,71 @@
 export default function TechnicalBar({ title, labels = [], selectedValue }) {
   if (!labels.length) return null
 
-  // Calculate indicator position as a percentage (0-100)
-  const idx = labels.findIndex(l => l.toLowerCase() === (selectedValue || '').toLowerCase())
-  const position = idx < 0 ? 0 : labels.length === 1 ? 50 : (idx / (labels.length - 1)) * 100
+  const idx = labels.findIndex(
+    l => l.toLowerCase() === (selectedValue || '').toLowerCase()
+  )
+  // Position 0–100 based on label index
+  const pct = idx < 0
+    ? 0
+    : labels.length === 1
+      ? 50
+      : (idx / (labels.length - 1)) * 100
 
   return (
-    <div style={{ marginBottom: '24px' }}>
-      {/* Title row */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-        <span style={{
-          fontSize: '0.8125rem',
-          fontWeight: 600,
-          color: '#000000',
-          fontFamily: "'Inter', sans-serif",
-          textTransform: 'uppercase',
-          letterSpacing: '0.06em',
-        }}>
-          {title}
-        </span>
-        {idx >= 0 && (
-          <span style={{
-            fontSize: '0.75rem',
-            fontWeight: 700,
-            color: '#FF0000',
-            fontFamily: "'Inter', sans-serif",
-            background: 'rgba(255,0,0,0.06)',
-            padding: '2px 10px',
-            borderRadius: '999px',
-            border: '1px solid rgba(255,0,0,0.15)',
-          }}>
-            {selectedValue}
-          </span>
-        )}
-      </div>
+    <div style={{
+      background: '#FFFFFF',
+      border: '1px solid #EBEBEB',
+      borderRadius: 12,
+      padding: '18px 20px 14px',
+      marginBottom: 12,
+    }}>
+      {/* Title */}
+      <p style={{
+        fontSize: '0.875rem',
+        fontWeight: 600,
+        color: '#1A1A1A',
+        fontFamily: "'Inter', sans-serif",
+        marginBottom: 14,
+      }}>
+        {title}
+      </p>
 
-      {/* Bar + indicator */}
-      <div style={{ position: 'relative', height: '8px', marginBottom: '8px' }}>
-        {/* Background gradient track */}
+      {/* Track + Thumb */}
+      <div style={{ position: 'relative', height: 6, marginBottom: 10, marginLeft: 2, marginRight: 2 }}>
+        {/* Full gradient track */}
         <div style={{
           position: 'absolute',
           inset: 0,
-          borderRadius: '999px',
-          background: 'linear-gradient(to right, #E8E8E8 0%, #CCCCCC 40%, #888888 70%, #444444 100%)',
+          borderRadius: 999,
+          background: 'linear-gradient(to right, #B8D8F0, #7EC8B8, #5DB88A)',
         }} />
-        {/* Red filled track up to indicator */}
-        <div style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          height: '100%',
-          width: `${position}%`,
-          borderRadius: '999px 0 0 999px',
-          background: 'linear-gradient(to right, #FF6666, #FF0000)',
-          transition: 'width 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
-        }} />
-        {/* Circular indicator */}
+
+        {/* Thumb */}
         <div style={{
           position: 'absolute',
           top: '50%',
-          left: `${position}%`,
+          left: `${pct}%`,
           transform: 'translate(-50%, -50%)',
-          width: '18px',
-          height: '18px',
+          width: 18,
+          height: 18,
           borderRadius: '50%',
           background: '#FFFFFF',
-          border: '3px solid #FF0000',
-          boxShadow: '0 2px 8px rgba(255,0,0,0.35)',
-          transition: 'left 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
+          boxShadow: '0 1px 6px rgba(0,0,0,0.20)',
+          border: '1.5px solid rgba(0,0,0,0.08)',
           zIndex: 2,
         }} />
       </div>
 
-      {/* Labels row */}
-      <div style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-      }}>
+      {/* Labels */}
+      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
         {labels.map((label, i) => (
           <span key={i} style={{
-            fontSize: '0.6875rem',
+            fontSize: '0.75rem',
             fontFamily: "'Inter', sans-serif",
-            color: label.toLowerCase() === (selectedValue || '').toLowerCase() ? '#FF0000' : '#999999',
-            fontWeight: label.toLowerCase() === (selectedValue || '').toLowerCase() ? 700 : 400,
-            transition: 'color 0.3s',
+            color: '#888888',
+            fontWeight: 400,
             textAlign: i === 0 ? 'left' : i === labels.length - 1 ? 'right' : 'center',
-            flex: i === 0 || i === labels.length - 1 ? '0 0 auto' : '1',
+            flex: i === 0 || i === labels.length - 1 ? '0 0 auto' : 1,
           }}>
             {label}
           </span>

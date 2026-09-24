@@ -9,6 +9,7 @@ import {
 } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import KKAdminLayout from '../../components/admin/KKAdminLayout'
+import TechnicalBarEditor from '../../components/admin/TechnicalBarEditor'
 import toast from 'react-hot-toast'
 
 // ─────────────────────────────────────────────
@@ -164,6 +165,7 @@ function StatusBadge({ status }) {
 }
 
 // ─────────────────────────────────────────────
+// ─────────────────────────────────────────────
 // TECHNICAL DETAILS EDITOR (inside product form)
 // ─────────────────────────────────────────────
 function TechDetailsEditor({ techBars, techSpecs, onChange }) {
@@ -176,7 +178,9 @@ function TechDetailsEditor({ techBars, techSpecs, onChange }) {
       if (i !== barIdx) return b
       const labels = [...(b.labels || [])]
       labels[labelIdx] = val
-      return { ...b, labels }
+      // If selected_value no longer exists in labels, reset it
+      const newSelected = labels.includes(b.selected_value) ? b.selected_value : ''
+      return { ...b, labels, selected_value: newSelected }
     })
     onChange('techBars', updated)
   }
@@ -187,81 +191,107 @@ function TechDetailsEditor({ techBars, techSpecs, onChange }) {
     onChange('techBars', updated)
   }
   const removeBarLabel = (barIdx, labelIdx) => {
-    const updated = techBars.map((b, i) =>
-      i === barIdx ? { ...b, labels: (b.labels || []).filter((_, li) => li !== labelIdx) } : b
-    )
+    const updated = techBars.map((b, i) => {
+      if (i !== barIdx) return b
+      const labels = (b.labels || []).filter((_, li) => li !== labelIdx)
+      const newSelected = labels.includes(b.selected_value) ? b.selected_value : (labels[0] || '')
+      return { ...b, labels, selected_value: newSelected }
+    })
     onChange('techBars', updated)
   }
   const removeBar = (i) => onChange('techBars', techBars.filter((_, idx) => idx !== i))
-
   const updateSpec = (i, field, val) => {
     const updated = techSpecs.map((s, idx) => idx === i ? { ...s, [field]: val } : s)
     onChange('techSpecs', updated)
   }
   const removeSpec = (i) => onChange('techSpecs', techSpecs.filter((_, idx) => idx !== i))
 
-  const S = { // inline styles shortcuts
-    label: { fontSize: '0.75rem', fontWeight: 600, color: '#333333', fontFamily: "'Inter', sans-serif", marginBottom: 4, display: 'block' },
-    input: { width: '100%', padding: '8px 12px', border: '1px solid #E0E0E0', borderRadius: 6, fontSize: '0.8125rem', fontFamily: "'Inter', sans-serif", color: '#000000', background: '#FFFFFF', outline: 'none' },
-    sectionTitle: { fontSize: '0.875rem', fontWeight: 700, color: '#000000', fontFamily: "'Inter', sans-serif", marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8 },
-    card: { background: '#FAFAFA', border: '1px solid #E5E5E5', borderRadius: 10, padding: 16, marginBottom: 12, position: 'relative' },
-    removeBtn: { position: 'absolute', top: 12, right: 12, background: 'none', border: 'none', cursor: 'pointer', color: '#EF4444', padding: 4, borderRadius: 4 },
-    addBtn: { display: 'inline-flex', alignItems: 'center', gap: 6, padding: '7px 14px', border: '1px dashed #CCCCCC', borderRadius: 6, background: 'transparent', cursor: 'pointer', fontSize: '0.8125rem', color: '#666666', fontFamily: "'Inter', sans-serif", transition: 'all 0.15s' },
+  const S = {
+    label:   { fontSize: '0.75rem', fontWeight: 600, color: '#333333', fontFamily: "'Inter', sans-serif", marginBottom: 4, display: 'block' },
+    input:   { width: '100%', padding: '8px 12px', border: '1px solid #E0E0E0', borderRadius: 6, fontSize: '0.8125rem', fontFamily: "'Inter', sans-serif", color: '#000000', background: '#FFFFFF', outline: 'none', boxSizing: 'border-box' },
+    secHead: { fontSize: '0.875rem', fontWeight: 700, color: '#000000', fontFamily: "'Inter', sans-serif", marginBottom: 4, display: 'flex', alignItems: 'center', gap: 8 },
+    hint:    { fontSize: '0.6875rem', color: '#999999', fontWeight: 400 },
+    card:    { background: '#FAFAFA', border: '1px solid #EBEBEB', borderRadius: 10, padding: '14px 16px', marginBottom: 10, position: 'relative' },
+    delBtn:  { position: 'absolute', top: 10, right: 10, background: 'none', border: 'none', cursor: 'pointer', color: '#EF4444', padding: 4, borderRadius: 4 },
+    addBtn:  { display: 'inline-flex', alignItems: 'center', gap: 6, padding: '7px 14px', border: '1px dashed #CCCCCC', borderRadius: 6, background: 'transparent', cursor: 'pointer', fontSize: '0.8125rem', color: '#666666', fontFamily: "'Inter', sans-serif" },
   }
 
   return (
     <div>
       {/* ── Technical Bars ── */}
       <div style={{ marginBottom: 28 }}>
-        <div style={S.sectionTitle}>
-          <span>Interactive Technical Bars</span>
-          <span style={{ fontSize: '0.6875rem', color: '#999999', fontWeight: 400 }}>(e.g. Color Vibe, Color Type)</span>
+        <div style={{ marginBottom: 14 }}>
+          <div style={S.secHead}>
+            Interactive Technical Bars
+            <span style={S.hint}>(e.g. Color Vibe, Color Type)</span>
+          </div>
+          <p style={{ fontSize: '0.75rem', color: '#888888', fontFamily: "'Inter', sans-serif", margin: 0 }}>
+            Set the title and labels. Then drag the slider to pick the selected value.
+          </p>
         </div>
 
         {techBars.map((bar, bi) => (
           <div key={bi} style={S.card}>
-            <button style={S.removeBtn} type="button" onClick={() => removeBar(bi)} title="Remove bar"><X size={14} /></button>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 12, paddingRight: 28 }}>
-              <div>
-                <label style={S.label}>Bar Title</label>
-                <input style={S.input} value={bar.title} onChange={e => updateBar(bi, 'title', e.target.value)} placeholder="e.g. Color Vibe" />
-              </div>
-              <div>
-                <label style={S.label}>Selected Value</label>
-                <select
-                  style={S.input}
-                  value={bar.selected_value}
-                  onChange={e => updateBar(bi, 'selected_value', e.target.value)}
-                >
-                  <option value="">— choose —</option>
-                  {(bar.labels || []).filter(Boolean).map((l, li) => (
-                    <option key={li} value={l}>{l}</option>
-                  ))}
-                </select>
+            <button style={S.delBtn} type="button" onClick={() => removeBar(bi)} title="Remove bar">
+              <X size={14} />
+            </button>
+
+            {/* Title */}
+            <div style={{ marginBottom: 10, paddingRight: 28 }}>
+              <label style={S.label}>Bar Title</label>
+              <input
+                style={S.input}
+                value={bar.title}
+                onChange={e => updateBar(bi, 'title', e.target.value)}
+                placeholder="e.g. Color Vibe"
+              />
+            </div>
+
+            {/* Labels row */}
+            <div style={{ marginBottom: 12 }}>
+              <label style={S.label}>Labels <span style={S.hint}>(left → right)</span></label>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center' }}>
+                {(bar.labels || []).map((lbl, li) => (
+                  <div key={li} style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+                    <input
+                      style={{ ...S.input, width: 90, padding: '6px 10px' }}
+                      value={lbl}
+                      onChange={e => updateBarLabel(bi, li, e.target.value)}
+                      placeholder={`Label ${li + 1}`}
+                    />
+                    {(bar.labels || []).length > 2 && (
+                      <button type="button" onClick={() => removeBarLabel(bi, li)}
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#EF4444', padding: 2 }}>
+                        <X size={11} />
+                      </button>
+                    )}
+                  </div>
+                ))}
+                <button type="button" style={{ ...S.addBtn, padding: '5px 10px', fontSize: '0.75rem' }}
+                  onClick={() => addBarLabel(bi)}>
+                  <Plus size={11} /> Add
+                </button>
               </div>
             </div>
-            <label style={S.label}>Labels (left → right on bar)</label>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
-              {(bar.labels || []).map((lbl, li) => (
-                <div key={li} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                  <input
-                    style={{ ...S.input, width: 100 }}
-                    value={lbl}
-                    onChange={e => updateBarLabel(bi, li, e.target.value)}
-                    placeholder={`Label ${li + 1}`}
-                  />
-                  {(bar.labels || []).length > 2 && (
-                    <button type="button" onClick={() => removeBarLabel(bi, li)}
-                      style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#EF4444', padding: 2 }}>
-                      <X size={12} />
-                    </button>
-                  )}
-                </div>
-              ))}
-              <button type="button" style={S.addBtn} onClick={() => addBarLabel(bi)}>
-                <Plus size={12} /> Label
-              </button>
-            </div>
+
+            {/* Live draggable preview */}
+            {bar.title && (bar.labels || []).filter(Boolean).length >= 2 ? (
+              <div>
+                <label style={{ ...S.label, marginBottom: 8 }}>
+                  Drag to set selected value:
+                </label>
+                <TechnicalBarEditor
+                  title={bar.title}
+                  labels={(bar.labels || []).filter(Boolean)}
+                  selectedValue={bar.selected_value}
+                  onChange={val => updateBar(bi, 'selected_value', val)}
+                />
+              </div>
+            ) : (
+              <div style={{ padding: '10px 12px', background: '#F5F5F5', borderRadius: 7, fontSize: '0.75rem', color: '#AAAAAA', fontFamily: "'Inter', sans-serif" }}>
+                Fill in title + at least 2 labels to see the draggable preview
+              </div>
+            )}
           </div>
         ))}
 
@@ -273,22 +303,28 @@ function TechDetailsEditor({ techBars, techSpecs, onChange }) {
 
       {/* ── Technical Specs ── */}
       <div>
-        <div style={S.sectionTitle}>
-          <span>Technical Specifications</span>
-          <span style={{ fontSize: '0.6875rem', color: '#999999', fontWeight: 400 }}>(e.g. Paint Type, HVLP Tip Size)</span>
+        <div style={{ marginBottom: 14 }}>
+          <div style={S.secHead}>
+            Technical Specifications
+            <span style={S.hint}>(e.g. Paint Type, HVLP Tip Size)</span>
+          </div>
         </div>
 
         {techSpecs.map((spec, si) => (
           <div key={si} style={{ ...S.card, padding: '10px 16px' }}>
-            <button style={S.removeBtn} type="button" onClick={() => removeSpec(si)} title="Remove spec"><X size={14} /></button>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.5fr', gap: 10, paddingRight: 24 }}>
+            <button style={S.delBtn} type="button" onClick={() => removeSpec(si)}><X size={14} /></button>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.5fr', gap: 10, paddingRight: 28 }}>
               <div>
-                <label style={S.label}>Specification Name</label>
-                <input style={S.input} value={spec.spec_name} onChange={e => updateSpec(si, 'spec_name', e.target.value)} placeholder="e.g. Paint Type" />
+                <label style={S.label}>Spec Name</label>
+                <input style={S.input} value={spec.spec_name}
+                  onChange={e => updateSpec(si, 'spec_name', e.target.value)}
+                  placeholder="e.g. Paint Type" />
               </div>
               <div>
                 <label style={S.label}>Value</label>
-                <input style={S.input} value={spec.spec_value} onChange={e => updateSpec(si, 'spec_value', e.target.value)} placeholder="e.g. Peelable Paint" />
+                <input style={S.input} value={spec.spec_value}
+                  onChange={e => updateSpec(si, 'spec_value', e.target.value)}
+                  placeholder="e.g. Peelable Paint" />
               </div>
             </div>
           </div>
