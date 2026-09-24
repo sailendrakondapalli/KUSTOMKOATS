@@ -32,6 +32,7 @@ const XtremeKolorzPage = lazy(() => import('../pages/shop/XtremeKolorzPage'))
 const XtremeWrapPage = lazy(() => import('../pages/shop/XtremeWrapPage'))
 const AccessoriesPage = lazy(() => import('../pages/shop/AccessoriesPage'))
 const ShopPage = lazy(() => import('../pages/shop/ShopPage'))
+const WholesalePage = lazy(() => import('../pages/shop/WholesalePage'))
 
 // Admin pages are handled in App.jsx directly (full-screen layout, no Navbar/Footer)
 
