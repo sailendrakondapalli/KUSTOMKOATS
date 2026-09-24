@@ -1,10 +1,6 @@
 /**
  * TechnicalBar — Read-only display matching the reference image.
- *
- * Props:
- *   title         {string}   — e.g. "Color Vibe"
- *   labels        {string[]} — e.g. ["Stealthy", "Bold", "Extreme"]
- *   selectedValue {string}   — one of the labels, e.g. "Bold"
+ * Compact white card, gradient track, white thumb, labels below.
  */
 export default function TechnicalBar({ title, labels = [], selectedValue }) {
   if (!labels.length) return null
@@ -12,7 +8,6 @@ export default function TechnicalBar({ title, labels = [], selectedValue }) {
   const idx = labels.findIndex(
     l => l.toLowerCase() === (selectedValue || '').toLowerCase()
   )
-  // Position 0–100 based on label index
   const pct = idx < 0
     ? 0
     : labels.length === 1
@@ -22,30 +17,35 @@ export default function TechnicalBar({ title, labels = [], selectedValue }) {
   return (
     <div style={{
       background: '#FFFFFF',
-      border: '1px solid #EBEBEB',
-      borderRadius: 12,
-      padding: '18px 20px 14px',
-      marginBottom: 12,
+      border: '1px solid #E8E8E8',
+      borderRadius: 10,
+      padding: '16px 18px 12px',
+      marginBottom: 10,
     }}>
       {/* Title */}
       <p style={{
-        fontSize: '0.875rem',
-        fontWeight: 600,
-        color: '#1A1A1A',
+        fontSize: '0.8125rem',
+        fontWeight: 500,
+        color: '#2A2A2A',
         fontFamily: "'Inter', sans-serif",
-        marginBottom: 14,
+        marginBottom: 12,
+        margin: '0 0 12px 0',
       }}>
         {title}
       </p>
 
-      {/* Track + Thumb */}
-      <div style={{ position: 'relative', height: 6, marginBottom: 10, marginLeft: 2, marginRight: 2 }}>
-        {/* Full gradient track */}
+      {/* Track container */}
+      <div style={{ position: 'relative', height: 20, marginBottom: 6 }}>
+        {/* Gradient track */}
         <div style={{
           position: 'absolute',
-          inset: 0,
+          top: '50%',
+          left: 0,
+          right: 0,
+          height: 4,
+          transform: 'translateY(-50%)',
           borderRadius: 999,
-          background: 'linear-gradient(to right, #B8D8F0, #7EC8B8, #5DB88A)',
+          background: 'linear-gradient(to right, #90CAE8, #6BBFB0, #4CAF85)',
         }} />
 
         {/* Thumb */}
@@ -54,26 +54,29 @@ export default function TechnicalBar({ title, labels = [], selectedValue }) {
           top: '50%',
           left: `${pct}%`,
           transform: 'translate(-50%, -50%)',
-          width: 18,
-          height: 18,
+          width: 16,
+          height: 16,
           borderRadius: '50%',
           background: '#FFFFFF',
-          boxShadow: '0 1px 6px rgba(0,0,0,0.20)',
-          border: '1.5px solid rgba(0,0,0,0.08)',
+          boxShadow: '0 1px 4px rgba(0,0,0,0.22), 0 0 0 1px rgba(0,0,0,0.06)',
           zIndex: 2,
+          flexShrink: 0,
         }} />
       </div>
 
       {/* Labels */}
-      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+      <div style={{
+        display: 'flex',
+        justifyContent: labels.length === 1 ? 'center' : 'space-between',
+        marginTop: 2,
+      }}>
         {labels.map((label, i) => (
           <span key={i} style={{
-            fontSize: '0.75rem',
+            fontSize: '0.6875rem',
             fontFamily: "'Inter', sans-serif",
-            color: '#888888',
+            color: '#999999',
             fontWeight: 400,
-            textAlign: i === 0 ? 'left' : i === labels.length - 1 ? 'right' : 'center',
-            flex: i === 0 || i === labels.length - 1 ? '0 0 auto' : 1,
+            lineHeight: 1,
           }}>
             {label}
           </span>

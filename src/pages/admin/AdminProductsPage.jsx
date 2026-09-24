@@ -383,32 +383,47 @@ function ProductFormModal({ initialData, categories, onClose, onSaved }) {
     setSaving(true)
 
     try {
-      const productData = {
+      // Build product data — try with optional columns first, fall back without them
+      const buildData = (includeOptional = true) => ({
         name: form.name.trim(),
-        description: form.description,
+        description: form.description || null,
         price: parseFloat(form.price),
-        original_price: form.original_price ? parseFloat(form.original_price) : null,
         category: form.category,
         stock: parseInt(form.stock) || 0,
-        custom_id: form.custom_id || null,
         images: form.images.filter(Boolean),
-        tags: form.tags,
+        tags: form.tags || [],
         size: form.size || null,
-      }
+        ...(includeOptional && {
+          original_price: form.original_price ? parseFloat(form.original_price) : null,
+          custom_id: form.custom_id || null,
+        }),
+      })
 
       let productId = form.id
 
-      if (productId) {
-        // UPDATE
-        const { error } = await supabase.from('products').update(productData).eq('id', productId)
-        if (error) throw error
-        toast.success('Product updated!')
-      } else {
-        // INSERT
-        const { data, error } = await supabase.from('products').insert(productData).select().single()
-        if (error) throw error
-        productId = data.id
-        toast.success('Product created!')
+      const tryUpsert = async (data) => {
+        if (productId) {
+          const { error } = await supabase.from('products').update(data).eq('id', productId)
+          if (error) throw error
+          toast.success('Product updated!')
+        } else {
+          const { data: row, error } = await supabase.from('products').insert(data).select().single()
+          if (error) throw error
+          productId = row.id
+          toast.success('Product created!')
+        }
+      }
+
+      try {
+        await tryUpsert(buildData(true))
+      } catch (err) {
+        // If optional columns don't exist yet, retry without them
+        if (err.message?.includes('custom_id') || err.message?.includes('original_price')) {
+          console.warn('Optional columns missing, retrying without them:', err.message)
+          await tryUpsert(buildData(false))
+        } else {
+          throw err
+        }
       }
 
       // Save technical bars

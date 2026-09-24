@@ -51,7 +51,7 @@ export default function ProductDetailPage() {
           addRecentlyViewed(data)
         }
 
-        // Load technical details (bars + specs)
+        // Fetch technical details
         const loadTechDetails = async () => {
           setTechLoading(true)
           const [barsRes, specsRes] = await Promise.all([
@@ -72,27 +72,20 @@ export default function ProductDetailPage() {
         }
         loadTechDetails()
 
-        // Load related products
-        const loadRecommended = async () => {
+        // Fetch related products
+        const loadRelated = async () => {
           const { data: sameCat } = await supabase
-            .from('products')
-            .select('*')
-            .eq('category', data.category)
-            .neq('id', id)
-            .limit(8)
-
+            .from('products').select('*')
+            .eq('category', data.category).neq('id', id).limit(8)
           let recommended = sameCat || []
           if (recommended.length < 4) {
             const { data: others } = await supabase
-              .from('products')
-              .select('*')
-              .neq('id', id)
-              .limit(8 - recommended.length)
+              .from('products').select('*').neq('id', id).limit(8 - recommended.length)
             if (others?.length) recommended = [...recommended, ...others]
           }
           setRelated(recommended)
         }
-        loadRecommended()
+        loadRelated()
       })
   }, [id])
 
@@ -129,13 +122,12 @@ export default function ProductDetailPage() {
       <div className="min-h-screen" style={{ background: '#FFFFFF', paddingTop: '80px' }}>
         <div className="max-w-7xl mx-auto px-6 lg:px-12 xl:px-20 py-12">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-            <div className="aspect-square rounded-lg bg-gray-100 animate-pulse" />
+            <div className="aspect-square rounded-xl bg-gray-100 animate-pulse" />
             <div className="space-y-4 py-8">
               <div className="h-4 bg-gray-100 rounded w-24 animate-pulse" />
               <div className="h-10 bg-gray-100 rounded w-3/4 animate-pulse" />
               <div className="h-6 bg-gray-100 rounded w-1/3 animate-pulse" />
               <div className="h-20 bg-gray-100 rounded animate-pulse" />
-              <div className="h-12 bg-gray-100 rounded animate-pulse" />
               <div className="h-12 bg-gray-100 rounded animate-pulse" />
             </div>
           </div>
@@ -146,8 +138,11 @@ export default function ProductDetailPage() {
 
   if (!product) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center" style={{ background: '#FFFFFF', paddingTop: '80px' }}>
-        <p className="text-lg mb-4" style={{ color: '#000000', fontFamily: "'Inter', sans-serif" }}>Product not found</p>
+      <div className="min-h-screen flex flex-col items-center justify-center"
+        style={{ background: '#FFFFFF', paddingTop: '80px' }}>
+        <p className="text-lg mb-4" style={{ color: '#000000', fontFamily: "'Inter', sans-serif" }}>
+          Product not found
+        </p>
         <button onClick={() => navigate('/products')}
           className="px-6 py-2 rounded-lg text-sm font-semibold"
           style={{ background: '#FF0000', color: '#FFFFFF', fontFamily: "'Inter', sans-serif" }}>
@@ -158,11 +153,10 @@ export default function ProductDetailPage() {
   }
 
   const images = Array.isArray(product.images) && product.images.length > 0
-    ? product.images
-    : ['/product-fallback.webp']
-
+    ? product.images : ['/product-fallback.webp']
   const currentMedia = images[imgIdx]
   const isCurrentVideo = isVideoUrl(currentMedia)
+  const hasTechDetails = techBars.length > 0 || techSpecs.length > 0
 
   const tags = [
     { label: product.category, bg: 'bg-red-50', border: 'border-red-200', text: 'text-red-600' },
@@ -176,53 +170,32 @@ export default function ProductDetailPage() {
     }),
   ]
 
-  const hasTechDetails = techBars.length > 0 || techSpecs.length > 0
-
   return (
     <>
       <Helmet>
         <title>{product.name} - Buy Online | Kustom Koats</title>
         <meta name="description" content={`Buy ${product.name} online. ${product.description ? product.description.slice(0, 140) : `Premium ${product.category} from Kustom Koats.`} ₹${product.price}.`} />
-        <meta name="keywords" content={`${product.name}, ${product.category}, automotive pearls, ${product.tags?.join(', ')}`} />
         <link rel="canonical" href={`https://www.kustomkoats.com/products/${product.id}`} />
         <meta property="og:title" content={`${product.name} - Kustom Koats`} />
-        <meta property="og:description" content={product.description || `Premium ${product.category} from Kustom Koats.`} />
         <meta property="og:image" content={product.images?.[0] || 'https://www.kustomkoats.com/og-image.png'} />
-        <meta property="og:url" content={`https://www.kustomkoats.com/products/${product.id}`} />
         <meta property="og:type" content="product" />
-        <meta property="product:price:amount" content={String(product.price)} />
-        <meta property="product:price:currency" content="INR" />
-        <script type="application/ld+json">{JSON.stringify({
-          "@context": "https://schema.org",
-          "@type": "Product",
-          "name": product.name,
-          "image": product.images || [],
-          "description": product.description || `Premium ${product.category}`,
-          "sku": product.custom_id || product.id,
-          "brand": { "@type": "Brand", "name": "Kustom Koats" },
-          "offers": {
-            "@type": "Offer",
-            "url": `https://www.kustomkoats.com/products/${product.id}`,
-            "priceCurrency": "INR",
-            "price": product.price,
-            "availability": product.stock > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
-            "seller": { "@type": "Organization", "name": "Kustom Koats" }
-          }
-        })}</script>
       </Helmet>
 
       {/* Spacer for fixed navbar */}
       <div style={{ height: '80px' }} />
 
-      <div className="max-w-7xl mx-auto px-6 lg:px-12 xl:px-20 py-10" style={{ background: '#FFFFFF' }}>
+      <div className="max-w-7xl mx-auto px-6 lg:px-12 xl:px-20 py-10"
+        style={{ background: '#FFFFFF' }}>
 
         {/* Breadcrumb */}
-        <div className="flex items-center gap-2 text-xs mb-8" style={{ color: '#666666', fontFamily: "'Inter', sans-serif" }}>
+        <div className="flex items-center gap-2 text-xs mb-8"
+          style={{ color: '#666666', fontFamily: "'Inter', sans-serif" }}>
           <Link to="/" className="hover:text-[#FF0000] transition-colors">Home</Link>
           <span>/</span>
           <Link to="/products" className="hover:text-[#FF0000] transition-colors">Shop</Link>
           <span>/</span>
-          <Link to={`/products?category=${encodeURIComponent(product.category)}`} className="hover:text-[#FF0000] transition-colors">{product.category}</Link>
+          <Link to={`/products?category=${encodeURIComponent(product.category)}`}
+            className="hover:text-[#FF0000] transition-colors">{product.category}</Link>
           <span>/</span>
           <span className="truncate max-w-[200px]" style={{ color: '#333333' }}>{product.name}</span>
         </div>
@@ -247,11 +220,11 @@ export default function ProductDetailPage() {
               {images.length > 1 && (
                 <>
                   <button onClick={() => setImgIdx(i => (i - 1 + images.length) % images.length)}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg hover:bg-white hover:scale-110 transition-all">
+                    className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/90 rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-all">
                     <ArrowLeft size={18} style={{ color: '#000000' }} />
                   </button>
                   <button onClick={() => setImgIdx(i => (i + 1) % images.length)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg hover:bg-white hover:scale-110 transition-all">
+                    className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/90 rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-all">
                     <ArrowRight size={18} style={{ color: '#000000' }} />
                   </button>
                 </>
@@ -263,13 +236,11 @@ export default function ProductDetailPage() {
               <div className="flex gap-3 flex-wrap">
                 {images.map((img, i) => (
                   <button key={i} onClick={() => setImgIdx(i)}
-                    className={`w-20 h-20 rounded-lg overflow-hidden border-2 transition-all ${i === imgIdx ? 'border-[#FF0000] shadow-md' : 'border-gray-200 opacity-60 hover:opacity-100 hover:border-gray-300'}`}>
-                    {isVideoUrl(img) ? (
-                      <video src={img} muted playsInline className="w-full h-full object-cover bg-[#F8F8F8]" />
-                    ) : (
-                      <img src={img} alt="" className="w-full h-full object-cover"
-                        onError={e => { e.target.src = '/product-fallback.webp' }} />
-                    )}
+                    className={`w-20 h-20 rounded-lg overflow-hidden border-2 transition-all ${i === imgIdx ? 'border-[#FF0000] shadow-md' : 'border-gray-200 opacity-60 hover:opacity-100'}`}>
+                    {isVideoUrl(img)
+                      ? <video src={img} muted playsInline className="w-full h-full object-cover" />
+                      : <img src={img} alt="" className="w-full h-full object-cover" onError={e => { e.target.src = '/product-fallback.webp' }} />
+                    }
                   </button>
                 ))}
               </div>
@@ -279,9 +250,7 @@ export default function ProductDetailPage() {
           {/* Right — info */}
           <div>
             <p className="text-[#FF0000] text-xs uppercase tracking-[0.15em] font-bold mb-3"
-              style={{ fontFamily: "'Inter', sans-serif" }}>
-              {product.category}
-            </p>
+              style={{ fontFamily: "'Inter', sans-serif" }}>{product.category}</p>
             <h1 className="text-4xl lg:text-5xl font-bold mb-4"
               style={{ fontFamily: "'Rajdhani', sans-serif", color: '#000000' }}>
               {product.name}
@@ -317,7 +286,8 @@ export default function ProductDetailPage() {
                   </>
                 )}
               </div>
-              <p className="text-sm font-medium" style={{ color: product.delivery_charge ? '#666666' : '#16a34a', fontFamily: "'Inter', sans-serif" }}>
+              <p className="text-sm font-medium"
+                style={{ color: product.delivery_charge ? '#666666' : '#16a34a', fontFamily: "'Inter', sans-serif" }}>
                 {product.delivery_charge ? `+ ₹${product.delivery_charge} delivery charge` : '✓ Free Delivery'}
               </p>
             </div>
@@ -338,12 +308,14 @@ export default function ProductDetailPage() {
             {/* Variants */}
             {product.size && (
               <div className="rounded-xl p-4 mb-4" style={{ background: '#F8F8F8', border: '1px solid #E5E5E5' }}>
-                <p className="text-xs font-bold uppercase tracking-wider mb-3" style={{ color: '#000000', fontFamily: "'Inter', sans-serif" }}>
+                <p className="text-xs font-bold uppercase tracking-wider mb-3"
+                  style={{ color: '#000000', fontFamily: "'Inter', sans-serif" }}>
                   Available Variants
                 </p>
                 <div className="flex flex-wrap gap-2">
                   {product.size.split(',').map(s => s.trim()).filter(Boolean).map(s => (
-                    <span key={s} className="px-4 py-2 bg-white border-2 border-gray-300 text-sm font-medium rounded-lg hover:border-[#FF0000] transition-colors cursor-pointer"
+                    <span key={s}
+                      className="px-4 py-2 bg-white border-2 border-gray-300 text-sm font-medium rounded-lg hover:border-[#FF0000] transition-colors cursor-pointer"
                       style={{ color: '#000000', fontFamily: "'Inter', sans-serif" }}>
                       {s}
                     </span>
@@ -354,9 +326,8 @@ export default function ProductDetailPage() {
 
             {/* Stock */}
             <div className="rounded-xl p-4 mb-6" style={{ background: '#F8F8F8', border: '1px solid #E5E5E5' }}>
-              <p className="text-xs font-bold uppercase tracking-wider mb-2" style={{ color: '#000000', fontFamily: "'Inter', sans-serif" }}>
-                Availability
-              </p>
+              <p className="text-xs font-bold uppercase tracking-wider mb-2"
+                style={{ color: '#000000', fontFamily: "'Inter', sans-serif" }}>Availability</p>
               <p className={`font-bold text-base ${(product.stock ?? 1) > 0 ? 'text-green-600' : 'text-red-600'}`}
                 style={{ fontFamily: "'Inter', sans-serif" }}>
                 {(product.stock ?? 1) > 0
@@ -369,7 +340,8 @@ export default function ProductDetailPage() {
             {tags.length > 0 && (
               <div className="flex flex-wrap gap-2 mb-6">
                 {tags.map(t => (
-                  <span key={t.label} className={`text-xs px-3 py-1.5 rounded-full border font-semibold uppercase tracking-wider ${t.bg} ${t.border} ${t.text}`}
+                  <span key={t.label}
+                    className={`text-xs px-3 py-1.5 rounded-full border font-semibold uppercase tracking-wider ${t.bg} ${t.border} ${t.text}`}
                     style={{ fontFamily: "'Inter', sans-serif" }}>
                     {t.label}
                   </span>
@@ -377,37 +349,32 @@ export default function ProductDetailPage() {
               </div>
             )}
 
-            {/* CTA Buttons */}
+            {/* CTAs */}
             <div className="space-y-3 mb-6">
               <button onClick={handleBuyNow} disabled={product.stock === 0}
-                className="w-full flex items-center justify-center gap-2 py-4 rounded-xl font-bold text-base uppercase tracking-wider transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                className="w-full flex items-center justify-center gap-2 py-4 rounded-xl font-bold text-base uppercase tracking-wider transition-all disabled:opacity-40"
                 style={{ background: '#FF0000', color: '#FFFFFF', fontFamily: "'Inter', sans-serif", boxShadow: '0 4px 16px rgba(255,0,0,0.25)' }}>
                 <ArrowRight size={18} /> Buy Now
               </button>
               <div className="flex gap-3">
                 <button onClick={handleAddToCart} disabled={product.stock === 0 || addingCart}
-                  className={`flex-1 flex items-center justify-center gap-2 py-4 rounded-xl font-bold text-base uppercase tracking-wider transition-all disabled:opacity-40 disabled:cursor-not-allowed ${inCart ? 'bg-green-700 hover:bg-green-600 text-white' : 'bg-black hover:bg-gray-800 text-white'}`}
+                  className={`flex-1 flex items-center justify-center gap-2 py-4 rounded-xl font-bold text-base uppercase tracking-wider transition-all disabled:opacity-40 ${inCart ? 'bg-green-700 hover:bg-green-600 text-white' : 'bg-black hover:bg-gray-800 text-white'}`}
                   style={{ fontFamily: "'Inter', sans-serif" }}>
                   {addingCart
                     ? <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    : inCart ? <><ArrowRight size={18} /> View Cart</> : <><ShoppingCart size={18} /> Add to Cart</>
-                  }
+                    : inCart ? <><ArrowRight size={18} /> View Cart</> : <><ShoppingCart size={18} /> Add to Cart</>}
                 </button>
                 <button onClick={handleWishlist}
-                  className={`w-14 h-14 rounded-xl border-2 flex items-center justify-center transition-all flex-shrink-0 ${wishlisted ? 'bg-red-500 border-red-500 text-white scale-105' : 'border-gray-300 text-gray-600 hover:border-red-400 hover:text-red-400'}`}>
-                  <Heart size={20} strokeWidth={2} fill={wishlisted ? 'currentColor' : 'none'} />
+                  className={`w-14 h-14 rounded-xl border-2 flex items-center justify-center transition-all flex-shrink-0 ${wishlisted ? 'bg-red-500 border-red-500 text-white' : 'border-gray-300 text-gray-600 hover:border-red-400 hover:text-red-400'}`}>
+                  <Heart size={20} fill={wishlisted ? 'currentColor' : 'none'} />
                 </button>
                 <button
                   onClick={() => {
-                    if (navigator.share) {
-                      navigator.share({ title: product.name, url: window.location.href }).catch(() => {})
-                    } else {
-                      navigator.clipboard.writeText(window.location.href)
-                      toast.success('Link copied!')
-                    }
+                    if (navigator.share) navigator.share({ title: product.name, url: window.location.href }).catch(() => {})
+                    else { navigator.clipboard.writeText(window.location.href); toast.success('Link copied!') }
                   }}
                   className="w-14 h-14 rounded-xl border-2 border-gray-300 text-gray-600 flex items-center justify-center hover:border-[#FF0000] hover:text-[#FF0000] transition-all flex-shrink-0">
-                  <Share2 size={20} strokeWidth={2} />
+                  <Share2 size={20} />
                 </button>
               </div>
             </div>
@@ -431,10 +398,9 @@ export default function ProductDetailPage() {
           </div>
         </div>
 
-        {/* ── TECHNICAL DETAILS SECTION ── */}
+        {/* ── TECHNICAL DETAILS ── */}
         {(hasTechDetails || techLoading) && (
           <section className="mt-16 pt-12" style={{ borderTop: '2px solid #F0F0F0' }}>
-            {/* Section Header */}
             <div className="mb-10">
               <p className="text-xs font-bold uppercase tracking-widest mb-2"
                 style={{ color: '#FF0000', fontFamily: "'Inter', sans-serif" }}>
@@ -448,33 +414,29 @@ export default function ProductDetailPage() {
 
             {techLoading ? (
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-                <div className="space-y-6">
+                <div className="space-y-3">
                   {[1,2,3,4].map(i => (
-                    <div key={i} className="animate-pulse">
-                      <div className="h-4 bg-gray-100 rounded w-1/3 mb-3" />
-                      <div className="h-3 bg-gray-100 rounded mb-2" />
+                    <div key={i} style={{ background: '#FFFFFF', border: '1px solid #E8E8E8', borderRadius: 10, padding: '16px 18px' }} className="animate-pulse">
+                      <div className="h-3 bg-gray-100 rounded w-1/3 mb-4" />
+                      <div className="h-2 bg-gray-100 rounded mb-3" />
                       <div className="flex justify-between">
-                        <div className="h-3 bg-gray-100 rounded w-12" />
-                        <div className="h-3 bg-gray-100 rounded w-12" />
+                        <div className="h-2 bg-gray-100 rounded w-12" />
+                        <div className="h-2 bg-gray-100 rounded w-12" />
                       </div>
                     </div>
                   ))}
                 </div>
-                <div className="space-y-2">
-                  {[1,2,3,4,5,6].map(i => (
-                    <div key={i} className="h-10 bg-gray-100 rounded animate-pulse" />
-                  ))}
+                <div className="space-y-1">
+                  {[1,2,3,4,5,6].map(i => <div key={i} className="h-11 bg-gray-100 rounded-lg animate-pulse" />)}
                 </div>
               </div>
             ) : (
-              /* Two-column layout: bars left, specs right. Stack on mobile. */
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16">
-
-                {/* LEFT — Interactive Technical Bars */}
+                {/* LEFT — Bars */}
                 {techBars.length > 0 && (
                   <div>
-                    <h3 className="text-sm font-bold uppercase tracking-wider mb-6"
-                      style={{ color: '#000000', fontFamily: "'Inter', sans-serif", borderBottom: '2px solid #F0F0F0', paddingBottom: '12px' }}>
+                    <h3 className="text-xs font-bold uppercase tracking-widest mb-5"
+                      style={{ color: '#888888', fontFamily: "'Inter', sans-serif" }}>
                       Performance Characteristics
                     </h3>
                     {techBars.map(bar => (
@@ -488,23 +450,15 @@ export default function ProductDetailPage() {
                   </div>
                 )}
 
-                {/* RIGHT — Technical Specification List */}
+                {/* RIGHT — Specs */}
                 {techSpecs.length > 0 && (
                   <div>
-                    <h3 className="text-sm font-bold uppercase tracking-wider mb-6"
-                      style={{ color: '#000000', fontFamily: "'Inter', sans-serif", borderBottom: '2px solid #F0F0F0', paddingBottom: '12px' }}>
+                    <h3 className="text-xs font-bold uppercase tracking-widest mb-5"
+                      style={{ color: '#888888', fontFamily: "'Inter', sans-serif" }}>
                       Product Specifications
                     </h3>
                     <TechnicalSpecs specs={techSpecs} />
                   </div>
-                )}
-
-                {/* If only one column has data, span full width */}
-                {techBars.length > 0 && techSpecs.length === 0 && (
-                  <div className="hidden lg:block" />
-                )}
-                {techSpecs.length > 0 && techBars.length === 0 && (
-                  <div className="hidden lg:block" />
                 )}
               </div>
             )}
@@ -529,17 +483,14 @@ export default function ProductDetailPage() {
                 <Link key={p.id} to={`/products/${p.id}`}
                   className="group rounded-xl overflow-hidden transition-all hover:shadow-xl"
                   style={{ background: '#FFFFFF', border: '1px solid #E5E5E5' }}>
-                  <div className="aspect-square overflow-hidden relative"
-                    style={{ background: '#F8F8F8' }}>
-                    {isVideoUrl(p.images?.[0]) ? (
-                      <video src={p.images[0]} muted loop playsInline
-                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
-                    ) : (
-                      <img src={p.images?.[0]} alt={p.name} loading="lazy"
-                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                        onError={e => { e.target.src = '/product-fallback.webp' }} />
-                    )}
-                    <span className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm text-[#FF0000] text-xs font-bold px-3 py-1 rounded-full"
+                  <div className="aspect-square overflow-hidden relative" style={{ background: '#F8F8F8' }}>
+                    {isVideoUrl(p.images?.[0])
+                      ? <video src={p.images[0]} muted loop playsInline className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                      : <img src={p.images?.[0]} alt={p.name} loading="lazy"
+                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                          onError={e => { e.target.src = '/product-fallback.webp' }} />
+                    }
+                    <span className="absolute top-3 left-3 bg-white/90 text-[#FF0000] text-xs font-bold px-3 py-1 rounded-full"
                       style={{ fontFamily: "'Inter', sans-serif" }}>
                       {p.category}
                     </span>
@@ -553,9 +504,7 @@ export default function ProductDetailPage() {
                       {formatINR(p.price)}
                     </p>
                     {p.original_price && p.original_price > p.price && (
-                      <p className="text-xs text-gray-400 line-through mt-1">
-                        {formatINR(p.original_price)}
-                      </p>
+                      <p className="text-xs text-gray-400 line-through mt-1">{formatINR(p.original_price)}</p>
                     )}
                   </div>
                 </Link>
@@ -563,14 +512,13 @@ export default function ProductDetailPage() {
             </div>
             <div className="text-center mt-8">
               <Link to={`/products?category=${encodeURIComponent(product.category)}`}
-                className="inline-flex items-center gap-2 px-8 py-4 rounded-xl font-bold transition-all duration-300 hover:scale-105"
+                className="inline-flex items-center gap-2 px-8 py-4 rounded-xl font-bold transition-all hover:scale-105"
                 style={{ background: '#FF0000', color: '#FFFFFF', fontFamily: "'Inter', sans-serif" }}>
                 View All {product.category} Products <ArrowRight size={20} />
               </Link>
             </div>
           </section>
         )}
-
       </div>
     </>
   )
