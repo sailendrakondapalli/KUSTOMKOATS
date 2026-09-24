@@ -19,10 +19,11 @@ const CATEGORIES_DEFAULT = ['Xtreme Kolorz', 'Xtreme Wrap', 'Accessories', 'Whol
 
 const emptyProduct = () => ({
   name: '', description: '', price: '', original_price: '',
+  wholesale_price: '', dealer_price: '',
   category: 'Xtreme Kolorz', stock: 10, custom_id: '',
   images: [], tags: [], size: '',
-  techBars: [],    // [{ title, labels: ['a','b','c'], selected_value: 'b' }]
-  techSpecs: [],   // [{ spec_name, spec_value }]
+  techBars: [],
+  techSpecs: [],
 })
 
 const emptyBar  = () => ({ title: '', labels: ['', '', ''], selected_value: '' })
@@ -394,7 +395,9 @@ function ProductFormModal({ initialData, categories, onClose, onSaved }) {
         tags: form.tags || [],
         size: form.size || null,
         ...(includeOptional && {
-          original_price: form.original_price ? parseFloat(form.original_price) : null,
+          original_price:  form.original_price  ? parseFloat(form.original_price)  : null,
+          wholesale_price: form.wholesale_price ? parseFloat(form.wholesale_price) : null,
+          dealer_price:    form.dealer_price    ? parseFloat(form.dealer_price)    : null,
           custom_id: form.custom_id || null,
         }),
       })
@@ -418,7 +421,7 @@ function ProductFormModal({ initialData, categories, onClose, onSaved }) {
         await tryUpsert(buildData(true))
       } catch (err) {
         // If optional columns don't exist yet, retry without them
-        if (err.message?.includes('custom_id') || err.message?.includes('original_price')) {
+        if (err.message?.includes('custom_id') || err.message?.includes('original_price') || err.message?.includes('wholesale_price') || err.message?.includes('dealer_price') || err.message?.includes('size')) {
           console.warn('Optional columns missing, retrying without them:', err.message)
           await tryUpsert(buildData(false))
         } else {
@@ -515,12 +518,20 @@ function ProductFormModal({ initialData, categories, onClose, onSaved }) {
                     <input style={S.input} value={form.name} onChange={e => setField('name', e.target.value)} placeholder="e.g. Pearl Blue Metallic" required />
                   </div>
                   <div>
-                    <label style={S.label}>Price (₹) *</label>
+                    <label style={S.label}>Price (₹) * <span style={{ color: '#888', fontWeight: 400 }}>(normal user price)</span></label>
                     <input style={S.input} type="number" min="0" step="0.01" value={form.price} onChange={e => setField('price', e.target.value)} placeholder="999" required />
                   </div>
                   <div>
-                    <label style={S.label}>Original Price (₹) — for discount</label>
+                    <label style={S.label}>Original Price (₹) <span style={{ color: '#888', fontWeight: 400 }}>(crossed out for discount)</span></label>
                     <input style={S.input} type="number" min="0" step="0.01" value={form.original_price} onChange={e => setField('original_price', e.target.value)} placeholder="1299 (optional)" />
+                  </div>
+                  <div>
+                    <label style={S.label}>Wholesale Price (₹) <span style={{ color: '#888', fontWeight: 400 }}>(for wholesalers)</span></label>
+                    <input style={S.input} type="number" min="0" step="0.01" value={form.wholesale_price} onChange={e => setField('wholesale_price', e.target.value)} placeholder="e.g. 750" />
+                  </div>
+                  <div>
+                    <label style={S.label}>Dealer Price (₹) <span style={{ color: '#888', fontWeight: 400 }}>(for dealers)</span></label>
+                    <input style={S.input} type="number" min="0" step="0.01" value={form.dealer_price} onChange={e => setField('dealer_price', e.target.value)} placeholder="e.g. 650" />
                   </div>
                   <div>
                     <label style={S.label}>Category *</label>
@@ -669,6 +680,12 @@ function ProductsTab({ products, categories, onRefresh }) {
     ])
     setEditData({
       ...product,
+      // Ensure all pricing fields are present
+      original_price:  product.original_price  || '',
+      wholesale_price: product.wholesale_price || '',
+      dealer_price:    product.dealer_price    || '',
+      custom_id:       product.custom_id       || '',
+      size:            product.size            || '',
       techBars: (barsRes.data || []).map(b => ({ ...b, labels: b.labels || [] })),
       techSpecs: specsRes.data || [],
     })
