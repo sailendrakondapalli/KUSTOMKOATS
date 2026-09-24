@@ -1,952 +1,815 @@
-import { useState, useEffect } from "react"
-import { Helmet } from "react-helmet-async"
-import { Plus, Edit2, Trash2, Save, X, ArrowLeft, Package, ShoppingBag, Settings, Star, Tag, CheckCircle, TrendingUp, Users, DollarSign } from "lucide-react"
-import { Link } from "react-router-dom"
-import { supabase } from "../../lib/supabase"
-import toast from "react-hot-toast"
+import { useState, useEffect, useRef } from 'react'
+import { Helmet } from 'react-helmet-async'
+import { Link } from 'react-router-dom'
+import {
+  Plus, Edit2, Trash2, Save, X, Search,
+  Package, ShoppingBag, Tag, Users, TrendingUp,
+  Image, Upload, ChevronDown, GripVertical,
+  DollarSign, AlertCircle, CheckCircle, BarChart2
+} from 'lucide-react'
+import { supabase } from '../../lib/supabase'
+import KKAdminLayout from '../../components/admin/KKAdminLayout'
+import toast from 'react-hot-toast'
 
-export default function AdminProductsPage() {
-  const [activeTab, setActiveTab] = useState('dashboard')
-  const [products, setProducts] = useState([])
-  const [orders, setOrders] = useState([])
-  const [reviews, setReviews] = useState([])
-  const [stats, setStats] = useState({
-    totalProducts: 0,
-    activeOrders: 0,
-    totalRevenue: 0,
-    pendingReviews: 0
-  })
-  const [loading, setLoading] = useState(true)
-  const [editing, setEditing] = useState(null)
-  const [showForm, setShowForm] = useState(false)
-  const [uploadingImage, setUploadingImage] = useState(false)
-  const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    price: '',
-    original_price: '',
-    category: 'Xtreme Kolorz',
-    stock: 10,
-    images: [],
-    tags: []
-  })
+// ─────────────────────────────────────────────
+// HELPERS
+// ─────────────────────────────────────────────
+const CATEGORIES_DEFAULT = ['Xtreme Kolorz', 'Xtreme Wrap', 'Accessories', 'Wholesale']
 
-  useEffect(() => {
-    loadData()
-  }, [activeTab])
+const emptyProduct = () => ({
+  name: '', description: '', price: '', original_price: '',
+  category: 'Xtreme Kolorz', stock: 10, custom_id: '',
+  images: [], tags: [], size: '',
+  techBars: [],    // [{ title, labels: ['a','b','c'], selected_value: 'b' }]
+  techSpecs: [],   // [{ spec_name, spec_value }]
+})
 
-  const loadData = async () => {
-    setLoading(true)
-    
-    if (activeTab === 'dashboard') {
-      await Promise.all([loadProducts(), loadOrders(), loadReviews()])
-      calculateStats()
-    } else if (activeTab === 'products') {
-      await loadProducts()
-    } else if (activeTab === 'orders') {
-      await loadOrders()
-    } else if (activeTab === 'reviews') {
-      await loadReviews()
+const emptyBar  = () => ({ title: '', labels: ['', '', ''], selected_value: '' })
+const emptySpec = () => ({ spec_name: '', spec_value: '' })
+
+// ─────────────────────────────────────────────
+// STAT CARD
+// ─────────────────────────────────────────────
+function StatCard({ icon: Icon, label, value, color = '#FF0000' }) {
+  return (
+    <div style={{
+      background: '#FFFFFF', border: '1px solid #E5E5E5', borderRadius: 12,
+      padding: '20px 24px', display: 'flex', alignItems: 'center', gap: 16,
+    }}>
+      <div style={{
+        width: 48, height: 48, borderRadius: 10, flexShrink: 0,
+        background: `${color}14`, display: 'flex', alignItems: 'center', justifyContent: 'center',
+      }}>
+        <Icon size={22} style={{ color }} />
+      </div>
+      <div>
+        <p style={{ color: '#999999', fontSize: '0.75rem', fontFamily: "'Inter', sans-serif", marginBottom: 2 }}>{label}</p>
+        <p style={{ color: '#000000', fontSize: '1.5rem', fontWeight: 700, fontFamily: "'Inter', sans-serif", lineHeight: 1 }}>{value}</p>
+      </div>
+    </div>
+  )
+}
+
+// ─────────────────────────────────────────────
+// DASHBOARD TAB
+// ─────────────────────────────────────────────
+function DashboardTab({ products, orders }) {
+  const totalRevenue = orders
+    .filter(o => o.payment_status === 'paid')
+    .reduce((s, o) => s + Number(o.total_amount || 0), 0)
+  const pendingOrders = orders.filter(o =>
+    ['pending', 'confirmed', 'processing'].includes(o.order_status)
+  ).length
+  const lowStock = products.filter(p => (p.stock || 0) < 10).length
+
+  return (
+    <div>
+      {/* Stats */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <StatCard icon={Package}    label="Total Products" value={products.length} color="#FF0000" />
+        <StatCard icon={ShoppingBag} label="Pending Orders" value={pendingOrders}   color="#F59E0B" />
+        <StatCard icon={DollarSign} label="Total Revenue"  value={`₹${totalRevenue.toLocaleString('en-IN')}`} color="#10B981" />
+        <StatCard icon={AlertCircle} label="Low Stock"     value={lowStock}         color="#EF4444" />
+      </div>
+
+      {/* Recent Orders */}
+      <div style={{ background: '#FFFFFF', border: '1px solid #E5E5E5', borderRadius: 12, overflow: 'hidden', marginBottom: 24 }}>
+        <div style={{ padding: '16px 20px', borderBottom: '1px solid #F0F0F0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <span style={{ fontWeight: 600, fontSize: '0.9375rem', fontFamily: "'Inter', sans-serif", color: '#000000' }}>
+            Recent Orders
+          </span>
+          <Link to="/admin/orders" style={{ fontSize: '0.8125rem', color: '#FF0000', textDecoration: 'none', fontFamily: "'Inter', sans-serif", fontWeight: 500 }}>
+            View all →
+          </Link>
+        </div>
+        <div style={{ overflowX: 'auto' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <thead>
+              <tr style={{ background: '#FAFAFA' }}>
+                {['Order ID', 'Amount', 'Status', 'Date'].map(h => (
+                  <th key={h} style={{ padding: '10px 16px', textAlign: 'left', fontSize: '0.6875rem', fontWeight: 700, color: '#999999', fontFamily: "'Inter', sans-serif", letterSpacing: '0.08em', textTransform: 'uppercase', borderBottom: '1px solid #F0F0F0' }}>{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {orders.slice(0, 8).map(order => (
+                <tr key={order.id} style={{ borderBottom: '1px solid #F8F8F8' }}>
+                  <td style={{ padding: '12px 16px', fontSize: '0.8125rem', fontWeight: 600, color: '#000000', fontFamily: "'Inter', sans-serif" }}>
+                    {order.display_order_id || order.id.slice(0, 8).toUpperCase()}
+                  </td>
+                  <td style={{ padding: '12px 16px', fontSize: '0.8125rem', fontWeight: 700, color: '#000000', fontFamily: "'Inter', sans-serif" }}>
+                    ₹{Number(order.total_amount || 0).toLocaleString('en-IN')}
+                  </td>
+                  <td style={{ padding: '12px 16px' }}>
+                    <StatusBadge status={order.order_status} />
+                  </td>
+                  <td style={{ padding: '12px 16px', fontSize: '0.8125rem', color: '#666666', fontFamily: "'Inter', sans-serif" }}>
+                    {new Date(order.created_at).toLocaleDateString('en-IN')}
+                  </td>
+                </tr>
+              ))}
+              {orders.length === 0 && (
+                <tr><td colSpan={4} style={{ padding: '32px', textAlign: 'center', color: '#999999', fontFamily: "'Inter', sans-serif", fontSize: '0.875rem' }}>No orders yet</td></tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Low stock */}
+      {lowStock > 0 && (
+        <div style={{ background: '#FFFFFF', border: '1px solid #E5E5E5', borderRadius: 12, overflow: 'hidden' }}>
+          <div style={{ padding: '16px 20px', borderBottom: '1px solid #F0F0F0' }}>
+            <span style={{ fontWeight: 600, fontSize: '0.9375rem', fontFamily: "'Inter', sans-serif", color: '#000000' }}>
+              Low Stock Alert
+            </span>
+          </div>
+          <div style={{ padding: '8px 0' }}>
+            {products.filter(p => (p.stock || 0) < 10).slice(0, 6).map(p => (
+              <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 20px', borderBottom: '1px solid #F8F8F8' }}>
+                {p.images?.[0] && <img src={p.images[0]} alt="" style={{ width: 36, height: 36, borderRadius: 6, objectFit: 'cover', flexShrink: 0, border: '1px solid #E5E5E5' }} />}
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p style={{ fontSize: '0.8125rem', fontWeight: 600, color: '#000000', fontFamily: "'Inter', sans-serif", overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.name}</p>
+                  <p style={{ fontSize: '0.75rem', color: '#999999', fontFamily: "'Inter', sans-serif" }}>{p.category}</p>
+                </div>
+                <span style={{ fontSize: '0.75rem', fontWeight: 700, color: p.stock === 0 ? '#EF4444' : '#F59E0B', background: p.stock === 0 ? '#FEF2F2' : '#FFFBEB', padding: '2px 10px', borderRadius: 999, fontFamily: "'Inter', sans-serif" }}>
+                  {p.stock === 0 ? 'Out of stock' : `${p.stock} left`}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function StatusBadge({ status }) {
+  const map = {
+    pending:    { bg: '#FFFBEB', color: '#D97706' },
+    confirmed:  { bg: '#EFF6FF', color: '#2563EB' },
+    processing: { bg: '#F5F3FF', color: '#7C3AED' },
+    shipped:    { bg: '#F0FDF4', color: '#16A34A' },
+    delivered:  { bg: '#F0FDF4', color: '#15803D' },
+    cancelled:  { bg: '#FEF2F2', color: '#DC2626' },
+    paid:       { bg: '#F0FDF4', color: '#16A34A' },
+    failed:     { bg: '#FEF2F2', color: '#DC2626' },
+  }
+  const s = map[status] || { bg: '#F5F5F5', color: '#666666' }
+  return (
+    <span style={{ fontSize: '0.6875rem', fontWeight: 700, padding: '3px 10px', borderRadius: 999, background: s.bg, color: s.color, fontFamily: "'Inter', sans-serif", textTransform: 'capitalize' }}>
+      {status || '—'}
+    </span>
+  )
+}
+
+// ─────────────────────────────────────────────
+// TECHNICAL DETAILS EDITOR (inside product form)
+// ─────────────────────────────────────────────
+function TechDetailsEditor({ techBars, techSpecs, onChange }) {
+  const updateBar = (i, field, val) => {
+    const updated = techBars.map((b, idx) => idx === i ? { ...b, [field]: val } : b)
+    onChange('techBars', updated)
+  }
+  const updateBarLabel = (barIdx, labelIdx, val) => {
+    const updated = techBars.map((b, i) => {
+      if (i !== barIdx) return b
+      const labels = [...(b.labels || [])]
+      labels[labelIdx] = val
+      return { ...b, labels }
+    })
+    onChange('techBars', updated)
+  }
+  const addBarLabel = (barIdx) => {
+    const updated = techBars.map((b, i) =>
+      i === barIdx ? { ...b, labels: [...(b.labels || []), ''] } : b
+    )
+    onChange('techBars', updated)
+  }
+  const removeBarLabel = (barIdx, labelIdx) => {
+    const updated = techBars.map((b, i) =>
+      i === barIdx ? { ...b, labels: (b.labels || []).filter((_, li) => li !== labelIdx) } : b
+    )
+    onChange('techBars', updated)
+  }
+  const removeBar = (i) => onChange('techBars', techBars.filter((_, idx) => idx !== i))
+
+  const updateSpec = (i, field, val) => {
+    const updated = techSpecs.map((s, idx) => idx === i ? { ...s, [field]: val } : s)
+    onChange('techSpecs', updated)
+  }
+  const removeSpec = (i) => onChange('techSpecs', techSpecs.filter((_, idx) => idx !== i))
+
+  const S = { // inline styles shortcuts
+    label: { fontSize: '0.75rem', fontWeight: 600, color: '#333333', fontFamily: "'Inter', sans-serif", marginBottom: 4, display: 'block' },
+    input: { width: '100%', padding: '8px 12px', border: '1px solid #E0E0E0', borderRadius: 6, fontSize: '0.8125rem', fontFamily: "'Inter', sans-serif", color: '#000000', background: '#FFFFFF', outline: 'none' },
+    sectionTitle: { fontSize: '0.875rem', fontWeight: 700, color: '#000000', fontFamily: "'Inter', sans-serif", marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8 },
+    card: { background: '#FAFAFA', border: '1px solid #E5E5E5', borderRadius: 10, padding: 16, marginBottom: 12, position: 'relative' },
+    removeBtn: { position: 'absolute', top: 12, right: 12, background: 'none', border: 'none', cursor: 'pointer', color: '#EF4444', padding: 4, borderRadius: 4 },
+    addBtn: { display: 'inline-flex', alignItems: 'center', gap: 6, padding: '7px 14px', border: '1px dashed #CCCCCC', borderRadius: 6, background: 'transparent', cursor: 'pointer', fontSize: '0.8125rem', color: '#666666', fontFamily: "'Inter', sans-serif", transition: 'all 0.15s' },
+  }
+
+  return (
+    <div>
+      {/* ── Technical Bars ── */}
+      <div style={{ marginBottom: 28 }}>
+        <div style={S.sectionTitle}>
+          <span>Interactive Technical Bars</span>
+          <span style={{ fontSize: '0.6875rem', color: '#999999', fontWeight: 400 }}>(e.g. Color Vibe, Color Type)</span>
+        </div>
+
+        {techBars.map((bar, bi) => (
+          <div key={bi} style={S.card}>
+            <button style={S.removeBtn} type="button" onClick={() => removeBar(bi)} title="Remove bar"><X size={14} /></button>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 12, paddingRight: 28 }}>
+              <div>
+                <label style={S.label}>Bar Title</label>
+                <input style={S.input} value={bar.title} onChange={e => updateBar(bi, 'title', e.target.value)} placeholder="e.g. Color Vibe" />
+              </div>
+              <div>
+                <label style={S.label}>Selected Value</label>
+                <select
+                  style={S.input}
+                  value={bar.selected_value}
+                  onChange={e => updateBar(bi, 'selected_value', e.target.value)}
+                >
+                  <option value="">— choose —</option>
+                  {(bar.labels || []).filter(Boolean).map((l, li) => (
+                    <option key={li} value={l}>{l}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            <label style={S.label}>Labels (left → right on bar)</label>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
+              {(bar.labels || []).map((lbl, li) => (
+                <div key={li} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <input
+                    style={{ ...S.input, width: 100 }}
+                    value={lbl}
+                    onChange={e => updateBarLabel(bi, li, e.target.value)}
+                    placeholder={`Label ${li + 1}`}
+                  />
+                  {(bar.labels || []).length > 2 && (
+                    <button type="button" onClick={() => removeBarLabel(bi, li)}
+                      style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#EF4444', padding: 2 }}>
+                      <X size={12} />
+                    </button>
+                  )}
+                </div>
+              ))}
+              <button type="button" style={S.addBtn} onClick={() => addBarLabel(bi)}>
+                <Plus size={12} /> Label
+              </button>
+            </div>
+          </div>
+        ))}
+
+        <button type="button" style={S.addBtn}
+          onClick={() => onChange('techBars', [...techBars, emptyBar()])}>
+          <Plus size={14} /> Add Technical Bar
+        </button>
+      </div>
+
+      {/* ── Technical Specs ── */}
+      <div>
+        <div style={S.sectionTitle}>
+          <span>Technical Specifications</span>
+          <span style={{ fontSize: '0.6875rem', color: '#999999', fontWeight: 400 }}>(e.g. Paint Type, HVLP Tip Size)</span>
+        </div>
+
+        {techSpecs.map((spec, si) => (
+          <div key={si} style={{ ...S.card, padding: '10px 16px' }}>
+            <button style={S.removeBtn} type="button" onClick={() => removeSpec(si)} title="Remove spec"><X size={14} /></button>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.5fr', gap: 10, paddingRight: 24 }}>
+              <div>
+                <label style={S.label}>Specification Name</label>
+                <input style={S.input} value={spec.spec_name} onChange={e => updateSpec(si, 'spec_name', e.target.value)} placeholder="e.g. Paint Type" />
+              </div>
+              <div>
+                <label style={S.label}>Value</label>
+                <input style={S.input} value={spec.spec_value} onChange={e => updateSpec(si, 'spec_value', e.target.value)} placeholder="e.g. Peelable Paint" />
+              </div>
+            </div>
+          </div>
+        ))}
+
+        <button type="button" style={S.addBtn}
+          onClick={() => onChange('techSpecs', [...techSpecs, emptySpec()])}>
+          <Plus size={14} /> Add Specification
+        </button>
+      </div>
+    </div>
+  )
+}
+
+// ─────────────────────────────────────────────
+// PRODUCT FORM MODAL
+// ─────────────────────────────────────────────
+function ProductFormModal({ initialData, categories, onClose, onSaved }) {
+  const [form, setForm] = useState(initialData || emptyProduct())
+  const [saving, setSaving] = useState(false)
+  const [uploadingIdx, setUploadingIdx] = useState(null)
+  const [activeTab, setActiveTab] = useState('basic') // basic | technical
+
+  const setField = (k, v) => setForm(f => ({ ...f, [k]: v }))
+
+  const handleImageUpload = async (e, idx) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    if (!file.type.startsWith('image/') && !file.type.startsWith('video/')) {
+      return toast.error('Only image/video files allowed')
     }
-    
-    setLoading(false)
-  }
-
-  const loadProducts = async () => {
-    const { data, error } = await supabase
-      .from('products')
-      .select('*')
-      .order('created_at', { ascending: false })
-    
-    if (!error && data) setProducts(data)
-  }
-
-  const loadOrders = async () => {
-    const { data, error } = await supabase
-      .from('orders')
-      .select(`
-        *,
-        order_items (
-          *,
-          products (*)
-        )
-      `)
-      .order('created_at', { ascending: false })
-    
-    if (!error && data) setOrders(data)
-  }
-
-  const loadReviews = async () => {
-    const { data, error } = await supabase
-      .from('testimonials')
-      .select('*')
-      .order('created_at', { ascending: false })
-    
-    if (!error && data) setReviews(data)
-  }
-
-  const calculateStats = () => {
-    const totalProducts = products.length
-    const activeOrders = orders.filter(o => ['pending', 'confirmed', 'processing', 'shipped'].includes(o.order_status)).length
-    const totalRevenue = orders.reduce((sum, order) => sum + Number(order.total_amount || 0), 0)
-    const pendingReviews = reviews.filter(r => !r.is_approved).length
-    
-    setStats({ totalProducts, activeOrders, totalRevenue, pendingReviews })
+    if (file.size > 20 * 1024 * 1024) return toast.error('File must be < 20MB')
+    setUploadingIdx(idx)
+    try {
+      const ext = file.name.split('.').pop()
+      const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
+      const { error } = await supabase.storage.from('product-images').upload(path, file, { upsert: false })
+      if (error) throw error
+      const { data: { publicUrl } } = supabase.storage.from('product-images').getPublicUrl(path)
+      const imgs = [...form.images]
+      if (idx < imgs.length) imgs[idx] = publicUrl
+      else imgs.push(publicUrl)
+      setField('images', imgs)
+      toast.success('Uploaded!')
+    } catch (err) {
+      toast.error(err.message || 'Upload failed')
+    } finally {
+      setUploadingIdx(null)
+    }
   }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    
-    const productData = {
-      ...formData,
-      price: parseFloat(formData.price),
-      original_price: formData.original_price ? parseFloat(formData.original_price) : null,
-      stock: parseInt(formData.stock)
-    }
+    if (!form.name.trim()) return toast.error('Product name is required')
+    if (!form.price) return toast.error('Price is required')
+    setSaving(true)
 
-    if (editing) {
-      const { error } = await supabase
-        .from('products')
-        .update(productData)
-        .eq('id', editing)
-      
-      if (error) {
-        toast.error('Failed to update product')
-      } else {
-        toast.success('Product updated!')
-        setEditing(null)
+    try {
+      const productData = {
+        name: form.name.trim(),
+        description: form.description,
+        price: parseFloat(form.price),
+        original_price: form.original_price ? parseFloat(form.original_price) : null,
+        category: form.category,
+        stock: parseInt(form.stock) || 0,
+        custom_id: form.custom_id || null,
+        images: form.images.filter(Boolean),
+        tags: form.tags,
+        size: form.size || null,
       }
-    } else {
-      const { error } = await supabase
-        .from('products')
-        .insert([productData])
-      
-      if (error) {
-        toast.error('Failed to create product')
+
+      let productId = form.id
+
+      if (productId) {
+        // UPDATE
+        const { error } = await supabase.from('products').update(productData).eq('id', productId)
+        if (error) throw error
+        toast.success('Product updated!')
       } else {
+        // INSERT
+        const { data, error } = await supabase.from('products').insert(productData).select().single()
+        if (error) throw error
+        productId = data.id
         toast.success('Product created!')
       }
+
+      // Save technical bars
+      await supabase.from('product_technical_bars').delete().eq('product_id', productId)
+      if (form.techBars.length > 0) {
+        const bars = form.techBars
+          .filter(b => b.title.trim() && b.labels.some(l => l.trim()))
+          .map((b, i) => ({
+            product_id: productId,
+            title: b.title.trim(),
+            labels: b.labels.filter(l => l.trim()),
+            selected_value: b.selected_value || b.labels.find(l => l.trim()) || '',
+            sort_order: i,
+          }))
+        if (bars.length > 0) {
+          const { error: bErr } = await supabase.from('product_technical_bars').insert(bars)
+          if (bErr) console.error('bars error:', bErr.message)
+        }
+      }
+
+      // Save technical specs
+      await supabase.from('product_specifications').delete().eq('product_id', productId)
+      if (form.techSpecs.length > 0) {
+        const specs = form.techSpecs
+          .filter(s => s.spec_name.trim() && s.spec_value.trim())
+          .map((s, i) => ({
+            product_id: productId,
+            spec_name: s.spec_name.trim(),
+            spec_value: s.spec_value.trim(),
+            sort_order: i,
+          }))
+        if (specs.length > 0) {
+          const { error: sErr } = await supabase.from('product_specifications').insert(specs)
+          if (sErr) console.error('specs error:', sErr.message)
+        }
+      }
+
+      onSaved()
+    } catch (err) {
+      toast.error(err.message || 'Failed to save')
+    } finally {
+      setSaving(false)
     }
-    
-    setShowForm(false)
-    setFormData({
-      name: '',
-      description: '',
-      price: '',
-      original_price: '',
-      category: 'Xtreme Kolorz',
-      stock: 10,
-      images: [],
-      tags: []
-    })
-    loadProducts()
   }
 
-  const handleEdit = (product) => {
-    setEditing(product.id)
-    setFormData({
-      name: product.name,
-      description: product.description || '',
-      price: product.price,
-      original_price: product.original_price || '',
-      category: product.category,
-      stock: product.stock,
-      images: product.images || [],
-      tags: product.tags || []
+  const S = {
+    overlay: { position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: '20px', overflowY: 'auto' },
+    modal: { background: '#FFFFFF', borderRadius: 16, width: '100%', maxWidth: 860, boxShadow: '0 24px 64px rgba(0,0,0,0.2)', marginTop: 20, marginBottom: 20 },
+    header: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 24px', borderBottom: '1px solid #F0F0F0' },
+    body: { padding: '24px' },
+    label: { fontSize: '0.75rem', fontWeight: 600, color: '#333333', fontFamily: "'Inter', sans-serif", marginBottom: 5, display: 'block' },
+    input: { width: '100%', padding: '9px 12px', border: '1px solid #E0E0E0', borderRadius: 7, fontSize: '0.875rem', fontFamily: "'Inter', sans-serif", color: '#000000', background: '#FFFFFF', outline: 'none', boxSizing: 'border-box' },
+    tab: (active) => ({
+      padding: '8px 16px', borderRadius: 6, border: 'none', cursor: 'pointer', fontSize: '0.8125rem',
+      fontFamily: "'Inter', sans-serif", fontWeight: active ? 600 : 400,
+      background: active ? '#FF0000' : 'transparent',
+      color: active ? '#FFFFFF' : '#666666', transition: 'all 0.15s',
+    }),
+  }
+
+  return (
+    <div style={S.overlay} onClick={e => e.target === e.currentTarget && onClose()}>
+      <div style={S.modal}>
+        {/* Header */}
+        <div style={S.header}>
+          <h2 style={{ fontFamily: "'Rajdhani', sans-serif", fontSize: '1.375rem', fontWeight: 700, color: '#000000', margin: 0 }}>
+            {form.id ? 'Edit Product' : 'Add New Product'}
+          </h2>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#999999', padding: 4, borderRadius: 4 }}>
+            <X size={20} />
+          </button>
+        </div>
+
+        {/* Tabs */}
+        <div style={{ padding: '12px 24px 0', display: 'flex', gap: 8, borderBottom: '1px solid #F0F0F0' }}>
+          <button style={S.tab(activeTab === 'basic')} onClick={() => setActiveTab('basic')}>Basic Info</button>
+          <button style={S.tab(activeTab === 'images')} onClick={() => setActiveTab('images')}>Images</button>
+          <button style={S.tab(activeTab === 'technical')} onClick={() => setActiveTab('technical')}>Technical Details</button>
+        </div>
+
+        <form onSubmit={handleSubmit}>
+          <div style={S.body}>
+            {/* ── BASIC TAB ── */}
+            {activeTab === 'basic' && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                  <div style={{ gridColumn: '1 / -1' }}>
+                    <label style={S.label}>Product Name *</label>
+                    <input style={S.input} value={form.name} onChange={e => setField('name', e.target.value)} placeholder="e.g. Pearl Blue Metallic" required />
+                  </div>
+                  <div>
+                    <label style={S.label}>Price (₹) *</label>
+                    <input style={S.input} type="number" min="0" step="0.01" value={form.price} onChange={e => setField('price', e.target.value)} placeholder="999" required />
+                  </div>
+                  <div>
+                    <label style={S.label}>Original Price (₹) — for discount</label>
+                    <input style={S.input} type="number" min="0" step="0.01" value={form.original_price} onChange={e => setField('original_price', e.target.value)} placeholder="1299 (optional)" />
+                  </div>
+                  <div>
+                    <label style={S.label}>Category *</label>
+                    <select style={S.input} value={form.category} onChange={e => setField('category', e.target.value)}>
+                      {categories.map(c => <option key={c} value={c}>{c}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label style={S.label}>Stock Quantity</label>
+                    <input style={S.input} type="number" min="0" value={form.stock} onChange={e => setField('stock', e.target.value)} placeholder="10" />
+                  </div>
+                  <div>
+                    <label style={S.label}>SKU / Custom ID</label>
+                    <input style={S.input} value={form.custom_id} onChange={e => setField('custom_id', e.target.value)} placeholder="KK-001" />
+                  </div>
+                  <div>
+                    <label style={S.label}>Size/Variants (comma-separated)</label>
+                    <input style={S.input} value={form.size} onChange={e => setField('size', e.target.value)} placeholder="50ml, 100ml, 250ml" />
+                  </div>
+                  <div style={{ gridColumn: '1 / -1' }}>
+                    <label style={S.label}>Tags (comma-separated)</label>
+                    <input
+                      style={S.input}
+                      value={Array.isArray(form.tags) ? form.tags.join(', ') : form.tags}
+                      onChange={e => setField('tags', e.target.value.split(',').map(t => t.trim()).filter(Boolean))}
+                      placeholder="metallic, pearl, automotive"
+                    />
+                  </div>
+                  <div style={{ gridColumn: '1 / -1' }}>
+                    <label style={S.label}>Description</label>
+                    <textarea
+                      style={{ ...S.input, height: 100, resize: 'vertical' }}
+                      value={form.description}
+                      onChange={e => setField('description', e.target.value)}
+                      placeholder="Describe the product..."
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* ── IMAGES TAB ── */}
+            {activeTab === 'images' && (
+              <div>
+                <p style={{ fontSize: '0.8125rem', color: '#666666', fontFamily: "'Inter', sans-serif", marginBottom: 16 }}>
+                  Upload images or paste public URLs. First image is the main product image.
+                </p>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 12 }}>
+                  {[...Array(Math.max(form.images.length + 1, 4))].map((_, idx) => {
+                    const url = form.images[idx] || ''
+                    return (
+                      <div key={idx} style={{ position: 'relative' }}>
+                        {/* Preview */}
+                        <div style={{ aspectRatio: '1', border: '2px dashed #E0E0E0', borderRadius: 10, overflow: 'hidden', background: '#FAFAFA', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 6 }}>
+                          {url ? (
+                            <>
+                              <img src={url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={e => { e.target.style.display = 'none' }} />
+                              <button
+                                type="button"
+                                onClick={() => setField('images', form.images.filter((_, i) => i !== idx))}
+                                style={{ position: 'absolute', top: 4, right: 4, background: '#EF4444', border: 'none', borderRadius: '50%', width: 22, height: 22, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#FFFFFF' }}
+                              ><X size={12} /></button>
+                            </>
+                          ) : uploadingIdx === idx ? (
+                            <div style={{ textAlign: 'center', color: '#999999' }}>
+                              <div style={{ width: 24, height: 24, border: '2px solid #FF0000', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.8s linear infinite', margin: '0 auto 6px' }} />
+                              <span style={{ fontSize: '0.6875rem' }}>Uploading...</span>
+                            </div>
+                          ) : (
+                            <label style={{ cursor: 'pointer', textAlign: 'center', color: '#CCCCCC', padding: 12 }}>
+                              <Upload size={24} style={{ margin: '0 auto 4px', display: 'block' }} />
+                              <span style={{ fontSize: '0.6875rem', fontFamily: "'Inter', sans-serif" }}>Upload</span>
+                              <input type="file" accept="image/*,video/*" style={{ display: 'none' }} onChange={e => handleImageUpload(e, idx)} />
+                            </label>
+                          )}
+                        </div>
+                        {/* URL input */}
+                        <input
+                          style={{ ...S.input, fontSize: '0.6875rem', padding: '5px 8px' }}
+                          value={url}
+                          onChange={e => {
+                            const imgs = [...form.images]
+                            if (idx < imgs.length) imgs[idx] = e.target.value
+                            else imgs.push(e.target.value)
+                            setField('images', imgs)
+                          }}
+                          placeholder="or paste URL"
+                        />
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* ── TECHNICAL TAB ── */}
+            {activeTab === 'technical' && (
+              <TechDetailsEditor
+                techBars={form.techBars}
+                techSpecs={form.techSpecs}
+                onChange={(key, val) => setField(key, val)}
+              />
+            )}
+          </div>
+
+          {/* Footer */}
+          <div style={{ padding: '16px 24px', borderTop: '1px solid #F0F0F0', display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
+            <button type="button" onClick={onClose}
+              style={{ padding: '9px 20px', border: '1px solid #E0E0E0', borderRadius: 8, background: '#FFFFFF', cursor: 'pointer', fontSize: '0.875rem', fontFamily: "'Inter', sans-serif", color: '#666666' }}>
+              Cancel
+            </button>
+            <button type="submit" disabled={saving}
+              style={{ padding: '9px 24px', border: 'none', borderRadius: 8, background: saving ? '#FFAAAA' : '#FF0000', cursor: saving ? 'not-allowed' : 'pointer', fontSize: '0.875rem', fontFamily: "'Inter', sans-serif", color: '#FFFFFF', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 8 }}>
+              {saving ? <><div style={{ width: 14, height: 14, border: '2px solid #FFFFFF', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} /> Saving...</> : <><Save size={14} /> {form.id ? 'Save Changes' : 'Create Product'}</>}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  )
+}
+
+// ─────────────────────────────────────────────
+// PRODUCTS TAB
+// ─────────────────────────────────────────────
+function ProductsTab({ products, categories, onRefresh }) {
+  const [search, setSearch] = useState('')
+  const [catFilter, setCatFilter] = useState('')
+  const [showForm, setShowForm] = useState(false)
+  const [editData, setEditData] = useState(null)
+  const [deleting, setDeleting] = useState(null)
+
+  const filtered = products.filter(p => {
+    const q = search.toLowerCase()
+    return (
+      (!q || p.name?.toLowerCase().includes(q) || (p.custom_id || '').toLowerCase().includes(q)) &&
+      (!catFilter || p.category === catFilter)
+    )
+  })
+
+  const handleEdit = async (product) => {
+    // Fetch tech bars + specs for this product
+    const [barsRes, specsRes] = await Promise.all([
+      supabase.from('product_technical_bars').select('*').eq('product_id', product.id).order('sort_order'),
+      supabase.from('product_specifications').select('*').eq('product_id', product.id).order('sort_order'),
+    ])
+    setEditData({
+      ...product,
+      techBars: (barsRes.data || []).map(b => ({ ...b, labels: b.labels || [] })),
+      techSpecs: specsRes.data || [],
     })
     setShowForm(true)
   }
 
-  const handleDelete = async (id) => {
-    if (!confirm('Are you sure you want to delete this product?')) return
-    
-    const { error } = await supabase
-      .from('products')
-      .delete()
-      .eq('id', id)
-    
-    if (error) {
-      toast.error('Failed to delete product')
-    } else {
-      toast.success('Product deleted')
-      loadProducts()
-    }
+  const handleDelete = async (id, name) => {
+    if (!window.confirm(`Delete "${name}"? This cannot be undone.`)) return
+    setDeleting(id)
+    const { error } = await supabase.from('products').delete().eq('id', id)
+    if (error) toast.error(error.message)
+    else { toast.success('Product deleted'); onRefresh() }
+    setDeleting(null)
   }
 
-  const handleImageUrlChange = (index, value) => {
-    const newImages = [...formData.images]
-    newImages[index] = value
-    setFormData({ ...formData, images: newImages })
+  return (
+    <div>
+      {/* Controls */}
+      <div style={{ display: 'flex', gap: 10, marginBottom: 16, flexWrap: 'wrap', alignItems: 'center' }}>
+        <div style={{ position: 'relative', flex: '1 1 200px', minWidth: 180 }}>
+          <Search size={14} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: '#AAAAAA' }} />
+          <input
+            value={search} onChange={e => setSearch(e.target.value)}
+            placeholder="Search products..."
+            style={{ width: '100%', padding: '8px 12px 8px 32px', border: '1px solid #E0E0E0', borderRadius: 7, fontSize: '0.8125rem', fontFamily: "'Inter', sans-serif", color: '#000000', outline: 'none', boxSizing: 'border-box' }}
+          />
+        </div>
+        <select
+          value={catFilter} onChange={e => setCatFilter(e.target.value)}
+          style={{ padding: '8px 12px', border: '1px solid #E0E0E0', borderRadius: 7, fontSize: '0.8125rem', fontFamily: "'Inter', sans-serif", color: '#000000', background: '#FFFFFF', cursor: 'pointer', outline: 'none' }}
+        >
+          <option value="">All Categories</option>
+          {categories.map(c => <option key={c} value={c}>{c}</option>)}
+        </select>
+        <button
+          onClick={() => { setEditData(null); setShowForm(true) }}
+          style={{ padding: '8px 18px', background: '#FF0000', border: 'none', borderRadius: 7, color: '#FFFFFF', fontSize: '0.8125rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, fontFamily: "'Inter', sans-serif", flexShrink: 0 }}
+        >
+          <Plus size={14} /> Add Product
+        </button>
+      </div>
+
+      {/* Table */}
+      <div style={{ background: '#FFFFFF', border: '1px solid #E5E5E5', borderRadius: 12, overflow: 'hidden' }}>
+        <div style={{ overflowX: 'auto' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 600 }}>
+            <thead>
+              <tr style={{ background: '#FAFAFA' }}>
+                {['Product', 'Category', 'Price', 'Stock', ''].map(h => (
+                  <th key={h} style={{ padding: '10px 16px', textAlign: 'left', fontSize: '0.6875rem', fontWeight: 700, color: '#999999', fontFamily: "'Inter', sans-serif", letterSpacing: '0.08em', textTransform: 'uppercase', borderBottom: '1px solid #F0F0F0' }}>{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.length === 0 ? (
+                <tr><td colSpan={5} style={{ padding: '48px', textAlign: 'center', color: '#AAAAAA', fontFamily: "'Inter', sans-serif", fontSize: '0.875rem' }}>
+                  {search || catFilter ? 'No products match your search.' : 'No products yet. Add your first product.'}
+                </td></tr>
+              ) : filtered.map(p => (
+                <tr key={p.id} style={{ borderBottom: '1px solid #F8F8F8', transition: 'background 0.1s' }}
+                  onMouseEnter={e => e.currentTarget.style.background = '#FAFAFA'}
+                  onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                  <td style={{ padding: '12px 16px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                      {p.images?.[0] ? (
+                        <img src={p.images[0]} alt="" style={{ width: 40, height: 40, borderRadius: 7, objectFit: 'cover', flexShrink: 0, border: '1px solid #E5E5E5' }} onError={e => e.target.style.display = 'none'} />
+                      ) : (
+                        <div style={{ width: 40, height: 40, borderRadius: 7, background: '#F0F0F0', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <Package size={16} style={{ color: '#CCCCCC' }} />
+                        </div>
+                      )}
+                      <div>
+                        <p style={{ fontSize: '0.8125rem', fontWeight: 600, color: '#000000', fontFamily: "'Inter', sans-serif", margin: 0 }}>{p.name}</p>
+                        {p.custom_id && <p style={{ fontSize: '0.6875rem', color: '#AAAAAA', fontFamily: "'Inter', sans-serif", margin: 0 }}>SKU: {p.custom_id}</p>}
+                      </div>
+                    </div>
+                  </td>
+                  <td style={{ padding: '12px 16px', fontSize: '0.8125rem', color: '#555555', fontFamily: "'Inter', sans-serif" }}>{p.category}</td>
+                  <td style={{ padding: '12px 16px', fontSize: '0.8125rem', fontWeight: 700, color: '#000000', fontFamily: "'Inter', sans-serif" }}>
+                    ₹{Number(p.price).toLocaleString('en-IN')}
+                    {p.original_price && p.original_price > p.price && (
+                      <span style={{ marginLeft: 6, fontSize: '0.6875rem', color: '#16A34A', fontWeight: 600, background: '#F0FDF4', padding: '1px 6px', borderRadius: 999 }}>
+                        -{Math.round(((p.original_price - p.price) / p.original_price) * 100)}%
+                      </span>
+                    )}
+                  </td>
+                  <td style={{ padding: '12px 16px' }}>
+                    <span style={{ fontSize: '0.75rem', fontWeight: 600, padding: '3px 10px', borderRadius: 999, fontFamily: "'Inter', sans-serif",
+                      background: p.stock === 0 ? '#FEF2F2' : p.stock < 10 ? '#FFFBEB' : '#F0FDF4',
+                      color: p.stock === 0 ? '#DC2626' : p.stock < 10 ? '#D97706' : '#16A34A',
+                    }}>
+                      {p.stock === 0 ? 'Out of stock' : `${p.stock}`}
+                    </span>
+                  </td>
+                  <td style={{ padding: '12px 16px', textAlign: 'right' }}>
+                    <button onClick={() => handleEdit(p)}
+                      style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#888888', padding: '6px', borderRadius: 6, marginRight: 4, transition: 'all 0.15s' }}
+                      onMouseEnter={e => { e.currentTarget.style.color = '#FF0000'; e.currentTarget.style.background = '#FFF0F0' }}
+                      onMouseLeave={e => { e.currentTarget.style.color = '#888888'; e.currentTarget.style.background = 'transparent' }}>
+                      <Edit2 size={15} />
+                    </button>
+                    <button onClick={() => handleDelete(p.id, p.name)} disabled={deleting === p.id}
+                      style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#888888', padding: '6px', borderRadius: 6, transition: 'all 0.15s' }}
+                      onMouseEnter={e => { e.currentTarget.style.color = '#EF4444'; e.currentTarget.style.background = '#FEF2F2' }}
+                      onMouseLeave={e => { e.currentTarget.style.color = '#888888'; e.currentTarget.style.background = 'transparent' }}>
+                      <Trash2 size={15} />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Product form modal */}
+      {showForm && (
+        <ProductFormModal
+          initialData={editData}
+          categories={categories}
+          onClose={() => { setShowForm(false); setEditData(null) }}
+          onSaved={() => { setShowForm(false); setEditData(null); onRefresh() }}
+        />
+      )}
+    </div>
+  )
+}
+
+// ─────────────────────────────────────────────
+// MAIN PAGE
+// ─────────────────────────────────────────────
+export default function AdminProductsPage() {
+  const [tab, setTab] = useState('dashboard')
+  const [products, setProducts] = useState([])
+  const [orders, setOrders] = useState([])
+  const [categories, setCategories] = useState([...CATEGORIES_DEFAULT])
+  const [loading, setLoading] = useState(true)
+
+  const loadAll = async () => {
+    setLoading(true)
+    const [prodsRes, ordersRes, catsRes] = await Promise.all([
+      supabase.from('products').select('*').order('created_at', { ascending: false }),
+      supabase.from('orders').select('*, order_items(*, products(name, images, price))').order('created_at', { ascending: false }),
+      supabase.from('categories').select('name').eq('is_active', true).order('sort_order'),
+    ])
+    if (prodsRes.data) setProducts(prodsRes.data)
+    if (ordersRes.data) setOrders(ordersRes.data)
+    if (catsRes.data?.length) setCategories(catsRes.data.map(c => c.name))
+    setLoading(false)
   }
 
-  const addImageField = () => {
-    setFormData({ ...formData, images: [...formData.images, ''] })
-  }
+  useEffect(() => { loadAll() }, [])
 
-  const removeImageField = (index) => {
-    const newImages = formData.images.filter((_, i) => i !== index)
-    setFormData({ ...formData, images: newImages })
-  }
-
-  const handleImageUpload = async (e, index = null) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-
-    // Validate file type
-    if (!file.type.startsWith('image/')) {
-      toast.error('Please upload an image file')
-      return
-    }
-
-    // Validate file size (5MB limit)
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error('Image size must be less than 5MB')
-      return
-    }
-
-    setUploadingImage(true)
-    try {
-      // Create unique filename
-      const fileExt = file.name.split('.').pop()
-      const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`
-      const filePath = `${fileName}`
-
-      // Upload to Supabase Storage
-      const { data, error } = await supabase.storage
-        .from('product-images')
-        .upload(filePath, file, {
-          cacheControl: '3600',
-          upsert: false
-        })
-
-      if (error) throw error
-
-      // Get public URL
-      const { data: { publicUrl } } = supabase.storage
-        .from('product-images')
-        .getPublicUrl(filePath)
-
-      // Update form data
-      const newImages = [...formData.images]
-      if (index !== null) {
-        newImages[index] = publicUrl
-      } else {
-        newImages.push(publicUrl)
-      }
-      setFormData({ ...formData, images: newImages })
-
-      toast.success('Image uploaded successfully!')
-    } catch (error) {
-      console.error('Upload error:', error)
-      toast.error('Failed to upload image')
-    } finally {
-      setUploadingImage(false)
-    }
-  }
-
-  const updateOrderStatus = async (orderId, status) => {
-    const { error } = await supabase
-      .from('orders')
-      .update({ order_status: status })
-      .eq('id', orderId)
-    
-    if (error) {
-      toast.error('Failed to update order')
-    } else {
-      toast.success('Order updated!')
-      loadOrders()
-    }
-  }
-
-  const deleteReview = async (id) => {
-    if (!confirm('Are you sure you want to delete this review?')) return
-    
-    const { error } = await supabase
-      .from('testimonials')
-      .delete()
-      .eq('id', id)
-    
-    if (error) {
-      toast.error('Failed to delete review')
-    } else {
-      toast.success('Review deleted')
-      loadReviews()
-    }
-  }
-
-  const toggleReviewApproval = async (id, currentStatus) => {
-    const { error } = await supabase
-      .from('testimonials')
-      .update({ is_approved: !currentStatus })
-      .eq('id', id)
-    
-    if (error) {
-      toast.error('Failed to update review status')
-    } else {
-      toast.success(`Review ${!currentStatus ? 'approved' : 'unapproved'}!`)
-      loadReviews()
-    }
-  }
-
-  const menuItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: <TrendingUp size={20} /> },
-    { id: 'products', label: 'Products', icon: <Package size={20} /> },
-    { id: 'orders', label: 'Orders', icon: <ShoppingBag size={20} /> },
-    { id: 'reviews', label: 'Reviews', icon: <Star size={20} /> }
+  const TABS = [
+    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { id: 'products',  label: 'Products',  icon: Package },
   ]
 
   return (
     <>
-      <Helmet>
-        <title>Admin Dashboard | Kustom Koats</title>
-      </Helmet>
-
-      <div className="min-h-screen flex" style={{ background: "#1A1A1A" }}>
-        {/* Sidebar */}
-        <div className="w-64 flex-shrink-0" style={{ background: "#0A0A0A", borderRight: "1px solid #2A2A2A" }}>
-          <div className="p-6">
-            <div className="flex items-center gap-3 mb-8">
-              <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ background: "#FF0000" }}>
-                <span className="text-white font-bold text-xl">K</span>
-              </div>
-              <div>
-                <h2 className="text-white font-bold text-lg" style={{ fontFamily: "'Bebas Neue', sans-serif", letterSpacing: '1px' }}>
-                  KUSTOM KOATS
-                </h2>
-                <p className="text-xs text-gray-500">ADMIN PANEL</p>
-              </div>
-            </div>
-
-            <nav className="space-y-2">
-              {menuItems.map(item => (
-                <button
-                  key={item.id}
-                  onClick={() => setActiveTab(item.id)}
-                  className="w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all"
-                  style={{ 
-                    background: activeTab === item.id ? "#FF0000" : "transparent",
-                    color: activeTab === item.id ? "#FFFFFF" : "#999999",
-                    fontFamily: "'Inter', sans-serif"
-                  }}
-                >
-                  {item.icon}
-                  <span className="font-medium">{item.label}</span>
-                </button>
-              ))}
-            </nav>
-
-            <div className="mt-auto pt-8">
-              <Link 
-                to="/"
-                className="flex items-center gap-2 px-4 py-3 text-gray-500 hover:text-white transition-colors"
-                style={{ fontFamily: "'Inter', sans-serif" }}
-              >
-                <ArrowLeft size={20} />
-                <span>Back to Website</span>
-              </Link>
-            </div>
-          </div>
+      <Helmet><title>Admin | Kustom Koats</title></Helmet>
+      <KKAdminLayout>
+        {/* Page tabs */}
+        <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
+          {TABS.map(t => (
+            <button key={t.id} onClick={() => setTab(t.id)}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 7,
+                padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer',
+                fontSize: '0.8125rem', fontFamily: "'Inter', sans-serif", fontWeight: tab === t.id ? 600 : 400,
+                background: tab === t.id ? '#FF0000' : '#FFFFFF',
+                color: tab === t.id ? '#FFFFFF' : '#444444',
+                boxShadow: tab === t.id ? '0 2px 8px rgba(255,0,0,0.2)' : 'none',
+                border: tab === t.id ? 'none' : '1px solid #E5E5E5',
+                transition: 'all 0.15s',
+              }}>
+              <t.icon size={14} /> {t.label}
+            </button>
+          ))}
         </div>
 
-        {/* Main Content */}
-        <div className="flex-1 overflow-auto">
-          {/* Header */}
-          <div className="px-8 py-6" style={{ borderBottom: "1px solid #2A2A2A" }}>
-            <div className="flex items-center justify-between">
-              <div>
-                <h1 className="text-3xl font-bold text-white" style={{ fontFamily: "'Bebas Neue', sans-serif", letterSpacing: '1px' }}>
-                  {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}
-                </h1>
-                <p className="text-gray-400 mt-1" style={{ fontFamily: "'Inter', sans-serif" }}>
-                  {activeTab === 'dashboard' && "Welcome back. Here's what's happening at Kustom Koats."}
-                  {activeTab === 'products' && "Manage your automotive pearl products"}
-                  {activeTab === 'orders' && "Track and manage customer orders"}
-                  {activeTab === 'reviews' && "Moderate customer testimonials"}
-                </p>
-              </div>
-              {activeTab === 'products' && (
-                <button
-                  onClick={() => {
-                    setShowForm(true)
-                    setEditing(null)
-                    setFormData({
-                      name: '',
-                      description: '',
-                      price: '',
-                      original_price: '',
-                      category: 'Xtreme Kolorz',
-                      stock: 10,
-                      images: [],
-                      tags: []
-                    })
-                  }}
-                  className="flex items-center gap-2 px-6 py-3 rounded-lg font-bold text-white transition-all hover:scale-105"
-                  style={{ background: "#FF0000", fontFamily: "'Inter', sans-serif" }}
-                >
-                  <Plus size={20} />
-                  Add Product
-                </button>
-              )}
-            </div>
+        {loading ? (
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 200 }}>
+            <div style={{ width: 32, height: 32, border: '3px solid #FF0000', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
           </div>
-
-          {/* Dashboard View */}
-          {activeTab === 'dashboard' && (
-            <div className="p-8">
-              {/* Stats Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                <div className="rounded-xl p-6" style={{ background: "#8B2635", border: "1px solid #9B3645" }}>
-                  <div className="flex items-center justify-between mb-4">
-                    <Package size={24} className="text-white opacity-80" />
-                  </div>
-                  <div>
-                    <p className="text-white text-3xl font-bold mb-1">{stats.totalProducts}</p>
-                    <p className="text-white text-sm opacity-80">Total Products</p>
-                    <p className="text-xs text-white opacity-60 mt-2">All items</p>
-                  </div>
-                </div>
-
-                <div className="rounded-xl p-6" style={{ background: "#8B2635", border: "1px solid #9B3645" }}>
-                  <div className="flex items-center justify-between mb-4">
-                    <ShoppingBag size={24} className="text-white opacity-80" />
-                  </div>
-                  <div>
-                    <p className="text-white text-3xl font-bold mb-1">{stats.activeOrders}</p>
-                    <p className="text-white text-sm opacity-80">Active Orders</p>
-                    <p className="text-xs text-white opacity-60 mt-2">Orders in progress</p>
-                  </div>
-                </div>
-
-                <div className="rounded-xl p-6" style={{ background: "#8B2635", border: "1px solid #9B3645" }}>
-                  <div className="flex items-center justify-between mb-4">
-                    <DollarSign size={24} className="text-white opacity-80" />
-                  </div>
-                  <div>
-                    <p className="text-white text-3xl font-bold mb-1">₹{stats.totalRevenue.toLocaleString()}</p>
-                    <p className="text-white text-sm opacity-80">Total Revenue</p>
-                    <p className="text-xs text-white opacity-60 mt-2">All time</p>
-                  </div>
-                </div>
-
-                <div className="rounded-xl p-6" style={{ background: "#8B2635", border: "1px solid #9B3645" }}>
-                  <div className="flex items-center justify-between mb-4">
-                    <Star size={24} className="text-white opacity-80" />
-                  </div>
-                  <div>
-                    <p className="text-white text-3xl font-bold mb-1">{stats.pendingReviews}</p>
-                    <p className="text-white text-sm opacity-80">Pending Reviews</p>
-                    <p className="text-xs text-white opacity-60 mt-2">Awaiting approval</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Recent Orders */}
-              <div className="rounded-xl p-6 mb-8" style={{ background: "#0A0A0A", border: "1px solid #2A2A2A" }}>
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-white text-lg font-bold" style={{ fontFamily: "'Inter', sans-serif" }}>
-                    Recent Orders ({orders.length} total)
-                  </h3>
-                  <button
-                    onClick={() => setActiveTab('orders')}
-                    className="text-sm text-red-500 hover:text-red-400 font-medium"
-                  >
-                    View all →
-                  </button>
-                </div>
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead>
-                      <tr style={{ borderBottom: "1px solid #2A2A2A" }}>
-                        <th className="px-4 py-3 text-left text-xs font-bold text-gray-400 uppercase">Order ID</th>
-                        <th className="px-4 py-3 text-left text-xs font-bold text-gray-400 uppercase">Amount</th>
-                        <th className="px-4 py-3 text-left text-xs font-bold text-gray-400 uppercase">Status</th>
-                        <th className="px-4 py-3 text-left text-xs font-bold text-gray-400 uppercase">Date</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {orders.slice(0, 5).map((order) => (
-                        <tr key={order.id} style={{ borderBottom: "1px solid #1A1A1A" }}>
-                          <td className="px-4 py-4 text-sm text-white font-medium">
-                            {order.display_order_id || order.id.slice(0, 8)}
-                          </td>
-                          <td className="px-4 py-4 text-sm text-white font-bold">
-                            ₹{order.total_amount}
-                          </td>
-                          <td className="px-4 py-4">
-                            <span className={`px-3 py-1 rounded-lg text-xs font-bold ${
-                              order.order_status === 'delivered' ? 'bg-green-900/30 text-green-400' :
-                              order.order_status === 'shipped' ? 'bg-blue-900/30 text-blue-400' :
-                              order.order_status === 'processing' ? 'bg-yellow-900/30 text-yellow-400' :
-                              'bg-gray-800 text-gray-400'
-                            }`}>
-                              {order.order_status}
-                            </span>
-                          </td>
-                          <td className="px-4 py-4 text-sm text-gray-400">
-                            {new Date(order.created_at).toLocaleDateString()}
-                          </td>
-                        </tr>
-                      ))}
-                      {orders.length === 0 && (
-                        <tr>
-                          <td colSpan="4" className="px-4 py-8 text-center text-gray-500">
-                            No orders yet
-                          </td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Products Tab */}
-          {activeTab === 'products' && (
-            <div className="p-8">
-              <div className="rounded-xl overflow-hidden" style={{ background: "#0A0A0A", border: "1px solid #2A2A2A" }}>
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead style={{ background: "#000000", borderBottom: "1px solid #2A2A2A" }}>
-                      <tr>
-                        <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase">Product</th>
-                        <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase">Category</th>
-                        <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase">Price</th>
-                        <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase">Stock</th>
-                        <th className="px-6 py-4 text-right text-xs font-bold text-gray-400 uppercase">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {loading ? (
-                        <tr>
-                          <td colSpan="5" className="px-6 py-12 text-center text-gray-500">
-                            Loading products...
-                          </td>
-                        </tr>
-                      ) : products.length === 0 ? (
-                        <tr>
-                          <td colSpan="5" className="px-6 py-12 text-center">
-                            <p className="text-gray-500 mb-4 text-lg">No products yet</p>
-                            <button
-                              onClick={() => setShowForm(true)}
-                              className="px-6 py-3 text-white rounded-lg font-bold transition-colors"
-                              style={{ background: "#FF0000" }}
-                            >
-                              Add Your First Product
-                            </button>
-                          </td>
-                        </tr>
-                      ) : (
-                        products.map((product) => (
-                          <tr key={product.id} style={{ borderBottom: "1px solid #1A1A1A" }} className="hover:bg-white/5 transition-colors">
-                            <td className="px-6 py-4">
-                              <div className="flex items-center">
-                                {product.images?.[0] && (
-                                  <img src={product.images[0]} alt={product.name} className="w-12 h-12 rounded-lg object-cover mr-4" />
-                                )}
-                                <div>
-                                  <div className="text-sm font-bold text-white">{product.name}</div>
-                                  <div className="text-xs text-gray-500">{product.id.slice(0, 8)}...</div>
-                                </div>
-                              </div>
-                            </td>
-                            <td className="px-6 py-4 text-sm text-gray-300">{product.category}</td>
-                            <td className="px-6 py-4 text-sm font-bold text-white">₹{product.price}</td>
-                            <td className="px-6 py-4 text-sm text-gray-300">{product.stock}</td>
-                            <td className="px-6 py-4 text-right">
-                              <button
-                                onClick={() => handleEdit(product)}
-                                className="text-gray-400 hover:text-[#FF0000] mr-4 transition-colors"
-                              >
-                                <Edit2 size={18} />
-                              </button>
-                              <button
-                                onClick={() => handleDelete(product.id)}
-                                className="text-gray-400 hover:text-[#FF0000] transition-colors"
-                              >
-                                <Trash2 size={18} />
-                              </button>
-                            </td>
-                          </tr>
-                        ))
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Orders Tab */}
-          {activeTab === 'orders' && (
-            <div className="p-8">
-              <div className="rounded-xl overflow-hidden" style={{ background: "#0A0A0A", border: "1px solid #2A2A2A" }}>
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead style={{ background: "#000000", borderBottom: "1px solid #2A2A2A" }}>
-                      <tr>
-                        <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase">Order ID</th>
-                        <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase">Total</th>
-                        <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase">Status</th>
-                        <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase">Date</th>
-                        <th className="px-6 py-4 text-right text-xs font-bold text-gray-400 uppercase">Items</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {loading ? (
-                        <tr>
-                          <td colSpan="5" className="px-6 py-12 text-center text-gray-500">
-                            Loading orders...
-                          </td>
-                        </tr>
-                      ) : orders.length === 0 ? (
-                        <tr>
-                          <td colSpan="5" className="px-6 py-12 text-center">
-                            <p className="text-gray-500 text-lg">No orders yet</p>
-                          </td>
-                        </tr>
-                      ) : (
-                        orders.map((order) => (
-                          <tr key={order.id} style={{ borderBottom: "1px solid #1A1A1A" }} className="hover:bg-white/5 transition-colors">
-                            <td className="px-6 py-4">
-                              <div className="text-sm font-bold text-white">
-                                {order.display_order_id || order.id.slice(0, 8)}
-                              </div>
-                            </td>
-                            <td className="px-6 py-4 text-sm font-bold text-white">
-                              ₹{order.total_amount}
-                            </td>
-                            <td className="px-6 py-4">
-                              <select
-                                value={order.order_status}
-                                onChange={(e) => updateOrderStatus(order.id, e.target.value)}
-                                className="px-3 py-1 rounded-lg text-sm font-bold"
-                                style={{ background: "#1A1A1A", border: "1px solid #2A2A2A", color: "#FFFFFF" }}
-                              >
-                                <option value="pending">Pending</option>
-                                <option value="confirmed">Confirmed</option>
-                                <option value="processing">Processing</option>
-                                <option value="shipped">Shipped</option>
-                                <option value="delivered">Delivered</option>
-                                <option value="cancelled">Cancelled</option>
-                              </select>
-                            </td>
-                            <td className="px-6 py-4 text-sm text-gray-400">
-                              {new Date(order.created_at).toLocaleDateString()}
-                            </td>
-                            <td className="px-6 py-4 text-right">
-                              <span className="text-xs text-gray-400">
-                                {order.order_items?.length || 0} items
-                              </span>
-                            </td>
-                          </tr>
-                        ))
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Reviews Tab */}
-          {activeTab === 'reviews' && (
-            <div className="p-8">
-              <div className="rounded-xl overflow-hidden" style={{ background: "#0A0A0A", border: "1px solid #2A2A2A" }}>
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead style={{ background: "#000000", borderBottom: "1px solid #2A2A2A" }}>
-                      <tr>
-                        <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase">Customer</th>
-                        <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase">Rating</th>
-                        <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase">Review</th>
-                        <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase">Status</th>
-                        <th className="px-6 py-4 text-right text-xs font-bold text-gray-400 uppercase">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {loading ? (
-                        <tr>
-                          <td colSpan="5" className="px-6 py-12 text-center text-gray-500">
-                            Loading reviews...
-                          </td>
-                        </tr>
-                      ) : reviews.length === 0 ? (
-                        <tr>
-                          <td colSpan="5" className="px-6 py-12 text-center">
-                            <p className="text-gray-500 text-lg">No reviews yet</p>
-                          </td>
-                        </tr>
-                      ) : (
-                        reviews.map((review) => (
-                          <tr key={review.id} style={{ borderBottom: "1px solid #1A1A1A" }} className="hover:bg-white/5 transition-colors">
-                            <td className="px-6 py-4">
-                              <div>
-                                <div className="text-sm font-bold text-white">
-                                  {review.name || 'Anonymous'}
-                                </div>
-                                {review.guest_email && (
-                                  <div className="text-xs text-gray-500">
-                                    {review.guest_email}
-                                  </div>
-                                )}
-                              </div>
-                            </td>
-                            <td className="px-6 py-4">
-                              <div className="flex gap-1">
-                                {[...Array(5)].map((_, i) => (
-                                  <Star
-                                    key={i}
-                                    size={14}
-                                    fill={i < review.rating ? "#FF0000" : "none"}
-                                    stroke={i < review.rating ? "#FF0000" : "#666666"}
-                                  />
-                                ))}
-                              </div>
-                            </td>
-                            <td className="px-6 py-4 text-sm text-gray-300 max-w-xs truncate">
-                              {review.review}
-                            </td>
-                            <td className="px-6 py-4">
-                              <button
-                                onClick={() => toggleReviewApproval(review.id, review.is_approved)}
-                                className={`px-3 py-1 rounded-lg text-xs font-bold transition-colors ${
-                                  review.is_approved
-                                    ? 'bg-green-900/30 text-green-400 hover:bg-green-900/50'
-                                    : 'bg-yellow-900/30 text-yellow-400 hover:bg-yellow-900/50'
-                                }`}
-                              >
-                                {review.is_approved ? 'Approved' : 'Pending'}
-                              </button>
-                            </td>
-                            <td className="px-6 py-4 text-right">
-                              <button
-                                onClick={() => deleteReview(review.id)}
-                                className="text-gray-400 hover:text-[#FF0000] transition-colors"
-                              >
-                                <Trash2 size={18} />
-                              </button>
-                            </td>
-                          </tr>
-                        ))
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Product Form Modal */}
-          {showForm && (
-            <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center p-4 z-50">
-              <div className="rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto" style={{ background: "#0A0A0A", border: "1px solid #2A2A2A" }}>
-                <div className="p-6">
-                  <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-2xl font-bold text-white" style={{ fontFamily: "'Bebas Neue', sans-serif" }}>
-                      {editing ? 'Edit Product' : 'Add New Product'}
-                    </h2>
-                    <button onClick={() => setShowForm(false)} className="text-gray-400 hover:text-white transition-colors">
-                      <X size={24} />
-                    </button>
-                  </div>
-
-                  <form onSubmit={handleSubmit} className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-bold text-gray-300 mb-2">Product Name *</label>
-                      <input
-                        type="text"
-                        required
-                        value={formData.name}
-                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                        className="w-full px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 transition-all"
-                        style={{ background: "#1A1A1A", border: "1px solid #2A2A2A", color: "#FFFFFF" }}
-                        placeholder="e.g., Pearl Red Metallic"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-bold text-gray-300 mb-2">Description</label>
-                      <textarea
-                        value={formData.description}
-                        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                        className="w-full px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 transition-all"
-                        style={{ background: "#1A1A1A", border: "1px solid #2A2A2A", color: "#FFFFFF" }}
-                        rows="3"
-                        placeholder="Describe the product..."
-                      />
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-bold text-gray-300 mb-2">Price (₹) *</label>
-                        <input
-                          type="number"
-                          required
-                          step="0.01"
-                          value={formData.price}
-                          onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                          className="w-full px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 transition-all"
-                          style={{ background: "#1A1A1A", border: "1px solid #2A2A2A", color: "#FFFFFF" }}
-                          placeholder="2999"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-bold text-gray-300 mb-2">Original Price (₹)</label>
-                        <input
-                          type="number"
-                          step="0.01"
-                          value={formData.original_price}
-                          onChange={(e) => setFormData({ ...formData, original_price: e.target.value })}
-                          className="w-full px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 transition-all"
-                          style={{ background: "#1A1A1A", border: "1px solid #2A2A2A", color: "#FFFFFF" }}
-                          placeholder="3999"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-bold text-gray-300 mb-2">Category *</label>
-                        <select
-                          required
-                          value={formData.category}
-                          onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                          className="w-full px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 transition-all"
-                          style={{ background: "#1A1A1A", border: "1px solid #2A2A2A", color: "#FFFFFF" }}
-                        >
-                          <option value="Xtreme Kolorz">Xtreme Kolorz</option>
-                          <option value="Xtreme Wrap">Xtreme Wrap</option>
-                          <option value="Accessories">Accessories</option>
-                          <option value="Wholesale">Wholesale</option>
-                        </select>
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-bold text-gray-300 mb-2">Stock *</label>
-                        <input
-                          type="number"
-                          required
-                          value={formData.stock}
-                          onChange={(e) => setFormData({ ...formData, stock: e.target.value })}
-                          className="w-full px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 transition-all"
-                          style={{ background: "#1A1A1A", border: "1px solid #2A2A2A", color: "#FFFFFF" }}
-                          placeholder="10"
-                        />
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-bold text-gray-300 mb-3">Product Images</label>
-                      <p className="text-xs text-gray-500 mb-3">Upload images or paste image URLs</p>
-                      
-                      {formData.images.map((img, index) => (
-                        <div key={index} className="mb-4">
-                          {/* Image Preview */}
-                          {img && (
-                            <div className="mb-2">
-                              <img 
-                                src={img} 
-                                alt={`Product ${index + 1}`} 
-                                className="w-32 h-32 object-cover rounded-lg border-2 border-gray-700"
-                                onError={(e) => e.target.style.display = 'none'}
-                              />
-                            </div>
-                          )}
-                          
-                          {/* URL Input and Upload Button */}
-                          <div className="flex gap-2">
-                            <input
-                              type="url"
-                              value={img}
-                              onChange={(e) => handleImageUrlChange(index, e.target.value)}
-                              className="flex-1 px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 transition-all"
-                              style={{ background: "#1A1A1A", border: "1px solid #2A2A2A", color: "#FFFFFF" }}
-                              placeholder="https://example.com/image.jpg or upload file"
-                            />
-                            
-                            {/* Upload Button */}
-                            <label
-                              className="px-4 py-3 text-white rounded-lg transition-colors cursor-pointer flex items-center gap-2"
-                              style={{ background: "#00A86B" }}
-                            >
-                              <Package size={18} />
-                              Upload
-                              <input
-                                type="file"
-                                accept="image/*"
-                                onChange={(e) => handleImageUpload(e, index)}
-                                className="hidden"
-                                disabled={uploadingImage}
-                              />
-                            </label>
-                            
-                            {/* Delete Button */}
-                            <button
-                              type="button"
-                              onClick={() => removeImageField(index)}
-                              className="px-4 py-3 text-white rounded-lg transition-colors"
-                              style={{ background: "#FF0000" }}
-                            >
-                              <Trash2 size={18} />
-                            </button>
-                          </div>
-                        </div>
-                      ))}
-                      
-                      {/* Add New Image Buttons */}
-                      <div className="flex gap-3">
-                        <button
-                          type="button"
-                          onClick={addImageField}
-                          className="text-sm font-bold text-red-500 hover:text-red-400"
-                        >
-                          + Add Image URL
-                        </button>
-                        
-                        <label className="text-sm font-bold text-green-500 hover:text-green-400 cursor-pointer">
-                          + Upload New Image
-                          <input
-                            type="file"
-                            accept="image/*"
-                            onChange={(e) => handleImageUpload(e)}
-                            className="hidden"
-                            disabled={uploadingImage}
-                          />
-                        </label>
-                      </div>
-                      
-                      {uploadingImage && (
-                        <p className="text-sm text-yellow-500 mt-2">Uploading image...</p>
-                      )}
-                    </div>
-
-                    <div className="flex gap-3 pt-4">
-                      <button
-                        type="submit"
-                        className="flex-1 flex items-center justify-center gap-2 px-6 py-4 text-white rounded-lg font-bold transition-all hover:scale-105"
-                        style={{ background: "#FF0000" }}
-                      >
-                        <Save size={20} />
-                        {editing ? 'Update Product' : 'Create Product'}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setShowForm(false)}
-                        className="px-6 py-4 text-gray-300 rounded-lg font-bold transition-colors hover:bg-white/5"
-                        style={{ border: "1px solid #2A2A2A" }}
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  </form>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
+        ) : (
+          <>
+            {tab === 'dashboard' && <DashboardTab products={products} orders={orders} />}
+            {tab === 'products'  && <ProductsTab products={products} categories={categories} onRefresh={loadAll} />}
+          </>
+        )}
+      </KKAdminLayout>
     </>
   )
 }

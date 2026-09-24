@@ -92,17 +92,20 @@ export default function Navbar() {
   }
 
   const navStyle = {
-    position: scrolled ? "sticky" : "absolute",
+    position: "fixed",
     top: 0,
     left: 0,
     right: 0,
-    background: scrolled ? "#FFFFFF" : "rgba(255, 255, 255, 0.95)",
-    backdropFilter: "blur(20px)",
-    boxShadow: scrolled ? "0 2px 8px rgba(0, 0, 0, 0.1)" : "0 2px 8px rgba(0, 0, 0, 0.05)",
-    transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+    background: scrolled ? "#FFFFFF" : "transparent",
+    backdropFilter: scrolled ? "blur(0px)" : "none",
+    boxShadow: scrolled ? "0 2px 12px rgba(0,0,0,0.08)" : "none",
+    transition: "background 0.4s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
   }
 
-  const iconStyle = `w-10 h-10 flex items-center justify-center ${scrolled ? 'text-black' : 'text-black'} hover:text-[#FF0000] transition-colors duration-300`
+  // On hero (transparent), text should be white for readability against video/dark bg
+  // After scroll (white bg), text should be black
+  const textColor = scrolled ? "#000000" : "#FFFFFF"
+  const iconStyle = `w-10 h-10 flex items-center justify-center hover:text-[#FF0000] transition-colors duration-300`
 
   const navLinks = [
     { to: "/", label: "HOME" },
@@ -316,10 +319,10 @@ export default function Navbar() {
 
   return (
     <>
-      <nav className="w-full px-6 lg:px-12 xl:px-20 h-20 flex items-center gap-6" style={{ ...navStyle, zIndex: 50 }}>
+      <nav className="w-full px-6 lg:px-12 xl:px-20 h-20 flex items-center gap-6" style={{ ...navStyle, zIndex: 1000 }}>
         {/* Logo */}
         <Link to="/" className="flex items-center gap-3 flex-shrink-0" onClick={closeAll}>
-          <div className="bg-black rounded-lg p-2 shadow-md">
+          <div className="rounded-lg p-2" style={{ background: scrolled ? "#000000" : "rgba(0,0,0,0.4)", transition: "background 0.4s" }}>
             <img 
               src="/logo.png" 
               alt="Kustom Koats" 
@@ -341,8 +344,8 @@ export default function Navbar() {
                     onMouseLeave={() => setActiveDropdown(null)}
                   >
                     <button
-                      className={`px-5 h-10 flex items-center text-[0.875rem] font-medium tracking-wide text-black hover:text-[#FF0000] transition-colors duration-300`}
-                      style={{ fontFamily: "'Inter', sans-serif" }}
+                      className={`px-5 h-10 flex items-center text-[0.875rem] font-medium tracking-wide hover:text-[#FF0000] transition-colors duration-300`}
+                      style={{ fontFamily: "'Inter', sans-serif", color: textColor }}
                     >
                       {item.label}
                       <svg className="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -374,8 +377,8 @@ export default function Navbar() {
                   </div>
                 ) : (
                   <Link key={item.to} to={item.to} onClick={closeAll}
-                    className={`px-5 h-10 flex items-center text-[0.875rem] font-medium tracking-wide text-black hover:text-[#FF0000] transition-colors duration-300`}
-                    style={{ fontFamily: "'Inter', sans-serif" }}>
+                    className={`px-5 h-10 flex items-center text-[0.875rem] font-medium tracking-wide hover:text-[#FF0000] transition-colors duration-300`}
+                    style={{ fontFamily: "'Inter', sans-serif", color: textColor }}>
                     {item.label}
                   </Link>
                 )
@@ -386,15 +389,17 @@ export default function Navbar() {
           {/* Desktop Search */}
           <div ref={searchRef} className="hidden lg:block relative w-72 ml-auto">
             <form onSubmit={handleSearch} className="relative">
-              <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-black/40 pointer-events-none" />
+              <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: scrolled ? "rgba(0,0,0,0.4)" : "rgba(255,255,255,0.6)", transition: "color 0.4s" }} />
               <input
                 type="text" value={searchQuery} onChange={handleSearchChange}
                 placeholder="Search colors..."
-                className="w-full rounded-sm pl-11 pr-4 py-2.5 text-sm text-black placeholder-black/30 focus:outline-none transition-all duration-300"
+                className="w-full rounded-sm pl-11 pr-4 py-2.5 text-sm focus:outline-none transition-all duration-400"
                 style={{
-                  background: "#F8F8F8",
-                  border: "1px solid rgba(0, 0, 0, 0.15)",
+                  background: scrolled ? "#F8F8F8" : "rgba(255,255,255,0.15)",
+                  border: `1px solid ${scrolled ? "rgba(0,0,0,0.15)" : "rgba(255,255,255,0.3)"}`,
+                  color: scrolled ? "#000000" : "#FFFFFF",
                   fontFamily: "'Inter', sans-serif",
+                  transition: "background 0.4s, border 0.4s, color 0.4s",
                 }}
               />
             </form>
@@ -430,7 +435,7 @@ export default function Navbar() {
           <div className="flex items-center gap-2 flex-shrink-0 ml-auto lg:ml-0">
             {!isOnAdminPanel && (
               <>
-                <Link to="/wishlist" className={iconStyle} title="Wishlist">
+                <Link to="/wishlist" className={iconStyle} title="Wishlist" style={{ color: textColor, transition: "color 0.4s" }}>
                   <div className="relative">
                     <Heart size={20} />
                     {wishlistItems.length > 0 && (
@@ -440,7 +445,7 @@ export default function Navbar() {
                     )}
                   </div>
                 </Link>
-                <Link to="/cart" className={iconStyle} title="Cart">
+                <Link to="/cart" className={iconStyle} title="Cart" style={{ color: textColor, transition: "color 0.4s" }}>
                   <div className="relative">
                     <ShoppingCart size={20} />
                     {itemCount > 0 && (
@@ -450,7 +455,7 @@ export default function Navbar() {
                     )}
                   </div>
                 </Link>
-                <Link to={user ? "/profile" : "/login"} className={iconStyle} title={user ? "Profile" : "Login"}>
+                <Link to={user ? "/profile" : "/login"} className={iconStyle} title={user ? "Profile" : "Login"} style={{ color: textColor, transition: "color 0.4s" }}>
                   <User size={20} />
                 </Link>
               </>
@@ -470,7 +475,7 @@ export default function Navbar() {
             {/* Hamburger button */}
             <button 
               className="lg:hidden p-2 transition-colors"
-              style={{ color: "#000000", background: "none", border: "none", cursor: "pointer" }}
+              style={{ color: textColor, background: "none", border: "none", cursor: "pointer", transition: "color 0.4s" }}
               onClick={() => setMenuOpen(!menuOpen)}
               aria-label="Toggle menu"
             >

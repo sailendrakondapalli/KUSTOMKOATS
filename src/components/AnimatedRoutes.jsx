@@ -33,10 +33,7 @@ const XtremeWrapPage = lazy(() => import('../pages/shop/XtremeWrapPage'))
 const AccessoriesPage = lazy(() => import('../pages/shop/AccessoriesPage'))
 const ShopPage = lazy(() => import('../pages/shop/ShopPage'))
 
-// Admin pages
-const AdminProductsPage = lazy(() => import('../pages/admin/AdminProductsPage'))
-const AdminOrdersPage = lazy(() => import('../pages/admin/AdminOrdersPage'))
-const WholesalePage = lazy(() => import('../pages/shop/WholesalePage'))
+// Admin pages are handled in App.jsx directly (full-screen layout, no Navbar/Footer)
 
 // Kustom Kulture pages
 const KultureJournalPage = lazy(() => import('../pages/kulture/KultureJournalPage'))
@@ -330,26 +327,7 @@ export default function AnimatedRoutes() {
           </PageTransition>
         } />
         
-        {/* Admin Routes */}
-        <Route path="/admin" element={
-          <PageTransition>
-            <ErrorBoundary>
-              <Suspense fallback={<PageLoader />}>
-                <AdminProductsPage />
-              </Suspense>
-            </ErrorBoundary>
-          </PageTransition>
-        } />
-        
-        <Route path="/admin/orders" element={
-          <PageTransition>
-            <ErrorBoundary>
-              <Suspense fallback={<PageLoader />}>
-                <AdminOrdersPage />
-              </Suspense>
-            </ErrorBoundary>
-          </PageTransition>
-        } />
+        {/* Admin Routes are defined in App.jsx (full-screen, no Navbar/Footer) */}
         
         <Route path="/events" element={
           <PageTransition>

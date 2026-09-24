@@ -9,6 +9,8 @@ import { useWishlistStore } from '../store/wishlistStore'
 import { useRecentlyViewedStore } from '../store/recentlyViewedStore'
 import { supabase } from '../lib/supabase'
 import { formatINR } from '../utils/format'
+import TechnicalBar from '../components/TechnicalBar'
+import TechnicalSpecs from '../components/TechnicalSpecs'
 import toast from 'react-hot-toast'
 
 const isVideoUrl = (url) => url && /\.(mp4|mov|webm|ogg)(\?|$)/i.test(url)
@@ -26,6 +28,9 @@ export default function ProductDetailPage() {
   const [imgIdx, setImgIdx] = useState(0)
   const [addingCart, setAddingCart] = useState(false)
   const [related, setRelated] = useState([])
+  const [techBars, setTechBars] = useState([])
+  const [techSpecs, setTechSpecs] = useState([])
+  const [techLoading, setTechLoading] = useState(false)
 
   const wishlisted = product ? isWishlisted(product.id) : false
   const inCart = product ? items.some(i => i.product_id === product.id) : false
@@ -33,48 +38,60 @@ export default function ProductDetailPage() {
   useEffect(() => {
     setLoading(true)
     setImgIdx(0)
+    setTechBars([])
+    setTechSpecs([])
+
     supabase.from('products').select('*').eq('id', id).single()
       .then(({ data, error }) => {
         if (error || !data) { setLoading(false); return }
         setProduct(data)
         setLoading(false)
-        
-        // Add to recently viewed if function exists
+
         if (addRecentlyViewed && typeof addRecentlyViewed === 'function') {
           addRecentlyViewed(data)
         }
-        
-        // Load recommended products with fallback strategy
+
+        // Load technical details (bars + specs)
+        const loadTechDetails = async () => {
+          setTechLoading(true)
+          const [barsRes, specsRes] = await Promise.all([
+            supabase
+              .from('product_technical_bars')
+              .select('*')
+              .eq('product_id', data.id)
+              .order('sort_order', { ascending: true }),
+            supabase
+              .from('product_specifications')
+              .select('*')
+              .eq('product_id', data.id)
+              .order('sort_order', { ascending: true }),
+          ])
+          setTechBars(barsRes.data || [])
+          setTechSpecs(specsRes.data || [])
+          setTechLoading(false)
+        }
+        loadTechDetails()
+
+        // Load related products
         const loadRecommended = async () => {
-          console.log('Loading recommended products for:', data.name, 'Category:', data.category)
-          
-          // Priority 1: Same category products
-          const { data: sameCat, error: err1 } = await supabase.from('products')
+          const { data: sameCat } = await supabase
+            .from('products')
             .select('*')
             .eq('category', data.category)
             .neq('id', id)
             .limit(8)
-          
-          console.log('Same category results:', sameCat, 'Error:', err1)
+
           let recommended = sameCat || []
-          
-          // Priority 2: If less than 4 from same category, get from other categories
           if (recommended.length < 4) {
-            const { data: others, error: err2 } = await supabase.from('products')
+            const { data: others } = await supabase
+              .from('products')
               .select('*')
               .neq('id', id)
               .limit(8 - recommended.length)
-            
-            console.log('Other products results:', others, 'Error:', err2)
-            if (others && others.length > 0) {
-              recommended = [...recommended, ...others]
-            }
+            if (others?.length) recommended = [...recommended, ...others]
           }
-          
-          console.log('Final recommended products:', recommended.length, recommended)
           setRelated(recommended)
         }
-        
         loadRecommended()
       })
   }, [id])
@@ -104,30 +121,36 @@ export default function ProductDetailPage() {
   }
 
   const handleBuyNow = () => {
-    // Navigate to checkout with buy now data
-    navigate('/checkout', {
-      state: {
-        buyNow: {
-          product: product,
-          quantity: 1
-        }
-      }
-    })
+    navigate('/checkout', { state: { buyNow: { product, quantity: 1 } } })
   }
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-[60vh]">
-        <div className="w-8 h-8 border-2 border-[#FF0000] border-t-transparent rounded-full animate-spin" />
+      <div className="min-h-screen" style={{ background: '#FFFFFF', paddingTop: '80px' }}>
+        <div className="max-w-7xl mx-auto px-6 lg:px-12 xl:px-20 py-12">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+            <div className="aspect-square rounded-lg bg-gray-100 animate-pulse" />
+            <div className="space-y-4 py-8">
+              <div className="h-4 bg-gray-100 rounded w-24 animate-pulse" />
+              <div className="h-10 bg-gray-100 rounded w-3/4 animate-pulse" />
+              <div className="h-6 bg-gray-100 rounded w-1/3 animate-pulse" />
+              <div className="h-20 bg-gray-100 rounded animate-pulse" />
+              <div className="h-12 bg-gray-100 rounded animate-pulse" />
+              <div className="h-12 bg-gray-100 rounded animate-pulse" />
+            </div>
+          </div>
+        </div>
       </div>
     )
   }
 
   if (!product) {
     return (
-      <div className="text-center py-20">
-        <p className="text-lg" style={{ color: "#000000", fontFamily: "'Inter', sans-serif" }}>Product not found</p>
-        <button onClick={() => navigate('/products')} className="mt-4 px-6 py-2 rounded-lg text-sm font-semibold" style={{ background: "#FF0000", color: "#FFFFFF", fontFamily: "'Inter', sans-serif" }}>
+      <div className="min-h-screen flex flex-col items-center justify-center" style={{ background: '#FFFFFF', paddingTop: '80px' }}>
+        <p className="text-lg mb-4" style={{ color: '#000000', fontFamily: "'Inter', sans-serif" }}>Product not found</p>
+        <button onClick={() => navigate('/products')}
+          className="px-6 py-2 rounded-lg text-sm font-semibold"
+          style={{ background: '#FF0000', color: '#FFFFFF', fontFamily: "'Inter', sans-serif" }}>
           Browse Products
         </button>
       </div>
@@ -149,20 +172,21 @@ export default function ProductDetailPage() {
         { bg: 'bg-gray-50', border: 'border-gray-200', text: 'text-gray-600' },
         { bg: 'bg-black/5', border: 'border-black/10', text: 'text-black' },
       ]
-      const p = palettes[i % palettes.length]
-      return { label: t, ...p }
+      return { label: t, ...palettes[i % palettes.length] }
     }),
   ]
+
+  const hasTechDetails = techBars.length > 0 || techSpecs.length > 0
 
   return (
     <>
       <Helmet>
         <title>{product.name} - Buy Online | Kustom Koats</title>
-        <meta name="description" content={`Buy ${product.name} online. ${product.description ? product.description.slice(0, 140) : `Premium ${product.category} automotive pearl from Kustom Koats.`} ₹${product.price}. Fast shipping available.`} />
-        <meta name="keywords" content={`${product.name}, buy ${product.category}, automotive pearls, ${product.tags?.join(', ')}, car paint pearls india`} />
+        <meta name="description" content={`Buy ${product.name} online. ${product.description ? product.description.slice(0, 140) : `Premium ${product.category} from Kustom Koats.`} ₹${product.price}.`} />
+        <meta name="keywords" content={`${product.name}, ${product.category}, automotive pearls, ${product.tags?.join(', ')}`} />
         <link rel="canonical" href={`https://www.kustomkoats.com/products/${product.id}`} />
         <meta property="og:title" content={`${product.name} - Kustom Koats`} />
-        <meta property="og:description" content={product.description || `Premium ${product.category} automotive pearl. High-quality finish for custom automotive applications.`} />
+        <meta property="og:description" content={product.description || `Premium ${product.category} from Kustom Koats.`} />
         <meta property="og:image" content={product.images?.[0] || 'https://www.kustomkoats.com/og-image.png'} />
         <meta property="og:url" content={`https://www.kustomkoats.com/products/${product.id}`} />
         <meta property="og:type" content="product" />
@@ -173,7 +197,7 @@ export default function ProductDetailPage() {
           "@type": "Product",
           "name": product.name,
           "image": product.images || [],
-          "description": product.description || `Premium ${product.category} automotive pearl`,
+          "description": product.description || `Premium ${product.category}`,
           "sku": product.custom_id || product.id,
           "brand": { "@type": "Brand", "name": "Kustom Koats" },
           "offers": {
@@ -183,32 +207,33 @@ export default function ProductDetailPage() {
             "price": product.price,
             "availability": product.stock > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
             "seller": { "@type": "Organization", "name": "Kustom Koats" }
-          },
-          "aggregateRating": {
-            "@type": "AggregateRating",
-            "ratingValue": "5",
-            "reviewCount": "1"
           }
         })}</script>
       </Helmet>
 
-      <div className="max-w-7xl mx-auto px-6 lg:px-12 xl:px-20 py-12" style={{ background: "#FFFFFF" }}>
+      {/* Spacer for fixed navbar */}
+      <div style={{ height: '80px' }} />
+
+      <div className="max-w-7xl mx-auto px-6 lg:px-12 xl:px-20 py-10" style={{ background: '#FFFFFF' }}>
+
         {/* Breadcrumb */}
-        <div className="flex items-center gap-2 text-xs mb-8" style={{ color: "#666666", fontFamily: "'Inter', sans-serif" }}>
+        <div className="flex items-center gap-2 text-xs mb-8" style={{ color: '#666666', fontFamily: "'Inter', sans-serif" }}>
           <Link to="/" className="hover:text-[#FF0000] transition-colors">Home</Link>
           <span>/</span>
-          <Link to="/shop/xtreme-kolorz" className="hover:text-[#FF0000] transition-colors">Shop</Link>
+          <Link to="/products" className="hover:text-[#FF0000] transition-colors">Shop</Link>
           <span>/</span>
-          <Link to={`/shop/xtreme-kolorz?category=${encodeURIComponent(product.category)}`} className="hover:text-[#FF0000] transition-colors">{product.category}</Link>
+          <Link to={`/products?category=${encodeURIComponent(product.category)}`} className="hover:text-[#FF0000] transition-colors">{product.category}</Link>
           <span>/</span>
-          <span className="truncate max-w-[200px]" style={{ color: "#333333" }}>{product.name}</span>
+          <span className="truncate max-w-[200px]" style={{ color: '#333333' }}>{product.name}</span>
         </div>
 
+        {/* ── PRODUCT MAIN ── */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16">
-          {/* Left - media (sticky) */}
-          <div className="lg:sticky lg:top-8 lg:h-fit space-y-4">
-            {/* Main image */}
-            <div className="relative aspect-square rounded-lg overflow-hidden bg-[#F8F8F8] border border-gray-200">
+
+          {/* Left — media */}
+          <div className="lg:sticky lg:top-24 lg:h-fit space-y-4">
+            <div className="relative aspect-square rounded-xl overflow-hidden"
+              style={{ background: '#F8F8F8', border: '1px solid #E5E5E5' }}>
               <AnimatePresence mode="wait">
                 <motion.div key={imgIdx} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="w-full h-full">
                   {isCurrentVideo ? (
@@ -219,20 +244,20 @@ export default function ProductDetailPage() {
                   )}
                 </motion.div>
               </AnimatePresence>
-              {/* Nav arrows */}
               {images.length > 1 && (
                 <>
                   <button onClick={() => setImgIdx(i => (i - 1 + images.length) % images.length)}
                     className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg hover:bg-white hover:scale-110 transition-all">
-                    <ArrowLeft size={18} style={{ color: "#000000" }} />
+                    <ArrowLeft size={18} style={{ color: '#000000' }} />
                   </button>
                   <button onClick={() => setImgIdx(i => (i + 1) % images.length)}
                     className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg hover:bg-white hover:scale-110 transition-all">
-                    <ArrowRight size={18} style={{ color: "#000000" }} />
+                    <ArrowRight size={18} style={{ color: '#000000' }} />
                   </button>
                 </>
               )}
             </div>
+
             {/* Thumbnails */}
             {images.length > 1 && (
               <div className="flex gap-3 flex-wrap">
@@ -251,19 +276,18 @@ export default function ProductDetailPage() {
             )}
           </div>
 
-          {/* Right - info (scrollable) */}
-          <div className="lg:min-h-screen">
-            <div className="lg:py-8">
-            <p className="text-[#FF0000] text-xs uppercase tracking-[0.15em] font-bold mb-3" style={{ fontFamily: "'Inter', sans-serif" }}>
+          {/* Right — info */}
+          <div>
+            <p className="text-[#FF0000] text-xs uppercase tracking-[0.15em] font-bold mb-3"
+              style={{ fontFamily: "'Inter', sans-serif" }}>
               {product.category}
             </p>
-            <h1 className="text-4xl lg:text-5xl font-bold mb-4" style={{ fontFamily: "'Rajdhani', sans-serif", color: "#000000" }}>
+            <h1 className="text-4xl lg:text-5xl font-bold mb-4"
+              style={{ fontFamily: "'Rajdhani', sans-serif", color: '#000000' }}>
               {product.name}
             </h1>
             {product.custom_id && (
-              <p className="text-gray-400 text-xs font-mono mb-4" style={{ fontFamily: "'Courier New', monospace" }}>
-                SKU: {product.custom_id}
-              </p>
+              <p className="text-gray-400 text-xs font-mono mb-4">SKU: {product.custom_id}</p>
             )}
 
             {/* Rating */}
@@ -276,9 +300,10 @@ export default function ProductDetailPage() {
               </span>
             </div>
 
-            <div className="mb-6 pb-6 border-b border-gray-200">
+            {/* Price */}
+            <div className="mb-6 pb-6" style={{ borderBottom: '1px solid #E5E5E5' }}>
               <div className="flex items-baseline gap-4 mb-2">
-                <p className="text-4xl font-bold" style={{ color: "#000000", fontFamily: "'Inter', sans-serif" }}>
+                <p className="text-4xl font-bold" style={{ color: '#000000', fontFamily: "'Inter', sans-serif" }}>
                   {formatINR(product.price)}
                 </p>
                 {product.original_price && product.original_price > product.price && (
@@ -286,22 +311,22 @@ export default function ProductDetailPage() {
                     <p className="text-xl text-gray-400 line-through" style={{ fontFamily: "'Inter', sans-serif" }}>
                       {formatINR(product.original_price)}
                     </p>
-                    <span className="bg-green-100 text-green-700 text-xs font-bold px-3 py-1 rounded-full" style={{ fontFamily: "'Inter', sans-serif" }}>
+                    <span className="bg-green-100 text-green-700 text-xs font-bold px-3 py-1 rounded-full">
                       SAVE {Math.round(((product.original_price - product.price) / product.original_price) * 100)}%
                     </span>
                   </>
                 )}
               </div>
-              <p className="text-sm font-medium" style={{ color: product.delivery_charge ? "#666666" : "#16a34a", fontFamily: "'Inter', sans-serif" }}>
-                {product.delivery_charge
-                  ? `+ ₹${product.delivery_charge} delivery charge`
-                  : "✓ Free Delivery"}
+              <p className="text-sm font-medium" style={{ color: product.delivery_charge ? '#666666' : '#16a34a', fontFamily: "'Inter', sans-serif" }}>
+                {product.delivery_charge ? `+ ₹${product.delivery_charge} delivery charge` : '✓ Free Delivery'}
               </p>
             </div>
 
+            {/* Description */}
             {product.description && (
               <div className="mb-6">
-                <h3 className="text-sm font-bold uppercase tracking-wider mb-3" style={{ color: "#000000", fontFamily: "'Inter', sans-serif" }}>
+                <h3 className="text-sm font-bold uppercase tracking-wider mb-3"
+                  style={{ color: '#000000', fontFamily: "'Inter', sans-serif" }}>
                   Product Description
                 </h3>
                 <p className="text-gray-700 text-base leading-relaxed" style={{ fontFamily: "'Inter', sans-serif" }}>
@@ -310,33 +335,34 @@ export default function ProductDetailPage() {
               </div>
             )}
 
-            {/* Variants / Stock */}
-            <div className="grid gap-4 mb-6">
-              {product.size && (
-                <div className="bg-[#F8F8F8] rounded-lg p-4 border border-gray-200">
-                  <p className="text-xs font-bold uppercase tracking-wider mb-3" style={{ color: "#000000", fontFamily: "'Inter', sans-serif" }}>
-                    Available Variants
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    {product.size.split(',').map(s => s.trim()).filter(Boolean).map(s => (
-                      <span key={s} className="px-4 py-2 bg-white border-2 border-gray-300 text-sm font-medium rounded-lg hover:border-[#FF0000] transition-colors cursor-pointer"
-                        style={{ color: "#000000", fontFamily: "'Inter', sans-serif" }}>
-                        {s}
-                      </span>
-                    ))}
-                  </div>
+            {/* Variants */}
+            {product.size && (
+              <div className="rounded-xl p-4 mb-4" style={{ background: '#F8F8F8', border: '1px solid #E5E5E5' }}>
+                <p className="text-xs font-bold uppercase tracking-wider mb-3" style={{ color: '#000000', fontFamily: "'Inter', sans-serif" }}>
+                  Available Variants
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {product.size.split(',').map(s => s.trim()).filter(Boolean).map(s => (
+                    <span key={s} className="px-4 py-2 bg-white border-2 border-gray-300 text-sm font-medium rounded-lg hover:border-[#FF0000] transition-colors cursor-pointer"
+                      style={{ color: '#000000', fontFamily: "'Inter', sans-serif" }}>
+                      {s}
+                    </span>
+                  ))}
                 </div>
-              )}
-              <div className="bg-[#F8F8F8] rounded-lg p-4 border border-gray-200">
-                <p className="text-xs font-bold uppercase tracking-wider mb-2" style={{ color: "#000000", fontFamily: "'Inter', sans-serif" }}>
-                  Availability
-                </p>
-                <p className={`font-bold text-base ${(product.stock ?? 1) > 0 ? 'text-green-600' : 'text-red-600'}`} style={{ fontFamily: "'Inter', sans-serif" }}>
-                  {(product.stock ?? 1) > 0
-                    ? product.stock < 10 ? `Only ${product.stock} left in stock!` : '✓ In Stock'
-                    : '✗ Out of Stock'}
-                </p>
               </div>
+            )}
+
+            {/* Stock */}
+            <div className="rounded-xl p-4 mb-6" style={{ background: '#F8F8F8', border: '1px solid #E5E5E5' }}>
+              <p className="text-xs font-bold uppercase tracking-wider mb-2" style={{ color: '#000000', fontFamily: "'Inter', sans-serif" }}>
+                Availability
+              </p>
+              <p className={`font-bold text-base ${(product.stock ?? 1) > 0 ? 'text-green-600' : 'text-red-600'}`}
+                style={{ fontFamily: "'Inter', sans-serif" }}>
+                {(product.stock ?? 1) > 0
+                  ? product.stock < 10 ? `Only ${product.stock} left in stock!` : '✓ In Stock'
+                  : '✗ Out of Stock'}
+              </p>
             </div>
 
             {/* Tags */}
@@ -351,18 +377,16 @@ export default function ProductDetailPage() {
               </div>
             )}
 
-            {/* Actions */}
+            {/* CTA Buttons */}
             <div className="space-y-3 mb-6">
               <button onClick={handleBuyNow} disabled={product.stock === 0}
-                className="w-full flex items-center justify-center gap-2 py-4 rounded-lg font-bold text-base uppercase tracking-wider transition-all disabled:opacity-40 disabled:cursor-not-allowed bg-[#FF0000] hover:bg-[#CC0000] text-white shadow-lg hover:shadow-xl"
-                style={{ fontFamily: "'Inter', sans-serif" }}>
+                className="w-full flex items-center justify-center gap-2 py-4 rounded-xl font-bold text-base uppercase tracking-wider transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                style={{ background: '#FF0000', color: '#FFFFFF', fontFamily: "'Inter', sans-serif", boxShadow: '0 4px 16px rgba(255,0,0,0.25)' }}>
                 <ArrowRight size={18} /> Buy Now
               </button>
               <div className="flex gap-3">
                 <button onClick={handleAddToCart} disabled={product.stock === 0 || addingCart}
-                  className={`flex-1 flex items-center justify-center gap-2 py-4 rounded-lg font-bold text-base uppercase tracking-wider transition-all disabled:opacity-40 disabled:cursor-not-allowed ${
-                    inCart ? 'bg-green-700 hover:bg-green-600 text-white' : 'bg-black hover:bg-gray-800 text-white'
-                  }`}
+                  className={`flex-1 flex items-center justify-center gap-2 py-4 rounded-xl font-bold text-base uppercase tracking-wider transition-all disabled:opacity-40 disabled:cursor-not-allowed ${inCart ? 'bg-green-700 hover:bg-green-600 text-white' : 'bg-black hover:bg-gray-800 text-white'}`}
                   style={{ fontFamily: "'Inter', sans-serif" }}>
                   {addingCart
                     ? <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -370,12 +394,11 @@ export default function ProductDetailPage() {
                   }
                 </button>
                 <button onClick={handleWishlist}
-                  className={`w-14 h-14 rounded-lg border-2 flex items-center justify-center transition-all flex-shrink-0 ${
-                    wishlisted ? 'bg-red-500 border-red-500 text-white scale-105' : 'border-gray-300 text-gray-600 hover:border-red-400 hover:text-red-400'
-                  }`}>
+                  className={`w-14 h-14 rounded-xl border-2 flex items-center justify-center transition-all flex-shrink-0 ${wishlisted ? 'bg-red-500 border-red-500 text-white scale-105' : 'border-gray-300 text-gray-600 hover:border-red-400 hover:text-red-400'}`}>
                   <Heart size={20} strokeWidth={2} fill={wishlisted ? 'currentColor' : 'none'} />
                 </button>
-                <button onClick={() => {
+                <button
+                  onClick={() => {
                     if (navigator.share) {
                       navigator.share({ title: product.name, url: window.location.href }).catch(() => {})
                     } else {
@@ -383,47 +406,131 @@ export default function ProductDetailPage() {
                       toast.success('Link copied!')
                     }
                   }}
-                  className="w-14 h-14 rounded-lg border-2 border-gray-300 text-gray-600 flex items-center justify-center hover:border-[#FF0000] hover:text-[#FF0000] transition-all flex-shrink-0">
+                  className="w-14 h-14 rounded-xl border-2 border-gray-300 text-gray-600 flex items-center justify-center hover:border-[#FF0000] hover:text-[#FF0000] transition-all flex-shrink-0">
                   <Share2 size={20} strokeWidth={2} />
                 </button>
               </div>
             </div>
 
             {/* Trust badges */}
-            <div className="grid grid-cols-3 gap-3 pt-6 border-t border-gray-200">
+            <div className="grid grid-cols-3 gap-3 pt-6" style={{ borderTop: '1px solid #E5E5E5' }}>
               {[
                 { icon: '✓', label: 'Automotive Grade' },
                 { icon: '✓', label: product.delivery_charge ? `₹${product.delivery_charge} Delivery` : 'Free Shipping' },
                 { icon: '✓', label: '100% Authentic' },
               ].map(b => (
-                <div key={b.label} className="bg-[#F8F8F8] border border-gray-200 rounded-lg py-3 px-2 text-center">
+                <div key={b.label} className="rounded-xl py-3 px-2 text-center"
+                  style={{ background: '#F8F8F8', border: '1px solid #E5E5E5' }}>
                   <p className="text-[#FF0000] text-xl font-bold mb-1">{b.icon}</p>
-                  <p className="text-xs font-medium" style={{ color: "#666666", fontFamily: "'Inter', sans-serif" }}>
+                  <p className="text-xs font-medium" style={{ color: '#666666', fontFamily: "'Inter', sans-serif" }}>
                     {b.label}
                   </p>
                 </div>
               ))}
             </div>
-            </div>
           </div>
         </div>
 
-        {/* Related Products */}
+        {/* ── TECHNICAL DETAILS SECTION ── */}
+        {(hasTechDetails || techLoading) && (
+          <section className="mt-16 pt-12" style={{ borderTop: '2px solid #F0F0F0' }}>
+            {/* Section Header */}
+            <div className="mb-10">
+              <p className="text-xs font-bold uppercase tracking-widest mb-2"
+                style={{ color: '#FF0000', fontFamily: "'Inter', sans-serif" }}>
+                SPECIFICATIONS
+              </p>
+              <h2 className="text-3xl font-bold"
+                style={{ fontFamily: "'Rajdhani', sans-serif", color: '#000000' }}>
+                Technical Details
+              </h2>
+            </div>
+
+            {techLoading ? (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+                <div className="space-y-6">
+                  {[1,2,3,4].map(i => (
+                    <div key={i} className="animate-pulse">
+                      <div className="h-4 bg-gray-100 rounded w-1/3 mb-3" />
+                      <div className="h-3 bg-gray-100 rounded mb-2" />
+                      <div className="flex justify-between">
+                        <div className="h-3 bg-gray-100 rounded w-12" />
+                        <div className="h-3 bg-gray-100 rounded w-12" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="space-y-2">
+                  {[1,2,3,4,5,6].map(i => (
+                    <div key={i} className="h-10 bg-gray-100 rounded animate-pulse" />
+                  ))}
+                </div>
+              </div>
+            ) : (
+              /* Two-column layout: bars left, specs right. Stack on mobile. */
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16">
+
+                {/* LEFT — Interactive Technical Bars */}
+                {techBars.length > 0 && (
+                  <div>
+                    <h3 className="text-sm font-bold uppercase tracking-wider mb-6"
+                      style={{ color: '#000000', fontFamily: "'Inter', sans-serif", borderBottom: '2px solid #F0F0F0', paddingBottom: '12px' }}>
+                      Performance Characteristics
+                    </h3>
+                    {techBars.map(bar => (
+                      <TechnicalBar
+                        key={bar.id}
+                        title={bar.title}
+                        labels={bar.labels || []}
+                        selectedValue={bar.selected_value}
+                      />
+                    ))}
+                  </div>
+                )}
+
+                {/* RIGHT — Technical Specification List */}
+                {techSpecs.length > 0 && (
+                  <div>
+                    <h3 className="text-sm font-bold uppercase tracking-wider mb-6"
+                      style={{ color: '#000000', fontFamily: "'Inter', sans-serif", borderBottom: '2px solid #F0F0F0', paddingBottom: '12px' }}>
+                      Product Specifications
+                    </h3>
+                    <TechnicalSpecs specs={techSpecs} />
+                  </div>
+                )}
+
+                {/* If only one column has data, span full width */}
+                {techBars.length > 0 && techSpecs.length === 0 && (
+                  <div className="hidden lg:block" />
+                )}
+                {techSpecs.length > 0 && techBars.length === 0 && (
+                  <div className="hidden lg:block" />
+                )}
+              </div>
+            )}
+          </section>
+        )}
+
+        {/* ── RELATED PRODUCTS ── */}
         {related.length > 0 && (
-          <section className="mt-16 pt-16 border-t border-gray-200">
+          <section className="mt-16 pt-16" style={{ borderTop: '1px solid #E5E5E5' }}>
             <div className="text-center mb-12">
-              <p className="text-sm font-bold mb-3 tracking-wider uppercase" style={{ color: "#FF0000", fontFamily: "'Inter', sans-serif" }}>
+              <p className="text-sm font-bold mb-3 tracking-wider uppercase"
+                style={{ color: '#FF0000', fontFamily: "'Inter', sans-serif" }}>
                 RECOMMENDED FOR YOU
               </p>
-              <h2 className="text-3xl md:text-4xl font-bold" style={{ fontFamily: "'Rajdhani', sans-serif", color: "#000000" }}>
+              <h2 className="text-3xl md:text-4xl font-bold"
+                style={{ fontFamily: "'Rajdhani', sans-serif", color: '#000000' }}>
                 You May Also Like
               </h2>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
               {related.map(p => (
                 <Link key={p.id} to={`/products/${p.id}`}
-                  className="group bg-white border border-gray-200 rounded-lg overflow-hidden hover:border-[#FF0000] hover:shadow-xl transition-all">
-                  <div className="aspect-square bg-[#F8F8F8] overflow-hidden relative">
+                  className="group rounded-xl overflow-hidden transition-all hover:shadow-xl"
+                  style={{ background: '#FFFFFF', border: '1px solid #E5E5E5' }}>
+                  <div className="aspect-square overflow-hidden relative"
+                    style={{ background: '#F8F8F8' }}>
                     {isVideoUrl(p.images?.[0]) ? (
                       <video src={p.images[0]} muted loop playsInline
                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
@@ -432,21 +539,21 @@ export default function ProductDetailPage() {
                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                         onError={e => { e.target.src = '/product-fallback.webp' }} />
                     )}
-                    {/* Category badge */}
-                    <span className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm text-[#FF0000] text-xs font-bold px-3 py-1 rounded-full" style={{ fontFamily: "'Inter', sans-serif" }}>
+                    <span className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm text-[#FF0000] text-xs font-bold px-3 py-1 rounded-full"
+                      style={{ fontFamily: "'Inter', sans-serif" }}>
                       {p.category}
                     </span>
                   </div>
                   <div className="p-4">
                     <p className="text-sm font-semibold line-clamp-2 mb-2 group-hover:text-[#FF0000] transition-colors"
-                      style={{ color: "#000000", fontFamily: "'Inter', sans-serif" }}>
+                      style={{ color: '#000000', fontFamily: "'Inter', sans-serif" }}>
                       {p.name}
                     </p>
-                    <p className="text-base font-bold" style={{ color: "#FF0000", fontFamily: "'Inter', sans-serif" }}>
+                    <p className="text-base font-bold" style={{ color: '#FF0000', fontFamily: "'Inter', sans-serif" }}>
                       {formatINR(p.price)}
                     </p>
                     {p.original_price && p.original_price > p.price && (
-                      <p className="text-xs text-gray-400 line-through mt-1" style={{ fontFamily: "'Inter', sans-serif" }}>
+                      <p className="text-xs text-gray-400 line-through mt-1">
                         {formatINR(p.original_price)}
                       </p>
                     )}
@@ -455,20 +562,15 @@ export default function ProductDetailPage() {
               ))}
             </div>
             <div className="text-center mt-8">
-              <Link 
-                to={`/shop/xtreme-kolorz?category=${encodeURIComponent(product.category)}`}
-                className="inline-flex items-center gap-2 px-8 py-4 rounded-lg font-bold transition-all duration-300 hover:scale-105"
-                style={{ 
-                  background: "#FF0000", 
-                  color: "#FFFFFF",
-                  fontFamily: "'Inter', sans-serif" 
-                }}
-              >
+              <Link to={`/products?category=${encodeURIComponent(product.category)}`}
+                className="inline-flex items-center gap-2 px-8 py-4 rounded-xl font-bold transition-all duration-300 hover:scale-105"
+                style={{ background: '#FF0000', color: '#FFFFFF', fontFamily: "'Inter', sans-serif" }}>
                 View All {product.category} Products <ArrowRight size={20} />
               </Link>
             </div>
           </section>
         )}
+
       </div>
     </>
   )

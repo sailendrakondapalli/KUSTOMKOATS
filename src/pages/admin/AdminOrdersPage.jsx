@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react'
 import { Search, Filter, Eye, Edit, Package, CheckCircle, XCircle, Clock, Truck, FileText, X } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { Helmet } from 'react-helmet-async'
 import { supabase } from '../../lib/supabase'
 import { formatINR } from '../../utils/format'
+import KKAdminLayout from '../../components/admin/KKAdminLayout'
 import toast from 'react-hot-toast'
 
 const ORDER_STATUSES = [
@@ -150,6 +152,9 @@ export default function AdminOrdersPage() {
   }
 
   return (
+    <>
+      <Helmet><title>Orders | Admin | Kustom Koats</title></Helmet>
+      <KKAdminLayout>
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
@@ -475,5 +480,7 @@ export default function AdminOrdersPage() {
         )}
       </AnimatePresence>
     </div>
+      </KKAdminLayout>
+    </>
   )
 }

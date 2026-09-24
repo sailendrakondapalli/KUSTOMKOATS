@@ -56,8 +56,8 @@
     margin: 0;
     padding: 0;
     width: 100%;
-    background-color: transparent;
-    color: #FFFFFF;
+    background-color: #FFFFFF;
+    color: #000000;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -69,16 +69,16 @@
     min-height: 100vh;
     width: 100%;
     max-width: 100%;
-    background: transparent;
+    background: #FFFFFF;
   }
 
   ::-webkit-scrollbar { width: 8px; }
-  ::-webkit-scrollbar-track { background: #1A1A1A; }
+  ::-webkit-scrollbar-track { background: #F0F0F0; }
   ::-webkit-scrollbar-thumb { background: #FF0000; border-radius: 4px; }
-  ::-webkit-scrollbar-thumb:hover { background: #FF3333; }
+  ::-webkit-scrollbar-thumb:hover { background: #CC0000; }
 
   h1, h2, h3, h4, h5, h6 {
-    color: #FFFFFF;
+    color: #000000;
     font-family: 'Rajdhani', 'Inter', sans-serif;
     font-weight: 700;
     letter-spacing: 0.02em;
@@ -404,4 +404,20 @@
   .shadow-card      { box-shadow: 0 2px 16px rgba(0,0,0,0.5); }
   .shadow-card-lg   { box-shadow: 0 8px 32px rgba(0,0,0,0.7); }
   .shadow-gold      { box-shadow: 0 4px 24px rgba(255, 0, 0, 0.25); }
+}
+
+/* ── KustomKoats Admin Utilities ── */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* Page top spacer for fixed navbar */
+.page-content {
+  padding-top: 80px;
+}
+
+/* Admin pages should not show the main navbar spacer */
+.admin-no-spacer {
+  padding-top: 0;
 }
