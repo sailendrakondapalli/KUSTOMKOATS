@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Helmet } from 'react-helmet-async'
-import { User, Mail, MapPin, Plus, Edit2, Trash2, Star, LogOut } from 'lucide-react'
+import { User, Mail, MapPin, Plus, Edit2, Trash2, Star, LogOut, Package, ChevronRight } from 'lucide-react'
 import { useAuthStore } from '../store/authStore'
 import { fetchAddresses, saveAddress, updateAddress, deleteAddress, setDefaultAddress } from '../services/addressService'
+import { fetchUserOrders } from '../services/orderService'
 import toast from 'react-hot-toast'
 import { useNavigate } from 'react-router-dom'
 
@@ -94,10 +95,13 @@ export default function ProfilePage() {
   const [showForm, setShowForm] = useState(false)
   const [editAddr, setEditAddr] = useState(null)
   const [saving, setSaving] = useState(false)
+  const [orders, setOrders] = useState([])
+  const [loadingOrders, setLoadingOrders] = useState(true)
 
   useEffect(() => {
     if (!user) return
     fetchAddresses(user.id).then(data => { setAddresses(data || []); setLoadingAddr(false) })
+    fetchUserOrders(user.id).then(data => { setOrders(data || []); setLoadingOrders(false) })
   }, [user])
 
   const handleSave = async (form) => {
@@ -154,7 +158,7 @@ export default function ProfilePage() {
       <Helmet>
         <title>My Profile - Kustom Koats</title>
       </Helmet>
-      <div className="max-w-2xl mx-auto px-4 py-8 space-y-6">
+      <div className="max-w-2xl mx-auto px-4 pt-20 pb-8 space-y-6">
         <h1 className="text-3xl font-bold text-[#1C1006]" style={{ fontFamily: 'Georgia, serif' }}>My Profile</h1>
 
         {/* User Info */}
@@ -245,6 +249,110 @@ export default function ProfilePage() {
                   <AddressForm onSave={handleSave} onCancel={() => setShowForm(false)} saving={saving} />
                 </motion.div>
               )}
+            </div>
+          )}
+        </div>
+
+        {/* My Orders */}
+        <div className="bg-white border border-[#E5D8C8] rounded-2xl p-6 shadow-sm">
+          <h2 className="text-[#5D3A1A] font-semibold flex items-center gap-2 mb-4">
+            <Package size={16} /> My Orders
+          </h2>
+
+          {loadingOrders ? (
+            <div className="flex justify-center py-8">
+              <div className="w-6 h-6 border-2 border-[#CA2A31] border-t-transparent rounded-full animate-spin" />
+            </div>
+          ) : orders.length === 0 ? (
+            <div className="text-center py-8">
+              <Package size={48} className="mx-auto text-[#E5D8C8] mb-3" />
+              <p className="text-[#8B6A4A] text-sm mb-4">No orders yet</p>
+              <button
+                onClick={() => navigate('/shop/xtreme-kolorz')}
+                className="px-4 py-2 bg-[#5D3A1A] text-white rounded-lg text-sm font-semibold hover:bg-[#7A4E28] transition-all"
+              >
+                Start Shopping
+              </button>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {orders.map(order => {
+                const statusColors = {
+                  pending: { bg: '#FEF3C7', text: '#92400E', label: 'Pending' },
+                  confirmed: { bg: '#DBEAFE', text: '#1E40AF', label: 'Confirmed' },
+                  processing: { bg: '#E0E7FF', text: '#3730A3', label: 'Processing' },
+                  shipped: { bg: '#DDD6FE', text: '#5B21B6', label: 'Shipped' },
+                  delivered: { bg: '#D1FAE5', text: '#065F46', label: 'Delivered' },
+                  cancelled: { bg: '#FEE2E2', text: '#991B1B', label: 'Cancelled' },
+                }
+                const status = statusColors[order.order_status] || statusColors.pending
+
+                return (
+                  <div
+                    key={order.id}
+                    className="border border-[#E5D8C8] rounded-xl p-4 hover:border-[#5D3A1A]/40 hover:bg-[#FAFAFA] transition-all cursor-pointer"
+                    onClick={() => navigate(`/orders/${order.id}`)}
+                  >
+                    <div className="flex items-start justify-between mb-3">
+                      <div>
+                        <p className="text-xs text-[#8B6A4A]">Order #{order.razorpay_order_id || order.id.slice(0, 8)}</p>
+                        <p className="text-xs text-[#8B6A4A] mt-0.5">
+                          {new Date(order.created_at).toLocaleDateString('en-IN', { 
+                            day: 'numeric', 
+                            month: 'short', 
+                            year: 'numeric' 
+                          })}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span
+                          className="text-xs font-semibold px-2 py-1 rounded-full"
+                          style={{ background: status.bg, color: status.text }}
+                        >
+                          {status.label}
+                        </span>
+                        <ChevronRight size={16} className="text-[#8B6A4A]" />
+                      </div>
+                    </div>
+
+                    {/* Order Items Preview */}
+                    <div className="flex items-center gap-2 mb-3 overflow-x-auto pb-2">
+                      {order.order_items?.slice(0, 3).map((item, idx) => (
+                        <div key={idx} className="flex-shrink-0">
+                          {item.products?.images?.[0] ? (
+                            <img
+                              src={item.products.images[0]}
+                              alt={item.products.name}
+                              className="w-12 h-12 object-cover rounded-lg border border-[#E5D8C8]"
+                            />
+                          ) : (
+                            <div className="w-12 h-12 bg-[#F5F0EB] rounded-lg border border-[#E5D8C8] flex items-center justify-center">
+                              <Package size={20} className="text-[#8B6A4A]" />
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                      {order.order_items?.length > 3 && (
+                        <div className="flex-shrink-0 w-12 h-12 bg-[#F5F0EB] rounded-lg border border-[#E5D8C8] flex items-center justify-center">
+                          <span className="text-xs font-semibold text-[#5D3A1A]">
+                            +{order.order_items.length - 3}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Total */}
+                    <div className="flex items-center justify-between pt-3 border-t border-[#E5D8C8]">
+                      <p className="text-sm text-[#4B3420]">
+                        {order.order_items?.length || 0} item{order.order_items?.length !== 1 ? 's' : ''}
+                      </p>
+                      <p className="text-sm font-semibold text-[#1C1006]">
+                        ₹{order.total_amount?.toLocaleString('en-IN')}
+                      </p>
+                    </div>
+                  </div>
+                )
+              })}
             </div>
           )}
         </div>

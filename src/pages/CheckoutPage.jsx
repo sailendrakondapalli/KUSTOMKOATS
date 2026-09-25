@@ -37,14 +37,14 @@ function NewAddressForm({ onSave, onCancel, saving }) {
     return Object.keys(e).length === 0
   }
   const handleSubmit = (e) => { e.preventDefault(); if (validate()) onSave(form) }
-  const inp = "w-full bg-white border border-[#E5D8C8] rounded-lg px-3 py-2.5 text-sm text-[#1C1006] placeholder-[#8B6A4A] focus:outline-none focus:border-[#5D3A1A]"
-  const lbl = "text-xs text-[#4B3420] mb-1 block font-medium"
+  const inp = "w-full bg-white border-2 border-gray-300 rounded-lg px-3 py-2.5 text-sm text-black placeholder-gray-400 focus:outline-none focus:border-black"
+  const lbl = "text-xs text-gray-700 mb-1 block font-medium"
   return (
-    <form onSubmit={handleSubmit} className="border border-[#E5D8C8] rounded-xl p-4 bg-[#FAFAFA] space-y-3">
+    <form onSubmit={handleSubmit} className="border-2 border-gray-300 rounded-xl p-4 bg-gray-50 space-y-3">
       <div className="flex gap-2 mb-1">
         {["Home","Work","Other"].map(l => (
           <button key={l} type="button" onClick={() => setForm(f => ({ ...f, label: l }))}
-            className={`px-3 py-1 rounded-full text-xs font-medium transition-all ${form.label === l ? "bg-[#5D3A1A] text-white" : "bg-white text-[#4B3420] border border-[#E5D8C8]"}`}>{l}</button>
+            className={`px-3 py-1 rounded-full text-xs font-medium transition-all ${form.label === l ? "bg-black text-white" : "bg-white text-black border-2 border-gray-300"}`}>{l}</button>
         ))}
       </div>
       <div className="grid grid-cols-2 gap-3">
@@ -63,13 +63,13 @@ function NewAddressForm({ onSave, onCancel, saving }) {
         </div>
         <div><label className={lbl}>PIN Code *</label><input value={form.pincode} onChange={e=>setForm(f=>({...f,pincode:e.target.value.replace(/\D/g,"").slice(0,6)}))} placeholder="6-digit PIN" maxLength={6} inputMode="numeric" type="tel" className={inp} />{errors.pincode&&<p className="text-red-400 text-xs mt-0.5">{errors.pincode}</p>}</div>
       </div>
-      <label className="flex items-center gap-2 text-xs text-gray-400 cursor-pointer">
-        <input type="checkbox" checked={form.is_default} onChange={e => setForm(f => ({ ...f, is_default: e.target.checked }))} className="accent-[#D97706]" />
+      <label className="flex items-center gap-2 text-xs text-gray-600 cursor-pointer">
+        <input type="checkbox" checked={form.is_default} onChange={e => setForm(f => ({ ...f, is_default: e.target.checked }))} className="accent-black" />
         Save as default address
       </label>
       <div className="flex gap-2">
-        <button type="button" onClick={onCancel} className="flex-1 py-2 border border-[#E5D8C8] text-[#4B3420] rounded-lg text-sm">Cancel</button>
-        <button type="submit" disabled={saving} className="flex-1 py-2 bg-[#5D3A1A] text-white font-semibold rounded-lg text-sm hover:bg-[#7A4E28] disabled:opacity-60">Save & Use</button>
+        <button type="button" onClick={onCancel} className="flex-1 py-2 border-2 border-gray-300 text-black rounded-lg text-sm hover:bg-gray-100">Cancel</button>
+        <button type="submit" disabled={saving} className="flex-1 py-2 bg-black text-white font-semibold rounded-lg text-sm hover:bg-gray-800 disabled:opacity-60">Save & Use</button>
       </div>
     </form>
   )
@@ -457,28 +457,28 @@ export default function CheckoutPage() {
 
   if (step === "success") {
     return (
-      <div className="max-w-lg mx-auto px-4 py-20 text-center">
+      <div className="max-w-lg mx-auto px-4 pt-24 pb-20 text-center">
         <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring" }}>
           <CheckCircle size={80} className="text-green-400 mx-auto mb-6" />
         </motion.div>
-        <h2 className="text-3xl font-bold text-[#1C1006] mb-3" style={{ fontFamily: "Georgia, serif" }}>Order Placed!</h2>
-        <p className="text-[#4B3420] mb-2">Your order is pending payment verification.</p>
-        <p className="text-[#8B6A4A] text-sm mb-8">We will confirm your order once payment is verified. You will be notified.</p>
+        <h2 className="text-3xl font-bold text-black mb-3" style={{ fontFamily: "Georgia, serif" }}>Order Placed!</h2>
+        <p className="text-gray-700 mb-2">Your order is pending payment verification.</p>
+        <p className="text-gray-500 text-sm mb-8">We will confirm your order once payment is verified. You will be notified.</p>
         <div className="flex gap-4 justify-center">
-          <button onClick={() => navigate("/orders")} className="px-6 py-3 bg-[#5D3A1A] text-white font-semibold rounded-lg hover:bg-[#7A4E28] transition-all">View Orders</button>
-          <button onClick={() => navigate("/")} className="px-6 py-3 border border-[#5D3A1A] text-[#5D3A1A] rounded-lg hover:bg-[#5D3A1A]/10 transition-all">Continue Shopping</button>
+          <button onClick={() => navigate("/orders")} className="px-6 py-3 bg-black text-white font-semibold rounded-lg hover:bg-gray-800 transition-all">View Orders</button>
+          <button onClick={() => navigate("/")} className="px-6 py-3 border-2 border-black text-black rounded-lg hover:bg-gray-100 transition-all">Continue Shopping</button>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold text-[#1C1006] mb-8" style={{ fontFamily: "Georgia, serif" }}>
+    <div className="max-w-5xl mx-auto px-4 pt-24 pb-12">
+      <h1 className="text-3xl font-bold text-black mb-8" style={{ fontFamily: "Georgia, serif" }}>
         {isBuyNow ? "Buy Now" : "Checkout"}
       </h1>
       {isBuyNow && (
-        <div className="mb-6 flex items-center gap-2 bg-[#5D3A1A]/5 border border-[#5D3A1A]/20 rounded-lg px-4 py-2.5 text-sm text-[#5D3A1A]">
+        <div className="mb-6 flex items-center gap-2 bg-gray-100 border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-black">
           <Zap size={14} className="flex-shrink-0" />
           Buying <span className="font-semibold mx-1">{buyNowData.product.name}</span> directly - your cart is unchanged.
         </div>
@@ -488,11 +488,11 @@ export default function CheckoutPage() {
       <div className="flex items-center gap-3 mb-8">
         {["address","payment"].map((s, i) => (
           <div key={s} className="flex items-center gap-2">
-            <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${step === s || (s === "address" && step === "payment") ? "bg-[#5D3A1A] text-white" : "bg-[#E5D8C8] text-[#8B6A4A] border border-[#E5D8C8]"}`}>
+            <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${step === s || (s === "address" && step === "payment") ? "bg-black text-white" : "bg-gray-200 text-gray-600 border border-gray-300"}`}>
               {i + 1}
             </div>
-            <span className={`text-sm capitalize ${step === s ? "text-[#1C1006] font-medium" : "text-[#8B6A4A]"}`}>{s === "address" ? "Delivery Address" : "Payment"}</span>
-            {i === 0 && <div className="w-8 h-px bg-[#E5D8C8] mx-1" />}
+            <span className={`text-sm capitalize ${step === s ? "text-black font-medium" : "text-gray-500"}`}>{s === "address" ? "Delivery Address" : "Payment"}</span>
+            {i === 0 && <div className="w-8 h-px bg-gray-300 mx-1" />}
           </div>
         ))}
       </div>
@@ -502,11 +502,11 @@ export default function CheckoutPage() {
           {step === "address" && (
             <>
               {!user && (
-                <div className="bg-white border border-[#E5D8C8] rounded-xl p-5 shadow-sm">
-                  <h2 className="text-[#1C1006] font-semibold mb-4">Guest Checkout</h2>
+                <div className="bg-white border-2 border-gray-200 rounded-xl p-5 shadow-sm">
+                  <h2 className="text-black font-semibold mb-4">Guest Checkout</h2>
                   <div className="space-y-3">
                     <div>
-                      <label className="text-xs text-[#4B3420] mb-1 block font-medium">
+                      <label className="text-xs text-gray-700 mb-1 block font-medium">
                         Full Name <span className="text-red-500">*</span>
                       </label>
                       <input
@@ -514,12 +514,12 @@ export default function CheckoutPage() {
                         value={guestName}
                         onChange={(e) => setGuestName(e.target.value)}
                         placeholder="Enter your full name"
-                        className="w-full bg-white border border-[#E5D8C8] rounded-lg px-3 py-2.5 text-sm text-[#1C1006] placeholder-[#8B6A4A] focus:outline-none focus:border-[#5D3A1A]"
+                        className="w-full bg-white border-2 border-gray-300 rounded-lg px-3 py-2.5 text-sm text-black placeholder-gray-400 focus:outline-none focus:border-black"
                       />
                     </div>
                     
                     <div>
-                      <label className="text-xs text-[#4B3420] mb-1 block font-medium">
+                      <label className="text-xs text-gray-700 mb-1 block font-medium">
                         Email <span className="text-red-500">*</span>
                       </label>
                       <input
@@ -527,7 +527,7 @@ export default function CheckoutPage() {
                         value={guestEmail}
                         onChange={(e) => setGuestEmail(e.target.value)}
                         placeholder="your.email@example.com"
-                        className="w-full bg-white border border-[#E5D8C8] rounded-lg px-3 py-2.5 text-sm text-[#1C1006] placeholder-[#8B6A4A] focus:outline-none focus:border-[#5D3A1A]"
+                        className="w-full bg-white border-2 border-gray-300 rounded-lg px-3 py-2.5 text-sm text-black placeholder-gray-400 focus:outline-none focus:border-black"
                       />
                       {guestEmail && !validateEmail(guestEmail) && (
                         <p className="text-xs text-red-500 mt-1">Please enter a valid email</p>
@@ -535,7 +535,7 @@ export default function CheckoutPage() {
                     </div>
                     
                     <div>
-                      <label className="text-xs text-[#4B3420] mb-1 block font-medium">
+                      <label className="text-xs text-gray-700 mb-1 block font-medium">
                         Phone Number <span className="text-red-500">*</span>
                       </label>
                       <input
@@ -544,7 +544,7 @@ export default function CheckoutPage() {
                         onChange={(e) => setGuestPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
                         placeholder="10-digit mobile number"
                         maxLength={10}
-                        className="w-full bg-white border border-[#E5D8C8] rounded-lg px-3 py-2.5 text-sm text-[#1C1006] placeholder-[#8B6A4A] focus:outline-none focus:border-[#5D3A1A]"
+                        className="w-full bg-white border-2 border-gray-300 rounded-lg px-3 py-2.5 text-sm text-black placeholder-gray-400 focus:outline-none focus:border-black"
                       />
                       {guestPhone && !validatePhone(guestPhone) && (
                         <p className="text-xs text-red-500 mt-1">Please enter 10-digit mobile number</p>
@@ -554,24 +554,24 @@ export default function CheckoutPage() {
                 </div>
               )}
               
-            <div className="bg-white border border-[#E5D8C8] rounded-xl p-5 shadow-sm">
+            <div className="bg-white border-2 border-gray-200 rounded-xl p-5 shadow-sm">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-[#1C1006] font-semibold flex items-center gap-2"><MapPin size={16} className="text-[#D97706]" /> Delivery Address</h2>
-                {!showNewForm && <button onClick={() => setShowNewForm(true)} className="flex items-center gap-1 text-xs text-[#5D3A1A] font-medium"><Plus size={13} /> Add New</button>}
+                <h2 className="text-black font-semibold flex items-center gap-2"><MapPin size={16} className="text-black" /> Delivery Address</h2>
+                {!showNewForm && <button onClick={() => setShowNewForm(true)} className="flex items-center gap-1 text-xs text-black font-medium hover:underline"><Plus size={13} /> Add New</button>}
               </div>
-              {loading ? <div className="h-20 bg-[#F5F0EB] rounded-xl animate-pulse" /> : (
+              {loading ? <div className="h-20 bg-gray-100 rounded-xl animate-pulse" /> : (
                 <div className="space-y-3">
                   {showNewForm && <NewAddressForm onSave={handleSaveNew} onCancel={() => addresses.length > 0 && setShowNewForm(false)} saving={savingAddr} />}
                   {addresses.map(addr => (
                     <div key={addr.id} onClick={() => { setSelectedId(addr.id); setShowNewForm(false) }}
-                      className={`border rounded-xl p-4 cursor-pointer transition-all ${selectedId === addr.id ? "border-[#5D3A1A] bg-[#5D3A1A]/5" : "border-[#E5D8C8] bg-[#FAFAFA] hover:border-[#5D3A1A]/30"}`}>
+                      className={`border-2 rounded-xl p-4 cursor-pointer transition-all ${selectedId === addr.id ? "border-black bg-gray-50" : "border-gray-300 bg-white hover:border-gray-500"}`}>
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
-                          <span className="text-xs px-2 py-0.5 bg-[#5D3A1A]/10 text-[#5D3A1A] rounded-full font-medium">{addr.label}</span>
-                          <p className="text-[#1C1006] text-sm font-medium mt-1">{addr.full_name} &middot; {addr.phone}</p>
-                          <p className="text-[#4B3420] text-xs">{addr.address1}, {addr.city}, {addr.state} &ndash; {addr.pincode}</p>
+                          <span className="text-xs px-2 py-0.5 bg-gray-200 text-black rounded-full font-medium">{addr.label}</span>
+                          <p className="text-black text-sm font-medium mt-1">{addr.full_name} &middot; {addr.phone}</p>
+                          <p className="text-gray-600 text-xs">{addr.address1}, {addr.city}, {addr.state} &ndash; {addr.pincode}</p>
                         </div>
-                        {selectedId === addr.id && <div className="w-5 h-5 bg-[#5D3A1A] rounded-full flex items-center justify-center ml-3"><Check size={12} className="text-white" /></div>}
+                        {selectedId === addr.id && <div className="w-5 h-5 bg-black rounded-full flex items-center justify-center ml-3"><Check size={12} className="text-white" /></div>}
                       </div>
                     </div>
                   ))}
@@ -579,7 +579,7 @@ export default function CheckoutPage() {
               )}
               <button onClick={() => { if (!selectedId) { toast.error("Select an address"); return } setStep("payment") }}
                 disabled={!selectedId || loading}
-                className="w-full mt-4 py-3 bg-[#5D3A1A] text-white font-semibold rounded-lg hover:bg-[#7A4E28] transition-all disabled:opacity-50">
+                className="w-full mt-4 py-3 bg-black text-white font-semibold rounded-lg hover:bg-gray-800 transition-all disabled:opacity-50">
                 Continue to Payment &rarr;
               </button>
             </div>
@@ -594,32 +594,32 @@ export default function CheckoutPage() {
             return (
               <div className="space-y-4">
                 {/* Payment Info Card */}
-                <div className="bg-white border border-[#E5D8C8] rounded-xl p-6 shadow-sm">
+                <div className="bg-white border-2 border-gray-200 rounded-xl p-6 shadow-sm">
                   <div className="text-center mb-6">
-                    <div className="w-16 h-16 bg-[#5D3A1A]/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <CreditCard size={32} className="text-[#5D3A1A]" />
+                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <CreditCard size={32} className="text-black" />
                     </div>
-                    <h2 className="text-2xl font-bold text-[#1C1006] mb-2">Secure Payment</h2>
-                    <p className="text-[#4B3420] text-sm">Pay securely with Razorpay</p>
+                    <h2 className="text-2xl font-bold text-black mb-2">Secure Payment</h2>
+                    <p className="text-gray-700 text-sm">Pay securely with Razorpay</p>
                   </div>
                   
-                  <div className="bg-[#F5F0EB] rounded-xl p-4 mb-6">
+                  <div className="bg-gray-50 rounded-xl p-4 mb-6 border-2 border-gray-200">
                     <div className="flex justify-between items-center">
-                      <span className="text-[#4B3420] font-medium">Total Amount</span>
-                      <span className="text-3xl font-bold text-[#5D3A1A]">{formatINR(grandTotal)}</span>
+                      <span className="text-gray-700 font-medium">Total Amount</span>
+                      <span className="text-3xl font-bold text-black">{formatINR(grandTotal)}</span>
                     </div>
                   </div>
                   
                   <div className="space-y-3 mb-6">
-                    <div className="flex items-center gap-2 text-sm text-[#4B3420]">
+                    <div className="flex items-center gap-2 text-sm text-gray-700">
                       <Check size={16} className="text-green-600" />
                       <span>UPI, Cards, Net Banking, Wallets</span>
                     </div>
-                    <div className="flex items-center gap-2 text-sm text-[#4B3420]">
+                    <div className="flex items-center gap-2 text-sm text-gray-700">
                       <Check size={16} className="text-green-600" />
                       <span>Secure SSL encrypted payment</span>
                     </div>
-                    <div className="flex items-center gap-2 text-sm text-[#4B3420]">
+                    <div className="flex items-center gap-2 text-sm text-gray-700">
                       <Check size={16} className="text-green-600" />
                       <span>Instant order confirmation</span>
                     </div>
@@ -628,7 +628,7 @@ export default function CheckoutPage() {
                   <button
                     onClick={handleRazorpayPayment}
                     disabled={paying || !selectedId || loading}
-                    className="w-full py-4 bg-[#5D3A1A] text-white font-bold rounded-xl hover:bg-[#7A4E28] transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-base shadow-lg">
+                    className="w-full py-4 bg-black text-white font-bold rounded-xl hover:bg-gray-800 transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-base shadow-lg">
                     {paying ? (
                       <>
                         <Loader2 size={18} className="animate-spin" />
@@ -642,12 +642,12 @@ export default function CheckoutPage() {
                     )}
                   </button>
                   
-                  <p className="text-[#8B6A4A] text-xs text-center mt-4">
+                  <p className="text-gray-500 text-xs text-center mt-4">
                     By proceeding, you agree to our terms and conditions
                   </p>
                 </div>
 
-                <button onClick={() => setStep("address")} className="flex items-center gap-1 text-xs text-[#8B6A4A] hover:text-[#5D3A1A] transition-colors">
+                <button onClick={() => setStep("address")} className="flex items-center gap-1 text-xs text-gray-600 hover:text-black transition-colors">
                   &larr; Back to address
                 </button>
               </div>
@@ -656,8 +656,8 @@ export default function CheckoutPage() {
         </div>
 
         {/* Order Summary */}
-        <div className="bg-white border border-[#E5D8C8] rounded-xl p-6 h-fit sticky top-20 shadow-sm">
-          <h2 className="text-[#1C1006] font-semibold mb-4">Order Summary</h2>
+        <div className="bg-white border-2 border-gray-200 rounded-xl p-6 h-fit sticky top-20 shadow-sm">
+          <h2 className="text-black font-semibold mb-4">Order Summary</h2>
           <div className="space-y-2 mb-4 max-h-48 overflow-y-auto">
             {items.map(item => {
               // Check if this specific item qualifies for the applied promo
@@ -679,16 +679,16 @@ export default function CheckoutPage() {
               const itemFinal = itemOriginal - itemDiscount
               return (
                 <div key={item.id || item.product_id} className="flex justify-between text-sm">
-                  <span className="text-[#4B3420] truncate mr-2">{item.products?.name} &times; {item.quantity}</span>
+                  <span className="text-gray-700 truncate mr-2">{item.products?.name} &times; {item.quantity}</span>
                   <div className="text-right flex-shrink-0">
                     {itemDiscount > 0 && <p className="text-gray-400 line-through text-xs">{formatINR(itemOriginal)}</p>}
-                    <span className={`font-medium ${itemDiscount > 0 ? 'text-green-600' : 'text-[#1C1006]'}`}>{formatINR(itemFinal)}</span>
+                    <span className={`font-medium ${itemDiscount > 0 ? 'text-green-600' : 'text-black'}`}>{formatINR(itemFinal)}</span>
                   </div>
                 </div>
               )
             })}
           </div>
-          <div className="border-t border-[#E5D8C8] pt-4 space-y-2 mb-5">
+          <div className="border-t-2 border-gray-200 pt-4 space-y-2 mb-5">
             {(() => {
               const selectedAddr = addresses.find(a => a.id === selectedId)
               const shipping = getShippingCost(selectedAddr)
@@ -697,8 +697,8 @@ export default function CheckoutPage() {
               return (
                 <>
                   <div className="flex justify-between text-sm">
-                    <span className="text-[#4B3420]">Subtotal</span>
-                    <span className="text-[#1C1006] font-medium">{formatINR(total)}</span>
+                    <span className="text-gray-700">Subtotal</span>
+                    <span className="text-black font-medium">{formatINR(total)}</span>
                   </div>
                   {discount > 0 && (
                     <div className="flex justify-between text-sm text-green-600">
@@ -711,22 +711,22 @@ export default function CheckoutPage() {
                     </div>
                   )}
                   <div className="flex justify-between text-sm">
-                    <span className="text-[#4B3420]">Delivery</span>
+                    <span className="text-gray-700">Delivery</span>
                     {shipping === 0
                       ? <span className="text-green-600 font-medium">Free</span>
-                      : <span className="text-[#D97706] font-medium">+{formatINR(shipping)}</span>
+                      : <span className="text-black font-medium">+{formatINR(shipping)}</span>
                     }
                   </div>
                   {selectedAddr && !(items.length > 0 && items.every(i => i.products?.delivery_charge != null)) && (
-                    <p className="text-[#8B6A4A] text-xs">
+                    <p className="text-gray-500 text-xs">
                       {["andhra pradesh","telangana","ap","ts"].some(s => (selectedAddr.state||"").toLowerCase().includes(s))
                         ? "AP/Telangana rate"
                         : "Other states rate"}
                     </p>
                   )}
-                  <div className="flex justify-between font-semibold pt-1 border-t border-[#E5D8C8]">
-                    <span className="text-[#1C1006]">Total</span>
-                    <span className="text-[#5D3A1A] text-lg font-bold">{formatINR(grandTotal)}</span>
+                  <div className="flex justify-between font-semibold pt-1 border-t-2 border-gray-200">
+                    <span className="text-black">Total</span>
+                    <span className="text-black text-lg font-bold">{formatINR(grandTotal)}</span>
                   </div>
                 </>
               )
@@ -737,7 +737,7 @@ export default function CheckoutPage() {
           <div className="mb-4 space-y-3">
             {/* Applied promo chip */}
             {appliedPromo && (
-              <div className="flex items-center justify-between bg-green-50 border border-green-200 rounded-xl px-3 py-2.5">
+              <div className="flex items-center justify-between bg-green-50 border-2 border-green-200 rounded-xl px-3 py-2.5">
                 <div className="flex items-center gap-2">
                   <Ticket size={14} className="text-green-600" />
                   <span className="text-green-700 text-sm font-semibold">{appliedPromo.promo.code}</span>
@@ -755,9 +755,9 @@ export default function CheckoutPage() {
                 <input value={promoInput} onChange={e => setPromoInput(e.target.value.toUpperCase())}
                   onKeyDown={e => e.key === "Enter" && applyPromo()}
                   placeholder="Enter promo code"
-                  className="flex-1 bg-white border border-[#E5D8C8] rounded-lg px-3 py-2 text-sm text-[#1C1006] placeholder-[#8B6A4A] focus:outline-none focus:border-[#D97706]" />
+                  className="flex-1 bg-white border-2 border-gray-300 rounded-lg px-3 py-2 text-sm text-black placeholder-gray-400 focus:outline-none focus:border-black" />
                 <button onClick={() => applyPromo()} disabled={promoLoading || !promoInput.trim()}
-                  className="px-3 py-2 bg-[#5D3A1A] text-white text-sm font-semibold rounded-lg hover:bg-[#7A4E28] disabled:opacity-50 flex items-center gap-1">
+                  className="px-3 py-2 bg-black text-white text-sm font-semibold rounded-lg hover:bg-gray-800 disabled:opacity-50 flex items-center gap-1">
                   {promoLoading ? <Loader2 size={13} className="animate-spin" /> : "Apply"}
                 </button>
               </div>
@@ -766,8 +766,8 @@ export default function CheckoutPage() {
             {/* Available promo codes list */}
             {allPromoCodes.length > 0 && (
               <div>
-                <p className="text-xs text-[#4B3420] font-semibold mb-2 flex items-center gap-1">
-                  <Ticket size={12} className="text-[#D97706]" /> Available Offers
+                <p className="text-xs text-gray-700 font-semibold mb-2 flex items-center gap-1">
+                  <Ticket size={12} className="text-black" /> Available Offers
                 </p>
                 <div className="space-y-2">
                   {allPromoCodes.map(code => {
@@ -779,21 +779,21 @@ export default function CheckoutPage() {
                     const discount = eligible ? calcItemDiscount(code, items) : 0
                     return (
                       <div key={code.id}
-                        className={`border rounded-xl px-3 py-2.5 transition-all ${
+                        className={`border-2 rounded-xl px-3 py-2.5 transition-all ${
                           eligible
-                            ? "bg-[#FFF8F0] border-[#D97706]/40"
-                            : "bg-gray-50 border-gray-200 opacity-60"
+                            ? "bg-gray-50 border-gray-300"
+                            : "bg-gray-100 border-gray-200 opacity-60"
                         }`}>
                         <div className="flex items-center justify-between gap-2">
                           <div className="flex items-center gap-2 flex-1 min-w-0">
-                            <span className={`font-mono font-bold text-xs px-2 py-0.5 rounded flex-shrink-0 ${eligible ? "text-[#D97706] bg-[#D97706]/10" : "text-gray-400 bg-gray-200"}`}>
+                            <span className={`font-mono font-bold text-xs px-2 py-0.5 rounded flex-shrink-0 ${eligible ? "text-black bg-gray-200" : "text-gray-400 bg-gray-200"}`}>
                               {code.code}
                             </span>
                             <div className="min-w-0">
-                              <p className={`text-xs font-medium truncate ${eligible ? "text-[#1C1006]" : "text-gray-400"}`}>
-                                {code.discount_type === 'percentage' ? `${code.discount_value}% off` : `?${code.discount_value} off`}
+                              <p className={`text-xs font-medium truncate ${eligible ? "text-black" : "text-gray-400"}`}>
+                                {code.discount_type === 'percentage' ? `${code.discount_value}% off` : `₹${code.discount_value} off`}
                                 {code.applicable_category ? ` on ${code.applicable_category}` : ""}
-                                {code.min_order_amount > 0 ? ` ? Min ?${code.min_order_amount.toLocaleString('en-IN')}` : ""}
+                                {code.min_order_amount > 0 ? ` • Min ₹${code.min_order_amount.toLocaleString('en-IN')}` : ""}
                               </p>
                               {code.description && <p className="text-gray-400 text-xs truncate">{code.description}</p>}
                               {!eligible && reason && <p className="text-red-400 text-xs">{reason}</p>}
@@ -807,7 +807,7 @@ export default function CheckoutPage() {
       applyPromo(code.code)
     }}
     disabled={promoLoading}
-    className="flex-shrink-0 px-4 py-2 bg-[#5D3A1A] text-white text-sm font-semibold rounded-lg hover:bg-[#7A4E28] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+    className="flex-shrink-0 px-4 py-2 bg-black text-white text-sm font-semibold rounded-lg hover:bg-gray-800 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
   >
     Apply
   </button>
@@ -826,7 +826,7 @@ export default function CheckoutPage() {
             )}
           </div>
 
-          <p className="text-[#8B6A4A] text-xs text-center">-??? UPI Payment - Secure &amp; Safe</p>
+          <p className="text-gray-500 text-xs text-center">🔒 UPI Payment - Secure &amp; Safe</p>
         </div>
       </div>
     </div>

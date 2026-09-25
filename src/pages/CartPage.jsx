@@ -101,11 +101,11 @@ export default function CartPage() {
 
   if (items.length === 0) {
     return (
-      <div className="max-w-2xl mx-auto px-4 py-20 text-center">
-        <ShoppingBag size={64} className="text-[#D97706] mx-auto mb-4" />
-        <h2 className="text-2xl font-bold text-[#1C1006] mb-2" style={{ fontFamily: 'Georgia, serif' }}>Your cart is empty</h2>
-        <p className="text-[#8B6A4A] mb-6">Discover our sacred Horse Riding collection</p>
-        <Link to="/products" className="px-8 py-3 bg-[#5D3A1A] text-white font-semibold rounded-lg hover:bg-[#7A4E28] transition-all">
+      <div className="max-w-2xl mx-auto px-4 pt-32 pb-20 text-center">
+        <ShoppingBag size={64} className="text-black mx-auto mb-4" />
+        <h2 className="text-2xl font-bold text-black mb-2" style={{ fontFamily: 'Georgia, serif' }}>Your cart is empty</h2>
+        <p className="text-gray-600 mb-6">Discover our collection</p>
+        <Link to="/products" className="px-8 py-3 bg-black text-white font-semibold rounded-lg hover:bg-gray-800 transition-all">
           Shop Now
         </Link>
       </div>
@@ -113,8 +113,8 @@ export default function CartPage() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold text-[#1C1006] mb-6" style={{ fontFamily: 'Georgia, serif' }}>Shopping Cart</h1>
+    <div className="max-w-5xl mx-auto px-4 pt-24 pb-12">
+      <h1 className="text-3xl font-bold text-black mb-6" style={{ fontFamily: 'Georgia, serif' }}>Shopping Cart</h1>
 
       {/* Select all row */}
       <div className="flex items-center gap-3 mb-4 px-1">
@@ -123,13 +123,13 @@ export default function CartPage() {
           id="select-all"
           checked={allSelected}
           onChange={toggleAll}
-          className="w-4 h-4 accent-[#5D3A1A] cursor-pointer"
+          className="w-4 h-4 accent-black cursor-pointer"
         />
-        <label htmlFor="select-all" className="text-sm text-[#4B3420] cursor-pointer select-none">
+        <label htmlFor="select-all" className="text-sm text-gray-700 cursor-pointer select-none">
           {allSelected ? 'Deselect all' : `Select all (${items.length})`}
         </label>
         {selectedIds.size > 0 && selectedIds.size < items.length && (
-          <span className="text-xs text-[#D97706] font-medium">{selectedIds.size} of {items.length} selected</span>
+          <span className="text-xs text-black font-medium">{selectedIds.size} of {items.length} selected</span>
         )}
       </div>
 
@@ -149,8 +149,8 @@ export default function CartPage() {
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -20 }}
-                  className={`flex gap-4 bg-white border rounded-xl p-4 shadow-sm transition-all ${
-                    isSelected ? 'border-[#5D3A1A]' : 'border-[#E5D8C8] opacity-60'
+                  className={`flex gap-4 bg-white border-2 rounded-xl p-4 shadow-sm transition-all ${
+                    isSelected ? 'border-black' : 'border-gray-300 opacity-60'
                   }`}
                 >
                   {/* Checkbox */}
@@ -159,7 +159,7 @@ export default function CartPage() {
                       type="checkbox"
                       checked={isSelected}
                       onChange={() => toggleItem(key)}
-                      className="w-4 h-4 accent-[#5D3A1A] cursor-pointer"
+                      className="w-4 h-4 accent-black cursor-pointer"
                     />
                   </div>
 
@@ -185,29 +185,29 @@ export default function CartPage() {
 
                   <div className="flex-1 min-w-0">
                     <Link to={`/products/${item.product_id}`}>
-                      <h3 className="text-[#1C1006] text-sm font-semibold hover:text-[#5D3A1A] transition-colors line-clamp-2">{product.name}</h3>
+                      <h3 className="text-black text-sm font-semibold hover:text-gray-700 transition-colors line-clamp-2">{product.name}</h3>
                     </Link>
-                    <p className="text-[#D97706] text-xs mt-1 font-medium">{product.category}</p>
-                    {product.stock === 0 && <p className="text-red-500 text-xs mt-1">? Out of stock</p>}
+                    <p className="text-gray-600 text-xs mt-1 font-medium">{product.category}</p>
+                    {product.stock === 0 && <p className="text-red-500 text-xs mt-1">⚠ Out of stock</p>}
                     <div className="flex items-center justify-between mt-3">
                       <div className="flex items-center gap-2">
-                        <button onClick={() => handleQty(item, -1)} className="w-7 h-7 flex items-center justify-center bg-[#F5F0EB] hover:bg-[#E5D8C8] text-[#4B3420] rounded-lg transition-all">
+                        <button onClick={() => handleQty(item, -1)} className="w-7 h-7 flex items-center justify-center bg-gray-100 hover:bg-gray-200 text-black rounded-lg transition-all">
                           <Minus size={12} />
                         </button>
-                        <span className="text-[#1C1006] text-sm w-6 text-center font-medium">{item.quantity}</span>
-                        <button onClick={() => handleQty(item, 1)} className="w-7 h-7 flex items-center justify-center bg-[#F5F0EB] hover:bg-[#E5D8C8] text-[#4B3420] rounded-lg transition-all">
+                        <span className="text-black text-sm w-6 text-center font-medium">{item.quantity}</span>
+                        <button onClick={() => handleQty(item, 1)} className="w-7 h-7 flex items-center justify-center bg-gray-100 hover:bg-gray-200 text-black rounded-lg transition-all">
                           <Plus size={12} />
                         </button>
                       </div>
                       <div className="flex items-center gap-3">
-                        <span className="text-[#5D3A1A] font-bold text-sm">{formatINR((product.price || 0) * item.quantity)}</span>
-                        <button onClick={() => handleRemove(item)} title="Remove" className="text-[#8B6A4A] hover:text-red-500 transition-colors">
+                        <span className="text-black font-bold text-sm">{formatINR((product.price || 0) * item.quantity)}</span>
+                        <button onClick={() => handleRemove(item)} title="Remove" className="text-gray-500 hover:text-red-500 transition-colors">
                           <Trash2 size={15} />
                         </button>
                       </div>
                     </div>
                     <button onClick={() => handleSaveLater(item)}
-                      className="mt-2 text-xs text-[#D97706] hover:text-[#5D3A1A] transition-colors flex items-center gap-1">
+                      className="mt-2 text-xs text-gray-600 hover:text-black transition-colors flex items-center gap-1">
                       <Heart size={11} /> Save for later
                     </button>
                   </div>
@@ -218,36 +218,36 @@ export default function CartPage() {
         </div>
 
         {/* Summary */}
-        <div className="bg-white border border-[#E5D8C8] rounded-xl p-6 h-fit sticky top-20 shadow-sm">
-          <h2 className="text-[#1C1006] font-semibold mb-4">Order Summary</h2>
+        <div className="bg-white border-2 border-gray-200 rounded-xl p-6 h-fit sticky top-20 shadow-sm">
+          <h2 className="text-black font-semibold mb-4">Order Summary</h2>
 
           {selectedItems.length === 0 ? (
-            <p className="text-[#8B6A4A] text-sm text-center py-4">No items selected</p>
+            <p className="text-gray-500 text-sm text-center py-4">No items selected</p>
           ) : (
             <div className="space-y-3 mb-4">
               {selectedItems.map(item => (
                 <div key={item.id || item.product_id} className="flex justify-between text-sm">
-                  <span className="text-[#4B3420] truncate mr-2">{item.products?.name} ? {item.quantity}</span>
-                  <span className="text-[#1C1006] shrink-0 font-medium">{formatINR((item.products?.price || 0) * item.quantity)}</span>
+                  <span className="text-gray-700 truncate mr-2">{item.products?.name} × {item.quantity}</span>
+                  <span className="text-black shrink-0 font-medium">{formatINR((item.products?.price || 0) * item.quantity)}</span>
                 </div>
               ))}
             </div>
           )}
 
-          <div className="border-t border-[#E5D8C8] pt-4 mb-6">
+          <div className="border-t-2 border-gray-200 pt-4 mb-6">
             <div className="flex justify-between">
-              <span className="text-[#1C1006] font-semibold">Total</span>
-              <span className="text-[#5D3A1A] font-bold text-lg">{formatINR(selectedTotal)}</span>
+              <span className="text-black font-semibold">Total</span>
+              <span className="text-black font-bold text-lg">{formatINR(selectedTotal)}</span>
             </div>
             {selectedItems.length > 0 && selectedItems.length < items.length && (
-              <p className="text-[#8B6A4A] text-xs mt-1">{selectedItems.length} of {items.length} items selected</p>
+              <p className="text-gray-500 text-xs mt-1">{selectedItems.length} of {items.length} items selected</p>
             )}
           </div>
 
           <button
             onClick={handleCheckout}
             disabled={hasOutOfStock || selectedItems.length === 0}
-            className="w-full flex items-center justify-center gap-2 py-3 bg-[#5D3A1A] text-white font-semibold rounded-lg hover:bg-[#7A4E28] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full flex items-center justify-center gap-2 py-3 bg-black text-white font-semibold rounded-lg hover:bg-gray-800 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Proceed to Checkout <ArrowRight size={16} />
           </button>

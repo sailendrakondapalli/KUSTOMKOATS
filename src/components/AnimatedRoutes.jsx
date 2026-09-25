@@ -14,6 +14,7 @@ const LoginPage = lazy(() => import('../pages/LoginPage'))
 const CartPage = lazy(() => import('../pages/CartPage'))
 const CheckoutPage = lazy(() => import('../pages/CheckoutPage'))
 const OrdersPage = lazy(() => import('../pages/OrdersPage'))
+const OrderDetailPage = lazy(() => import('../pages/OrderDetailPage'))
 const OrderSuccessPage = lazy(() => import('../pages/OrderSuccessPage'))
 const WishlistPage = lazy(() => import('../pages/WishlistPage'))
 const ProfilePage = lazy(() => import('../pages/ProfilePage'))
@@ -450,6 +451,17 @@ export default function AnimatedRoutes() {
               <ErrorBoundary>
                 <Suspense fallback={<PageLoader />}>
                   <OrdersPage />
+                </Suspense>
+              </ErrorBoundary>
+            </ProtectedRoute>
+          </PageTransition>
+        } />
+        <Route path="/orders/:id" element={
+          <PageTransition>
+            <ProtectedRoute>
+              <ErrorBoundary>
+                <Suspense fallback={<PageLoader />}>
+                  <OrderDetailPage />
                 </Suspense>
               </ErrorBoundary>
             </ProtectedRoute>

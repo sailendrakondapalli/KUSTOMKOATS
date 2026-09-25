@@ -165,17 +165,17 @@ export default function AdminCategoriesPage() {
                       <button onClick={() => openEdit(cat)}
                         style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#888888', padding: 6, borderRadius: 6, marginRight: 4 }}
                         onMouseEnter={e => { e.currentTarget.style.color = '#CA2A31'; e.currentTarget.style.background = '#FFF0F0' }}
-                        onMouseLeave={e => { e.currentTarget.style.color = '#888888'; e.currentTarget.style.background = 'transparent' }}>
+                        onMouseLeave={e => { e.currentTarget.style.color = '#888888'; e.currentTarget.style.background = 'transparent' }}
+                        title="Edit category">
                         <Edit2 size={15} />
                       </button>
-                      {!DEFAULT_CATEGORIES.includes(cat.name) && (
-                        <button onClick={() => handleDelete(cat)} disabled={deleting === cat.id}
-                          style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#888888', padding: 6, borderRadius: 6 }}
-                          onMouseEnter={e => { e.currentTarget.style.color = '#EF4444'; e.currentTarget.style.background = '#FEF2F2' }}
-                          onMouseLeave={e => { e.currentTarget.style.color = '#888888'; e.currentTarget.style.background = 'transparent' }}>
-                          <Trash2 size={15} />
-                        </button>
-                      )}
+                      <button onClick={() => handleDelete(cat)} disabled={deleting === cat.id}
+                        style={{ background: 'none', border: 'none', cursor: deleting === cat.id ? 'not-allowed' : 'pointer', color: '#888888', padding: 6, borderRadius: 6, opacity: deleting === cat.id ? 0.5 : 1 }}
+                        onMouseEnter={e => { if (deleting !== cat.id) { e.currentTarget.style.color = '#EF4444'; e.currentTarget.style.background = '#FEF2F2' } }}
+                        onMouseLeave={e => { e.currentTarget.style.color = '#888888'; e.currentTarget.style.background = 'transparent' }}
+                        title="Delete category">
+                        <Trash2 size={15} />
+                      </button>
                     </td>
                   </tr>
                 ))}

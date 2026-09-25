@@ -317,11 +317,11 @@ export default function Navbar() {
     <>
       <nav className="w-full px-6 lg:px-12 xl:px-20 h-14 flex items-center gap-6" style={{ ...navStyle, zIndex: 1000 }}>
         {/* Logo */}
-        <Link to="/" className="flex items-center gap-3 flex-shrink-0" onClick={closeAll}>
+        <Link to="/" className="flex items-center gap-3 flex-shrink-0 group" onClick={closeAll}>
           <img 
             src="/logo.png" 
             alt="Kustom Koats" 
-            className="h-5 md:h-7 w-auto object-contain"
+            className="h-5 md:h-7 w-auto object-contain transition-transform duration-300 group-hover:scale-110"
             style={{ maxWidth: '180px', filter: 'brightness(0) invert(1)' }}
           />
         </Link>
@@ -333,18 +333,19 @@ export default function Navbar() {
                 item.submenu ? (
                   <div 
                     key={item.label}
-                    className="relative"
+                    className="relative group"
                     onMouseEnter={() => setActiveDropdown(item.label)}
                     onMouseLeave={() => setActiveDropdown(null)}
                   >
                     <button
-                      className={`px-5 h-10 flex items-center text-[0.875rem] font-medium tracking-wide hover:text-[#CA2A31] transition-colors duration-300`}
+                      className="px-5 h-10 flex items-center text-[0.875rem] font-medium tracking-wide transition-colors duration-300 relative"
                       style={{ fontFamily: "'Inter', sans-serif", color: textColor }}
                     >
                       {item.label}
                       <svg className="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                       </svg>
+                      <span className="absolute bottom-0 left-1/2 h-0.5 bg-[#CA2A31] transition-all duration-300 ease-out w-0 group-hover:w-full group-hover:left-0" />
                     </button>
                     {activeDropdown === item.label && (
                       <div 
@@ -371,9 +372,10 @@ export default function Navbar() {
                   </div>
                 ) : (
                   <Link key={item.to} to={item.to} onClick={closeAll}
-                    className={`px-5 h-10 flex items-center text-[0.875rem] font-medium tracking-wide hover:text-[#CA2A31] transition-colors duration-300`}
+                    className="px-5 h-10 flex items-center text-[0.875rem] font-medium tracking-wide transition-colors duration-300 relative group"
                     style={{ fontFamily: "'Inter', sans-serif", color: textColor }}>
                     {item.label}
+                    <span className="absolute bottom-0 left-1/2 h-0.5 bg-[#CA2A31] transition-all duration-300 ease-out w-0 group-hover:w-full group-hover:left-0" />
                   </Link>
                 )
               ))}

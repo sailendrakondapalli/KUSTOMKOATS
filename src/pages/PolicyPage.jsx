@@ -67,8 +67,8 @@ export default function PolicyPage() {
 
   if (!policy) {
     return (
-      <div style={{ minHeight: "60vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#1A1714" }}>
-        <p style={{ color: "rgba(243,235,221,0.4)", fontFamily: "'Inter', sans-serif" }}>Page not found.</p>
+      <div style={{ minHeight: "60vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#FFFFFF", paddingTop: "96px" }}>
+        <p style={{ color: "#999999", fontFamily: "'Inter', sans-serif" }}>Page not found.</p>
       </div>
     )
   }
@@ -76,18 +76,18 @@ export default function PolicyPage() {
   return (
     <>
       <Helmet>
-        <title>{policy.title} - Royal Hoof Horse Riding Academy</title>
+        <title>{policy.title} - Kustom Koats</title>
       </Helmet>
 
-      <div style={{ background: "#1A1714", minHeight: "100vh", padding: "48px 24px 80px" }}>
+      <div style={{ background: "#FFFFFF", minHeight: "100vh", padding: "96px 24px 80px" }}>
         <div style={{ maxWidth: 720, margin: "0 auto" }}>
 
           {/* Page header */}
-          <div style={{ marginBottom: 40, paddingBottom: 24, borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
-            <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "0.75rem", letterSpacing: "0.25em", textTransform: "uppercase", color: "#B8955A", marginBottom: 10 }}>
-              Royal Hoof Horse Riding Academy
+          <div style={{ marginBottom: 40, paddingBottom: 24, borderBottom: "2px solid #E5E5E5" }}>
+            <p style={{ fontFamily: "'Inter', sans-serif", fontSize: "0.75rem", letterSpacing: "0.15em", textTransform: "uppercase", color: "#666666", marginBottom: 10, fontWeight: 600 }}>
+              Kustom Koats
             </p>
-            <h1 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "clamp(1.75rem, 4vw, 2.5rem)", fontWeight: 700, color: "#F3EBDD", lineHeight: 1.15 }}>
+            <h1 style={{ fontFamily: "'Georgia', serif", fontSize: "clamp(1.75rem, 4vw, 2.5rem)", fontWeight: 700, color: "#000000", lineHeight: 1.15 }}>
               {policy.title}
             </h1>
           </div>
@@ -96,23 +96,23 @@ export default function PolicyPage() {
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
             {policy.sections.map((section, i) => (
               <div key={i} style={{
-                background: "#5B1E28",
-                border: "1px solid rgba(255,255,255,0.07)",
-                borderRadius: 8,
+                background: "#FFFFFF",
+                border: "2px solid #E5E5E5",
+                borderRadius: 12,
                 padding: "20px 24px",
               }}>
-                <h2 style={{ color: "#B8955A", fontWeight: 600, fontSize: "1rem", marginBottom: 10, fontFamily: "'Inter', sans-serif" }}>
+                <h2 style={{ color: "#000000", fontWeight: 600, fontSize: "1rem", marginBottom: 10, fontFamily: "'Inter', sans-serif" }}>
                   {section.heading}
                 </h2>
-                <p style={{ color: "rgba(243,235,221,0.7)", fontSize: "0.9rem", lineHeight: 1.7, whiteSpace: "pre-line", fontFamily: "'Inter', sans-serif" }}>
+                <p style={{ color: "#333333", fontSize: "0.9rem", lineHeight: 1.7, whiteSpace: "pre-line", fontFamily: "'Inter', sans-serif" }}>
                   {section.text}
                 </p>
               </div>
             ))}
           </div>
 
-          <p style={{ color: "rgba(243,235,221,0.25)", fontSize: "0.75rem", textAlign: "center", marginTop: 40, fontFamily: "'Inter', sans-serif" }}>
-            Last updated: August 2026 - Royal Hoof Horse Riding Academy
+          <p style={{ color: "#999999", fontSize: "0.75rem", textAlign: "center", marginTop: 40, fontFamily: "'Inter', sans-serif" }}>
+            Last updated: March 2024 - Kustom Koats
           </p>
         </div>
       </div>
