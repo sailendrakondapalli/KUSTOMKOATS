@@ -23,21 +23,21 @@ export default function Footer() {
             {/* Contact Information */}
             <div className="space-y-3 text-sm" style={{ color: "#333333", fontFamily: "'Inter', sans-serif" }}>
               <div className="flex items-start gap-3">
-                <MapPin size={15} style={{ color: "#FF0000", marginTop: "2px" }} className="flex-shrink-0" /> 
+                <MapPin size={15} style={{ color: "#CA2A31", marginTop: "2px" }} className="flex-shrink-0" /> 
                 <div>
                   <p>{CONTACT_INFO.company.fullAddress}</p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
-                <Phone size={15} style={{ color: "#FF0000" }} /> 
+                <Phone size={15} style={{ color: "#CA2A31" }} /> 
                 {CONTACT_INFO.phone}
               </div>
               <div className="flex items-center gap-3">
-                <Mail size={15} style={{ color: "#FF0000" }} /> 
+                <Mail size={15} style={{ color: "#CA2A31" }} /> 
                 {CONTACT_INFO.email.info}
               </div>
               <div className="flex items-center gap-3">
-                <Globe size={15} style={{ color: "#FF0000" }} /> 
+                <Globe size={15} style={{ color: "#CA2A31" }} /> 
                 {CONTACT_INFO.website}
               </div>
             </div>
@@ -56,7 +56,7 @@ export default function Footer() {
                 <li key={item.to}>
                   <Link to={item.to} className="text-sm transition-colors duration-300" 
                     style={{ color: "#333333", fontFamily: "'Inter', sans-serif" }}
-                    onMouseEnter={e => e.currentTarget.style.color = "#FF0000"}
+                    onMouseEnter={e => e.currentTarget.style.color = "#CA2A31"}
                     onMouseLeave={e => e.currentTarget.style.color = "#333333"}>
                     {item.label}
                   </Link>
@@ -81,7 +81,7 @@ export default function Footer() {
                 <li key={item.to}>
                   <Link to={item.to} className="text-sm transition-colors duration-300" 
                     style={{ color: "#333333", fontFamily: "'Inter', sans-serif" }}
-                    onMouseEnter={e => e.currentTarget.style.color = "#FF0000"}
+                    onMouseEnter={e => e.currentTarget.style.color = "#CA2A31"}
                     onMouseLeave={e => e.currentTarget.style.color = "#333333"}>
                     {item.label}
                   </Link>
@@ -100,7 +100,7 @@ export default function Footer() {
           </p>
           <div className="flex items-center gap-3 flex-wrap justify-center">
             {/* Visa */}
-            <div className="h-8 px-3 flex items-center justify-center rounded border" style={{ background: "#FFFFFF", borderColor: "#E5E5E5" }}>
+            <div className="h-8 px-3 flex items-center justify-center rounded border transition-transform duration-300 hover:scale-110 cursor-pointer" style={{ background: "#FFFFFF", borderColor: "#E5E5E5" }}>
               <svg width="40" height="13" viewBox="0 0 40 13" fill="none">
                 <path d="M15.2 0.8H12.8L11 10.4H13.4L15.2 0.8Z" fill="#1A1F71"/>
                 <path d="M21.6 1C21.1 0.8 20.2 0.6 19.1 0.6C16.7 0.6 15 1.8 15 3.6C15 4.9 16.3 5.6 17.3 6C18.3 6.4 18.7 6.7 18.7 7.1C18.7 7.7 18 8 17.3 8C16.3 8 15.8 7.9 15 7.5L14.6 7.3L14.2 9.6C14.8 9.9 15.9 10.1 17 10.1C19.6 10.1 21.3 8.9 21.3 7C21.3 6 20.6 5.3 19.1 4.7C18.2 4.3 17.7 4 17.7 3.6C17.7 3.2 18.2 2.8 19.2 2.8C20 2.8 20.7 3 21.2 3.2L21.5 3.4L21.9 1.2C21.6 1.1 21.1 1 21.6 1Z" fill="#1A1F71"/>
@@ -110,7 +110,7 @@ export default function Footer() {
               </svg>
             </div>
             {/* Mastercard */}
-            <div className="h-8 px-3 flex items-center justify-center rounded border" style={{ background: "#FFFFFF", borderColor: "#E5E5E5" }}>
+            <div className="h-8 px-3 flex items-center justify-center rounded border transition-transform duration-300 hover:scale-110 cursor-pointer" style={{ background: "#FFFFFF", borderColor: "#E5E5E5" }}>
               <svg width="32" height="20" viewBox="0 0 32 20" fill="none">
                 <circle cx="12" cy="10" r="8" fill="#EB001B"/>
                 <circle cx="20" cy="10" r="8" fill="#F79E1B"/>
@@ -118,7 +118,7 @@ export default function Footer() {
               </svg>
             </div>
             {/* American Express */}
-            <div className="h-8 px-3 flex items-center justify-center rounded border" style={{ background: "#FFFFFF", borderColor: "#E5E5E5" }}>
+            <div className="h-8 px-3 flex items-center justify-center rounded border transition-transform duration-300 hover:scale-110 cursor-pointer" style={{ background: "#FFFFFF", borderColor: "#E5E5E5" }}>
               <svg width="32" height="20" viewBox="0 0 32 20" fill="none">
                 <rect width="32" height="20" rx="2" fill="#006FCF"/>
                 <path d="M8 8H10L11 10L12 8H14V14H12V10L11 12L10 10V14H8V8Z" fill="white"/>
@@ -127,14 +127,14 @@ export default function Footer() {
               </svg>
             </div>
             {/* PayPal */}
-            <div className="h-8 px-3 flex items-center justify-center rounded border" style={{ background: "#FFFFFF", borderColor: "#E5E5E5" }}>
+            <div className="h-8 px-3 flex items-center justify-center rounded border transition-transform duration-300 hover:scale-110 cursor-pointer" style={{ background: "#FFFFFF", borderColor: "#E5E5E5" }}>
               <svg width="32" height="20" viewBox="0 0 32 20" fill="none">
                 <path d="M11.5 4H15.5C17.5 4 19 5.5 19 7.5C19 9.5 17.5 11 15.5 11H13.5L12.5 16H10L11.5 4Z" fill="#003087"/>
                 <path d="M13.5 11H15.5C17.5 11 19 12.5 19 14.5C19 16.5 17.5 18 15.5 18H13.5L12.5 16H10L11.5 11H13.5Z" fill="#009CDE"/>
               </svg>
             </div>
             {/* RuPay */}
-            <div className="h-8 px-3 flex items-center justify-center rounded border" style={{ background: "#FFFFFF", borderColor: "#E5E5E5" }}>
+            <div className="h-8 px-3 flex items-center justify-center rounded border transition-transform duration-300 hover:scale-110 cursor-pointer" style={{ background: "#FFFFFF", borderColor: "#E5E5E5" }}>
               <svg width="40" height="20" viewBox="0 0 40 20" fill="none">
                 <path d="M8 5H12C14 5 15 6 15 8C15 10 14 11 12 11H10L9 15H7L8 5Z" fill="#097939"/>
                 <path d="M16 5H18L17 15H15L16 5Z" fill="#097939"/>
@@ -142,7 +142,7 @@ export default function Footer() {
               </svg>
             </div>
             {/* UPI */}
-            <div className="h-8 px-3 flex items-center justify-center rounded border text-xs font-bold" style={{ background: "#FFFFFF", borderColor: "#E5E5E5", color: "#097939" }}>
+            <div className="h-8 px-3 flex items-center justify-center rounded border text-xs font-bold transition-transform duration-300 hover:scale-110 cursor-pointer" style={{ background: "#FFFFFF", borderColor: "#E5E5E5", color: "#097939" }}>
               UPI
             </div>
           </div>
@@ -154,9 +154,9 @@ export default function Footer() {
           style={{ color: "#666666", fontFamily: "'Inter', sans-serif" }}>
           <span>© {new Date().getFullYear()} {CONTACT_INFO.company.parent}. All rights reserved.</span>
           <div className="flex gap-6">
-            <Link to="/privacy-policy" className="hover:text-[#FF0000] transition-colors">Privacy Policy</Link>
-            <Link to="/shipping-policy" className="hover:text-[#FF0000] transition-colors">Shipping</Link>
-            <Link to="/refund-policy" className="hover:text-[#FF0000] transition-colors">Returns</Link>
+            <Link to="/privacy-policy" className="hover:text-[#CA2A31] transition-colors">Privacy Policy</Link>
+            <Link to="/shipping-policy" className="hover:text-[#CA2A31] transition-colors">Shipping</Link>
+            <Link to="/refund-policy" className="hover:text-[#CA2A31] transition-colors">Returns</Link>
           </div>
         </div>
       </div>

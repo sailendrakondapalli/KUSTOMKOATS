@@ -24,13 +24,13 @@ const AdminBlogPage       = lazy(() => import('./pages/admin/AdminBlogPage'))
 const PageLoader = () => (
   <div className="min-h-screen flex items-center justify-center" style={{ background: '#FFFFFF' }}>
     <div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin"
-      style={{ borderColor: '#FF0000', borderTopColor: 'transparent' }} />
+      style={{ borderColor: '#CA2A31', borderTopColor: 'transparent' }} />
   </div>
 )
 
 const AdminLoader = () => (
   <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#111111' }}>
-    <div className="w-8 h-8 rounded-full border-4 border-red-600 border-t-transparent animate-spin" />
+    <div className="w-8 h-8 rounded-full border-4 border-[#CA2A31] border-t-transparent animate-spin" />
   </div>
 )
 

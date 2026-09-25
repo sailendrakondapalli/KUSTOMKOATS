@@ -19,7 +19,7 @@ function GoogleIcon() {
 }
 
 // ── Shared input style ──
-const inputCls = "w-full bg-[#F8F8F8] border border-[#E5E5E5] rounded-lg pl-10 pr-4 py-3 text-sm text-black placeholder-gray-400 focus:outline-none focus:border-[#FF0000] transition-colors"
+const inputCls = "w-full bg-[#F8F8F8] border border-[#E5E5E5] rounded-lg pl-10 pr-4 py-3 text-sm text-black placeholder-gray-400 focus:outline-none focus:border-[#CA2A31] transition-colors"
 
 export default function LoginPage() {
   const [mode, setMode]           = useState("login") // "login" | "signup" | "forgot"
@@ -104,7 +104,7 @@ export default function LoginPage() {
         <div className="text-center mb-8">
           <Link to="/" className="inline-block mb-4">
             <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl"
-              style={{ background: "#FF0000" }}>
+              style={{ background: "#CA2A31" }}>
               <span style={{ color: "#FFFFFF", fontFamily: "'Rajdhani', sans-serif", fontSize: "1.75rem", fontWeight: 800, lineHeight: 1 }}>K</span>
             </div>
           </Link>
@@ -126,19 +126,19 @@ export default function LoginPage() {
             <div className="text-center py-4">
               <div className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4"
                 style={{ background: "#FFF0F0" }}>
-                <Mail size={26} style={{ color: "#FF0000" }} />
+                <Mail size={26} style={{ color: "#CA2A31" }} />
               </div>
               <p className="font-bold text-lg mb-2" style={{ color: "#000000", fontFamily: "'Inter', sans-serif" }}>Check your email</p>
               <p className="text-sm mb-1" style={{ color: "#666666", fontFamily: "'Inter', sans-serif" }}>
                 We sent a confirmation link to
               </p>
-              <p className="font-semibold text-sm mb-4" style={{ color: "#FF0000", fontFamily: "'Inter', sans-serif" }}>{form.email}</p>
+              <p className="font-semibold text-sm mb-4" style={{ color: "#CA2A31", fontFamily: "'Inter', sans-serif" }}>{form.email}</p>
               <p className="text-xs mb-6" style={{ color: "#999999", fontFamily: "'Inter', sans-serif" }}>
                 Click the link in that email to activate your account, then come back to sign in.
               </p>
               <button onClick={() => switchMode("login")}
                 className="w-full py-3 rounded-xl font-bold text-sm transition-all hover:opacity-90"
-                style={{ background: "#FF0000", color: "#FFFFFF", fontFamily: "'Inter', sans-serif" }}>
+                style={{ background: "#CA2A31", color: "#FFFFFF", fontFamily: "'Inter', sans-serif" }}>
                 Go to Sign In
               </button>
             </div>
@@ -149,7 +149,7 @@ export default function LoginPage() {
               {mode === "forgot" ? (
                 <motion.div key="forgot" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
                   <button onClick={() => switchMode("login")}
-                    className="flex items-center gap-1.5 text-sm mb-5 transition-colors hover:text-[#FF0000]"
+                    className="flex items-center gap-1.5 text-sm mb-5 transition-colors hover:text-[#CA2A31]"
                     style={{ color: "#666666", fontFamily: "'Inter', sans-serif" }}>
                     <ArrowLeft size={15} /> Back to Sign In
                   </button>
@@ -160,11 +160,11 @@ export default function LoginPage() {
                       </div>
                       <p className="font-semibold mb-1" style={{ color: "#000000", fontFamily: "'Inter', sans-serif" }}>Check your email</p>
                       <p className="text-sm" style={{ color: "#666666", fontFamily: "'Inter', sans-serif" }}>
-                        We sent a reset link to <span className="font-semibold" style={{ color: "#FF0000" }}>{form.email}</span>
+                        We sent a reset link to <span className="font-semibold" style={{ color: "#CA2A31" }}>{form.email}</span>
                       </p>
                       <button onClick={() => switchMode("login")}
                         className="mt-6 w-full py-3 rounded-xl font-bold text-sm hover:opacity-90 transition-all"
-                        style={{ background: "#FF0000", color: "#FFFFFF", fontFamily: "'Inter', sans-serif" }}>
+                        style={{ background: "#CA2A31", color: "#FFFFFF", fontFamily: "'Inter', sans-serif" }}>
                         Back to Sign In
                       </button>
                     </div>
@@ -184,7 +184,7 @@ export default function LoginPage() {
                       </div>
                       <button type="submit" disabled={loading}
                         className="w-full py-3 rounded-xl font-bold text-sm disabled:opacity-60 flex items-center justify-center gap-2 hover:opacity-90 transition-all"
-                        style={{ background: "#FF0000", color: "#FFFFFF", fontFamily: "'Inter', sans-serif" }}>
+                        style={{ background: "#CA2A31", color: "#FFFFFF", fontFamily: "'Inter', sans-serif" }}>
                         {loading && <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />}
                         Send Reset Link
                       </button>
@@ -218,7 +218,7 @@ export default function LoginPage() {
                     <button onClick={() => switchMode("login")}
                       className="flex-1 py-2 text-sm font-medium rounded-lg transition-all"
                       style={{
-                        background: mode === "login" ? "#FF0000" : "transparent",
+                        background: mode === "login" ? "#CA2A31" : "transparent",
                         color: mode === "login" ? "#FFFFFF" : "#666666",
                         fontFamily: "'Inter', sans-serif"
                       }}>
@@ -227,7 +227,7 @@ export default function LoginPage() {
                     <button onClick={() => switchMode("signup")}
                       className="flex-1 py-2 text-sm font-medium rounded-lg transition-all"
                       style={{
-                        background: mode === "signup" ? "#FF0000" : "transparent",
+                        background: mode === "signup" ? "#CA2A31" : "transparent",
                         color: mode === "signup" ? "#FFFFFF" : "#666666",
                         fontFamily: "'Inter', sans-serif"
                       }}>
@@ -264,7 +264,7 @@ export default function LoginPage() {
                         {mode === "login" && (
                           <button type="button" onClick={() => switchMode("forgot")}
                             className="text-xs hover:underline"
-                            style={{ color: "#FF0000", fontFamily: "'Inter', sans-serif" }}>
+                            style={{ color: "#CA2A31", fontFamily: "'Inter', sans-serif" }}>
                             Forgot password?
                           </button>
                         )}
@@ -285,7 +285,7 @@ export default function LoginPage() {
 
                     <button type="submit" disabled={loading}
                       className="w-full py-3 rounded-xl font-bold text-sm disabled:opacity-60 flex items-center justify-center gap-2 hover:opacity-90 transition-all mt-2"
-                      style={{ background: "#FF0000", color: "#FFFFFF", fontFamily: "'Inter', sans-serif" }}>
+                      style={{ background: "#CA2A31", color: "#FFFFFF", fontFamily: "'Inter', sans-serif" }}>
                       {loading && <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />}
                       {mode === "login" ? "Sign In" : "Create Account"}
                     </button>
@@ -299,7 +299,7 @@ export default function LoginPage() {
 
         {/* Back to store */}
         <p className="text-center mt-6 text-xs" style={{ color: "#AAAAAA", fontFamily: "'Inter', sans-serif" }}>
-          <Link to="/" className="hover:text-[#FF0000] transition-colors">← Back to Kustom Koats</Link>
+          <Link to="/" className="hover:text-[#CA2A31] transition-colors">← Back to Kustom Koats</Link>
         </p>
       </motion.div>
     </div>

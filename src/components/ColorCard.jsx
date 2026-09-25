@@ -56,7 +56,7 @@ export default function ColorCard({ product, colorName, category }) {
               {product && (
                 <button
                   onClick={handleAddToCart}
-                  className="btn-icon bg-red-600 hover:bg-red-700 text-white p-3 rounded-full transition-all transform hover:scale-110"
+                  className="btn-icon bg-[#CA2A31] hover:bg-red-700 text-white p-3 rounded-full transition-all transform hover:scale-110"
                   aria-label="Add to cart"
                 >
                   <ShoppingCart size={18} />

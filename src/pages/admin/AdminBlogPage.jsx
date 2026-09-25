@@ -249,7 +249,7 @@ export default function AdminBlogPage() {
             resetForm()
           }}
           className="flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-all hover:scale-105"
-          style={{ background: "#FF0000", color: "#FFFFFF" }}
+          style={{ background: "#CA2A31", color: "#FFFFFF" }}
         >
           <Plus size={20} />
           New Post
@@ -429,7 +429,7 @@ export default function AdminBlogPage() {
                 <button
                   type="submit"
                   className="px-8 py-3 rounded-lg font-medium"
-                  style={{ background: "#FF0000", color: "#FFFFFF" }}
+                  style={{ background: "#CA2A31", color: "#FFFFFF" }}
                 >
                   {editingPost ? "Update Post" : "Create Post"}
                 </button>
@@ -531,7 +531,7 @@ export default function AdminBlogPage() {
                           className="p-2 rounded hover:bg-gray-100"
                           title="Delete"
                         >
-                          <Trash2 size={18} style={{ color: "#FF0000" }} />
+                          <Trash2 size={18} style={{ color: "#CA2A31" }} />
                         </button>
                       </div>
                     </td>

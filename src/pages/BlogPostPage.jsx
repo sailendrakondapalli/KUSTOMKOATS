@@ -84,7 +84,7 @@ export default function BlogPostPage() {
           <div className="max-w-4xl mx-auto px-6">
             <Link 
               to="/kustom-kultor"
-              className="inline-flex items-center gap-2 text-sm font-medium transition-colors hover:text-red-600"
+              className="inline-flex items-center gap-2 text-sm font-medium transition-colors hover:text-[#CA2A31]"
               style={{ color: "#666666" }}
             >
               <ArrowLeft size={16} />
@@ -147,14 +147,14 @@ export default function BlogPostPage() {
                 {post.views || 0} views
               </div>
               <button 
-                className="flex items-center gap-2 text-sm transition-colors hover:text-red-600"
+                className="flex items-center gap-2 text-sm transition-colors hover:text-[#CA2A31]"
                 style={{ color: "#666666" }}
               >
                 <Heart size={16} />
                 {post.likes || 0}
               </button>
               <button 
-                className="flex items-center gap-2 text-sm transition-colors hover:text-red-600"
+                className="flex items-center gap-2 text-sm transition-colors hover:text-[#CA2A31]"
                 style={{ color: "#666666" }}
                 onClick={() => {
                   if (navigator.share) {
@@ -203,7 +203,7 @@ export default function BlogPostPage() {
               to="/kustom-kultor"
               className="inline-flex items-center gap-2 px-8 py-4 rounded-lg font-bold transition-all duration-300 hover:scale-105"
               style={{ 
-                background: "#FF0000", 
+                background: "#CA2A31", 
                 color: "#FFFFFF",
                 fontFamily: "'Inter', sans-serif" 
               }}

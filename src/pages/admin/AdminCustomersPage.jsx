@@ -93,7 +93,7 @@ export default function AdminCustomersPage() {
 
         {loading ? (
           <div style={{ display: 'flex', justifyContent: 'center', padding: 60 }}>
-            <div style={{ width: 32, height: 32, border: '3px solid #FF0000', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+            <div style={{ width: 32, height: 32, border: '3px solid #CA2A31', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
           </div>
         ) : (
           <div style={S.card}>
@@ -149,7 +149,7 @@ export default function AdminCustomersPage() {
                       <td style={{ padding: '12px 16px', textAlign: 'right' }}>
                         <button onClick={() => setSelected(c)}
                           style={{ background: 'none', border: '1px solid #E0E0E0', cursor: 'pointer', color: '#666666', padding: '5px 10px', borderRadius: 6, fontSize: '0.75rem', fontFamily: "'Inter', sans-serif", display: 'inline-flex', alignItems: 'center', gap: 5, transition: 'all 0.15s' }}
-                          onMouseEnter={e => { e.currentTarget.style.borderColor = '#FF0000'; e.currentTarget.style.color = '#FF0000' }}
+                          onMouseEnter={e => { e.currentTarget.style.borderColor = '#CA2A31'; e.currentTarget.style.color = '#CA2A31' }}
                           onMouseLeave={e => { e.currentTarget.style.borderColor = '#E0E0E0'; e.currentTarget.style.color = '#666666' }}>
                           <Eye size={12} /> View
                         </button>
@@ -174,7 +174,7 @@ export default function AdminCustomersPage() {
               <div style={{ padding: '20px 24px' }}>
                 {/* Profile */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 24, padding: '16px', background: '#FAFAFA', borderRadius: 10, border: '1px solid #F0F0F0' }}>
-                  <div style={{ width: 52, height: 52, borderRadius: '50%', background: '#FFE0E0', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.25rem', fontWeight: 700, color: '#FF0000', flexShrink: 0 }}>
+                  <div style={{ width: 52, height: 52, borderRadius: '50%', background: '#FFE0E0', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.25rem', fontWeight: 700, color: '#CA2A31', flexShrink: 0 }}>
                     {(selected.name || 'G').charAt(0).toUpperCase()}
                   </div>
                   <div>

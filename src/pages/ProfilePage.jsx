@@ -195,7 +195,7 @@ export default function ProfilePage() {
 
           {loadingAddr ? (
             <div className="flex justify-center py-8">
-              <div className="w-6 h-6 border-2 border-[#FF0000] border-t-transparent rounded-full animate-spin" />
+              <div className="w-6 h-6 border-2 border-[#CA2A31] border-t-transparent rounded-full animate-spin" />
             </div>
           ) : (
             <div className="space-y-3">

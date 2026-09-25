@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react"
 import { Link } from "react-router-dom"
 import { motion } from "framer-motion"
 import { Helmet } from "react-helmet-async"
+import { createPortal } from "react-dom"
 import { ArrowRight, Shield, CheckCircle, Star, Palette, Sparkles, Zap, Award, TrendingUp, Package, Droplet, Clock, Globe } from "lucide-react"
 import { fetchProducts } from "../services/productService"
 import ProductCard from "../components/ProductCard"
@@ -66,7 +67,7 @@ function HeroSection() {
   }
 
   return (
-    <section className="relative w-full overflow-hidden" style={{ height: "clamp(550px, 85vh, 800px)" }}>
+    <section className="relative w-full overflow-hidden" style={{ height: "clamp(550px, 85vh, 800px)", background: "#000000" }}>
       {/* Video Background */}
       <video
         autoPlay
@@ -74,6 +75,7 @@ function HeroSection() {
         muted
         playsInline
         className="absolute inset-0 w-full h-full object-cover"
+        style={{ opacity: 0.7 }}
       >
         <source src="/Kustom Koats Hero Page.mov" type="video/mp4" />
       </video>
@@ -234,7 +236,7 @@ function FeaturedCategoriesSection() {
   ]
 
   return (
-    <section className={`w-full py-16 ${PX}`} style={{ background: "#FFFFFF" }}>
+    <section className={`w-full py-16 ${PX}`} style={{ background: "#FFFFFF", position: "relative", zIndex: 5 }}>
       <div className="max-w-7xl mx-auto">
         {/* Mobile: Horizontal Scroll */}
         <div className="md:hidden flex gap-6 overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-hide"
@@ -267,7 +269,7 @@ function FeaturedCategoriesSection() {
                   </div>
                   <div className="space-y-3">
                     <p className="text-xs font-bold uppercase tracking-wider" 
-                      style={{ color: "#FF0000", fontFamily: "'Inter', sans-serif" }}>
+                      style={{ color: "#CA2A31", fontFamily: "'Inter', sans-serif" }}>
                       {category.title}
                     </p>
                     <h3 
@@ -285,11 +287,11 @@ function FeaturedCategoriesSection() {
                       </p>
                     )}
                     <div
-                      className="inline-block text-sm font-bold tracking-wider uppercase transition-colors group-hover:text-[#FF0000]"
+                      className="inline-block text-sm font-bold tracking-wider uppercase transition-colors group-hover:text-[#CA2A31]"
                       style={{ 
                         fontFamily: "'Inter', sans-serif",
                         color: "#000000",
-                        borderBottom: "2px solid #FF0000",
+                        borderBottom: "2px solid #CA2A31",
                         paddingBottom: "2px"
                       }}
                     >
@@ -328,7 +330,7 @@ function FeaturedCategoriesSection() {
                   </div>
                   <div className="space-y-3">
                     <p className="text-xs font-bold uppercase tracking-wider" 
-                      style={{ color: "#FF0000", fontFamily: "'Inter', sans-serif" }}>
+                      style={{ color: "#CA2A31", fontFamily: "'Inter', sans-serif" }}>
                       {category.title}
                     </p>
                     <h3 
@@ -346,11 +348,11 @@ function FeaturedCategoriesSection() {
                       </p>
                     )}
                     <div
-                      className="inline-block text-sm font-bold tracking-wider uppercase transition-colors group-hover:text-[#FF0000]"
+                      className="inline-block text-sm font-bold tracking-wider uppercase transition-colors group-hover:text-[#CA2A31]"
                       style={{ 
                         fontFamily: "'Inter', sans-serif",
                         color: "#000000",
-                        borderBottom: "2px solid #FF0000",
+                        borderBottom: "2px solid #CA2A31",
                         paddingBottom: "2px"
                       }}
                     >
@@ -379,11 +381,11 @@ function XtremeKolorzSection() {
   ]
 
   return (
-    <section className={`w-full py-12 ${PX}`} style={{ background: "#FFFFFF" }}>
+    <section className={`w-full py-12 ${PX}`} style={{ background: "#FFFFFF", position: "relative", zIndex: 5 }}>
       <ScrollReveal>
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <p className="text-sm font-bold mb-3 tracking-wider uppercase" style={{ color: "#FF0000", fontFamily: "'Inter', sans-serif" }}>
+            <p className="text-sm font-bold mb-3 tracking-wider uppercase" style={{ color: "#CA2A31", fontFamily: "'Inter', sans-serif" }}>
               XTREME KOLORZ
             </p>
             <h2 className="text-3xl md:text-4xl font-bold mb-4"
@@ -412,7 +414,7 @@ function XtremeKolorzSection() {
                       }}
                     />
                   </div>
-                  <h3 className="text-sm font-semibold group-hover:text-[#FF0000] transition-colors" 
+                  <h3 className="text-sm font-semibold group-hover:text-[#CA2A31] transition-colors" 
                     style={{ color: "#000000", fontFamily: "'Inter', sans-serif" }}>
                     {category.name}
                   </h3>
@@ -429,7 +431,7 @@ function XtremeKolorzSection() {
 /* --- Xtreme Wrap Section --- */
 function XtremeWrapSection() {
   return (
-    <section className={`w-full py-12 ${PX}`} style={{ background: "#FFFFFF" }}>
+    <section className={`w-full py-12 ${PX}`} style={{ background: "#FFFFFF", position: "relative", zIndex: 5 }}>
       <ScrollReveal>
         <div className="max-w-7xl mx-auto text-center">
           <h2 className="text-3xl md:text-4xl font-bold mb-6"
@@ -443,7 +445,7 @@ function XtremeWrapSection() {
             to="/shop/xtreme-wrap"
             className="inline-flex items-center gap-2 px-8 py-4 rounded-lg font-bold transition-all duration-300 hover:scale-105"
             style={{ 
-              background: "#FF0000", 
+              background: "#CA2A31", 
               color: "#FFFFFF",
               fontFamily: "'Inter', sans-serif" 
             }}
@@ -459,7 +461,7 @@ function XtremeWrapSection() {
 /* --- Accessories Section --- */
 function AccessoriesSection() {
   return (
-    <section className={`w-full py-12 ${PX}`} style={{ background: "#F8F8F8" }}>
+    <section className={`w-full py-12 ${PX}`} style={{ background: "#F8F8F8", position: "relative", zIndex: 5 }}>
       <ScrollReveal>
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12">
@@ -511,7 +513,7 @@ function SignatureSeriesSection() {
   }, [])
 
   return (
-    <section className={`w-full py-12 ${PX}`} style={{ background: "#FFFFFF" }}>
+    <section className={`w-full py-12 ${PX}`} style={{ background: "#FFFFFF", position: "relative", zIndex: 5 }}>
       <ScrollReveal>
         <div className="max-w-7xl mx-auto">
           {/* Section Header */}
@@ -555,7 +557,7 @@ function SignatureSeriesSection() {
                     
                     {/* Product Name */}
                     <h3 
-                      className="text-base md:text-lg lg:text-xl font-bold mb-2 transition-colors group-hover:text-[#FF0000]"
+                      className="text-base md:text-lg lg:text-xl font-bold mb-2 transition-colors group-hover:text-[#CA2A31]"
                       style={{ 
                         fontFamily: "'Inter', sans-serif", 
                         color: "#000000",
@@ -581,7 +583,7 @@ function SignatureSeriesSection() {
                       className="inline-flex items-center gap-2 text-xs md:text-sm font-medium transition-all group-hover:gap-3"
                       style={{ 
                         fontFamily: "'Inter', sans-serif", 
-                        color: "#FF0000"
+                        color: "#CA2A31"
                       }}
                     >
                       Read more 
@@ -634,11 +636,11 @@ function FeaturedProductsSection() {
   }, [])
 
   return (
-    <section className={`w-full py-12 ${PX}`} style={{ background: "#F8F8F8" }}>
+    <section className={`w-full py-12 ${PX}`} style={{ background: "#F8F8F8", position: "relative", zIndex: 5 }}>
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between mb-12">
           <div>
-            <p className="text-sm font-bold mb-2 tracking-wider uppercase" style={{ color: "#FF0000", fontFamily: "'Inter', sans-serif" }}>
+            <p className="text-sm font-bold mb-2 tracking-wider uppercase" style={{ color: "#CA2A31", fontFamily: "'Inter', sans-serif" }}>
               ORIGINAL CANDY KOLORZ
             </p>
             <h2 className="text-3xl md:text-4xl font-bold"
@@ -649,7 +651,7 @@ function FeaturedProductsSection() {
           <Link to="/shop/xtreme-kolorz?category=candy" 
             className="flex items-center gap-2 text-sm font-medium transition-colors hover:gap-3 duration-300"
             style={{ color: "#333333", fontFamily: "'Inter', sans-serif" }}>
-            View All <ArrowRight size={16} style={{ color: "#FF0000" }} />
+            View All <ArrowRight size={16} style={{ color: "#CA2A31" }} />
           </Link>
         </div>
 
@@ -681,11 +683,11 @@ function FindYourFinishSection() {
   ]
 
   return (
-    <section className={`w-full py-12 ${PX}`} style={{ background: "#FFFFFF" }}>
+    <section className={`w-full py-12 ${PX}`} style={{ background: "#FFFFFF", position: "relative", zIndex: 5 }}>
       <ScrollReveal>
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <p className="text-sm font-bold mb-3 tracking-wider uppercase" style={{ color: "#FF0000", fontFamily: "'Inter', sans-serif" }}>
+            <p className="text-sm font-bold mb-3 tracking-wider uppercase" style={{ color: "#CA2A31", fontFamily: "'Inter', sans-serif" }}>
               FIND YOUR FINISH
             </p>
             <h2 className="text-3xl md:text-4xl font-bold"
@@ -700,7 +702,7 @@ function FindYourFinishSection() {
                 <div className="text-center p-6 rounded-lg transition-all duration-300 hover:shadow-xl"
                   style={{ background: "#F8F8F8" }}>
                   <div className="inline-flex items-center justify-center w-16 h-16 rounded-full mb-4"
-                    style={{ background: "rgba(255, 0, 0, 0.05)", color: "#FF0000" }}>
+                    style={{ background: "rgba(255, 0, 0, 0.05)", color: "#CA2A31" }}>
                     {finish.icon}
                   </div>
                   <h3 className="text-lg font-bold mb-3" style={{ color: "#000000", fontFamily: "'Inter', sans-serif" }}>
@@ -722,10 +724,10 @@ function FindYourFinishSection() {
 /* --- Built With Kustom Koats Section --- */
 function BuiltWithKKSection() {
   return (
-    <section className={`w-full py-12 ${PX}`} style={{ background: "#FFFFFF" }}>
+    <section className={`w-full py-12 ${PX}`} style={{ background: "#FFFFFF", position: "relative", zIndex: 5 }}>
       <ScrollReveal>
         <div className="max-w-7xl mx-auto text-center">
-          <p className="text-sm font-bold mb-3 tracking-wider uppercase" style={{ color: "#FF0000", fontFamily: "'Inter', sans-serif" }}>
+          <p className="text-sm font-bold mb-3 tracking-wider uppercase" style={{ color: "#CA2A31", fontFamily: "'Inter', sans-serif" }}>
             SHOWCASE
           </p>
           <h2 className="text-3xl md:text-4xl font-bold mb-6"
@@ -739,7 +741,7 @@ function BuiltWithKKSection() {
             to="/kulture/projects"
             className="inline-flex items-center gap-2 px-8 py-4 rounded-lg font-bold transition-all duration-300 hover:scale-105"
             style={{ 
-              background: "#FF0000", 
+              background: "#CA2A31", 
               color: "#FFFFFF",
               fontFamily: "'Inter', sans-serif" 
             }}
@@ -759,7 +761,7 @@ function KustomKultureSection() {
       <ScrollReveal>
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12">
-            <p className="text-sm font-bold mb-3 tracking-wider uppercase" style={{ color: "#FF0000", fontFamily: "'Inter', sans-serif" }}>
+            <p className="text-sm font-bold mb-3 tracking-wider uppercase" style={{ color: "#CA2A31", fontFamily: "'Inter', sans-serif" }}>
               KUSTOM KULTURE
             </p>
             <h2 className="text-3xl md:text-4xl font-bold"
@@ -794,7 +796,7 @@ function KustomKultureSection() {
 /* --- First Order Discount Section --- */
 function FirstOrderSection() {
   return (
-    <section className={`w-full py-12 ${PX}`} style={{ background: "#FF0000" }}>
+    <section className={`w-full py-12 ${PX}`} style={{ background: "#CA2A31" }}>
       <ScrollReveal>
         <div className="max-w-4xl mx-auto text-center">
           <h3 className="text-3xl md:text-4xl font-bold mb-6" style={{ fontFamily: "'Rajdhani', 'Inter', sans-serif", color: "#FFFFFF" }}>
@@ -1106,7 +1108,7 @@ function CTASection() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <Link
               to="/wholesale/why-partner"
-              className="inline-flex items-center gap-2 bg-[#FF0000] hover:bg-[#CC0000] text-white px-8 py-4 rounded-lg font-bold transition-all duration-300 hover:scale-105"
+              className="inline-flex items-center gap-2 bg-[#CA2A31] hover:bg-[#CC0000] text-white px-8 py-4 rounded-lg font-bold transition-all duration-300 hover:scale-105"
               style={{ fontFamily: "'Inter', sans-serif" }}
             >
               <Star size={20} />
@@ -1115,7 +1117,7 @@ function CTASection() {
             
             <Link
               to="/contact"
-              className="inline-flex items-center gap-2 bg-transparent border-2 border-black/20 text-black hover:border-[#FF0000] hover:text-[#FF0000] px-8 py-4 rounded-lg font-bold transition-all duration-300"
+              className="inline-flex items-center gap-2 bg-transparent border-2 border-black/20 text-black hover:border-[#CA2A31] hover:text-[#CA2A31] px-8 py-4 rounded-lg font-bold transition-all duration-300"
               style={{ fontFamily: "'Inter', sans-serif" }}
             >
               Contact Us
@@ -1153,7 +1155,7 @@ function NewsletterSection() {
   }
 
   return (
-    <section className={`w-full py-16 ${PX}`} style={{ background: "#FFFFFF" }}>
+    <section className={`w-full py-16 ${PX}`} style={{ background: "#FFFFFF", position: "relative", zIndex: 5 }}>
       <ScrollReveal>
         <div className="max-w-4xl mx-auto text-center">
           <p className="text-xs font-bold mb-3 tracking-[0.15em] uppercase" 
@@ -1265,12 +1267,12 @@ function FollowUsSection() {
       ), 
       label: 'YouTube', 
       url: 'https://youtube.com/@kustomkoats',
-      color: '#FF0000'
+      color: '#CA2A31'
     }
   ]
 
   return (
-    <section className={`w-full py-16 ${PX}`} style={{ background: "#FAFAFA" }}>
+    <section className={`w-full py-16 ${PX}`} style={{ background: "#FAFAFA", position: "relative", zIndex: 5 }}>
       <ScrollReveal>
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-3xl md:text-4xl font-normal mb-6"
@@ -1318,85 +1320,117 @@ function FollowUsSection() {
   )
 }
 
-/* --- Fixed Video Background Section --- */
-function FixedVideoSection() {
-  const videoRef = useRef(null)
+/* --- Fixed Video Transition with Parallax Content --- */
+// Parallax section with truly fixed background using Portal
+function FixedVideoTransition() {
   const sectionRef = useRef(null)
+  const [isVisible, setIsVisible] = useState(false)
 
   useEffect(() => {
-    const video = videoRef.current
-    if (!video) return
+    const section = sectionRef.current
+    if (!section) return
 
-    // Improved autoplay handling
-    const attemptPlay = async () => {
-      try {
-        // Set video properties before playing
-        video.muted = true
-        video.playsInline = true
-        await video.play()
-        console.log('Video playing successfully')
-      } catch (err) {
-        console.log('Initial autoplay prevented, will retry on scroll:', err.message)
-      }
+    const handleScroll = () => {
+      const rect = section.getBoundingClientRect()
+      const windowHeight = window.innerHeight
+      
+      // Check if section is in viewport
+      const inView = rect.top < windowHeight && rect.bottom > 0
+      setIsVisible(inView)
     }
 
-    // Intersection Observer to ensure play when visible
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting && video.paused) {
-          attemptPlay()
-        }
-      },
-      { threshold: 0.1 }
-    )
-
-    if (sectionRef.current) {
-      observer.observe(sectionRef.current)
-    }
-
-    // Initial play attempt
-    attemptPlay()
+    handleScroll()
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    window.addEventListener('resize', handleScroll, { passive: true })
 
     return () => {
-      if (sectionRef.current) {
-        observer.unobserve(sectionRef.current)
-      }
+      window.removeEventListener('scroll', handleScroll)
+      window.removeEventListener('resize', handleScroll)
     }
   }, [])
 
   return (
-    <section 
-      ref={sectionRef}
-      className="relative w-full overflow-hidden"
-      style={{ 
-        height: 'clamp(600px, 100vh, 1000px)',
-        background: '#000000'
-      }}
-    >
-      {/* Video Background */}
-      <video
-        ref={videoRef}
-        autoPlay
-        loop
-        muted
-        playsInline
-        preload="auto"
-        className="absolute inset-0 w-full h-full object-cover"
-      >
-        <source src="/bgfixedscroll.mp4" type="video/mp4" />
-      </video>
-      
-      {/* Dark overlay for cinematic effect */}
-      <div 
-        className="absolute inset-0"
-        style={{ background: 'rgba(0, 0, 0, 0.4)' }}
-      />
+    <>
+      {/* Fixed background rendered at document.body level via Portal */}
+      {isVisible && createPortal(
+        <>
+          {/* Fixed background image */}
+          <div
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: '100%',
+              backgroundImage: 'url(/og-image.png)',
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              backgroundRepeat: 'no-repeat',
+              zIndex: 6, // Higher than other sections (which are at 5)
+              pointerEvents: 'none'
+            }}
+          />
+          {/* Dark overlay */}
+          <div
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: '100%',
+              background: 'rgba(0, 0, 0, 0.4)',
+              zIndex: 6, // Same as background
+              pointerEvents: 'none'
+            }}
+          />
+        </>,
+        document.body
+      )}
 
-      {/* Optional content overlay */}
-      <div className="relative w-full h-full flex items-center justify-center">
-        {/* You can add text or other content here if needed */}
-      </div>
-    </section>
+      {/* Scrollable section */}
+      <section
+        ref={sectionRef}
+        style={{
+          position: 'relative',
+          minHeight: '150vh',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '10rem 5%',
+          zIndex: 7 // Higher than background
+        }}
+      >
+        {/* Content that scrolls over the fixed background */}
+        <div
+          style={{
+            position: 'relative',
+            zIndex: 7, // Same as section
+            maxWidth: '800px',
+            width: '100%',
+            textAlign: 'center',
+            color: '#FFFFFF'
+          }}
+        >
+          <h2 style={{
+            fontSize: 'clamp(2.5rem, 5vw, 4rem)',
+            fontWeight: 700,
+            marginBottom: '2rem',
+            fontFamily: "'Rajdhani', sans-serif",
+            textShadow: '0 4px 30px rgba(0, 0, 0, 0.9)'
+          }}>
+            EXPERIENCE TRUE PARALLAX
+          </h2>
+          <p style={{
+            fontSize: 'clamp(1.2rem, 2vw, 1.5rem)',
+            marginBottom: '3rem',
+            fontFamily: "'Inter', sans-serif",
+            textShadow: '0 2px 15px rgba(0, 0, 0, 0.9)'
+          }}>
+            Scroll down and watch the background stay fixed while content moves
+          </p>
+        </div>
+      </section>
+    </>
   )
 }
 
@@ -1414,7 +1448,6 @@ export default function HomePage() {
         <FeaturedCategoriesSection />
         <SignatureSeriesSection />
         <WhyKustomKoatsNeon />
-        <FixedVideoSection />
         <NewsletterSection />
         <FollowUsSection />
         <ReviewsSection />

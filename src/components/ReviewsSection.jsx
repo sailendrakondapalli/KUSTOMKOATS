@@ -180,7 +180,7 @@ export default function ReviewsSection() {
   }
 
   return (
-    <section className="w-full px-4 sm:px-6 lg:px-10 xl:px-16 py-12">
+    <section className="w-full px-4 sm:px-6 lg:px-10 xl:px-16 py-12" style={{ position: "relative", zIndex: 5 }}>
       {/* Header */}
       <div className="text-center mb-10">
         <p className="text-[#C8860A] text-xs uppercase tracking-[0.2em] mb-2 font-bold">What Our Customers Say</p>

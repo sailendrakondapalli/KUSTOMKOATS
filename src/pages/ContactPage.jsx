@@ -88,7 +88,7 @@ export default function ContactPage() {
 
   const inputClass = `
     w-full rounded-lg px-4 py-3 text-sm
-    placeholder-black/40 focus:outline-none focus:ring-2 focus:ring-[#FF0000] transition-all
+    placeholder-black/40 focus:outline-none focus:ring-2 focus:ring-[#CA2A31] transition-all
   `
   const inputStyle = {
     background: "#FFFFFF",
@@ -109,7 +109,7 @@ export default function ContactPage() {
 
         {/* Hero banner */}
         <div style={{
-          background: "linear-gradient(135deg, #000000 0%, #1A0000 50%, #000000 100%)",
+          background: "#000000",
           padding: "80px 24px 60px",
           textAlign: "center",
         }}>
@@ -118,7 +118,7 @@ export default function ContactPage() {
             fontSize: "0.75rem",
             letterSpacing: "0.25em",
             textTransform: "uppercase",
-            color: "#FF0000",
+            color: "#CA2A31",
             marginBottom: "12px",
             fontWeight: 600
           }}>
@@ -177,7 +177,7 @@ export default function ContactPage() {
                     gap: "16px",
                     boxShadow: "0 2px 8px rgba(0, 0, 0, 0.05)"
                   }}>
-                    <div style={{ color: "#FF0000", flexShrink: 0, marginTop: "2px" }}>
+                    <div style={{ color: "#CA2A31", flexShrink: 0, marginTop: "2px" }}>
                       {item.icon}
                     </div>
                     <div>
@@ -201,7 +201,7 @@ export default function ContactPage() {
                             textDecoration: "none",
                             lineHeight: 1.5,
                           }}
-                          onMouseEnter={e => e.currentTarget.style.color = "#FF0000"}
+                          onMouseEnter={e => e.currentTarget.style.color = "#CA2A31"}
                           onMouseLeave={e => e.currentTarget.style.color = "#000000"}
                         >
                           {item.value}
@@ -289,7 +289,7 @@ export default function ContactPage() {
                     className={inputClass}
                     style={inputStyle}
                   />
-                  {errors.name && <p style={{ color: "#FF0000", fontSize: "0.75rem", marginTop: "4px", fontFamily: "'Inter', sans-serif" }}>{errors.name}</p>}
+                  {errors.name && <p style={{ color: "#CA2A31", fontSize: "0.75rem", marginTop: "4px", fontFamily: "'Inter', sans-serif" }}>{errors.name}</p>}
                 </div>
 
                 {/* Phone */}
@@ -314,7 +314,7 @@ export default function ContactPage() {
                     className={inputClass}
                     style={inputStyle}
                   />
-                  {errors.phone && <p style={{ color: "#FF0000", fontSize: "0.75rem", marginTop: "4px", fontFamily: "'Inter', sans-serif" }}>{errors.phone}</p>}
+                  {errors.phone && <p style={{ color: "#CA2A31", fontSize: "0.75rem", marginTop: "4px", fontFamily: "'Inter', sans-serif" }}>{errors.phone}</p>}
                 </div>
 
                 {/* Email */}
@@ -339,7 +339,7 @@ export default function ContactPage() {
                     className={inputClass}
                     style={inputStyle}
                   />
-                  {errors.email && <p style={{ color: "#FF0000", fontSize: "0.75rem", marginTop: "4px", fontFamily: "'Inter', sans-serif" }}>{errors.email}</p>}
+                  {errors.email && <p style={{ color: "#CA2A31", fontSize: "0.75rem", marginTop: "4px", fontFamily: "'Inter', sans-serif" }}>{errors.email}</p>}
                 </div>
 
                 {/* Message */}
@@ -364,7 +364,7 @@ export default function ContactPage() {
                     className={inputClass}
                     style={{ ...inputStyle, resize: "vertical" }}
                   />
-                  {errors.message && <p style={{ color: "#FF0000", fontSize: "0.75rem", marginTop: "4px", fontFamily: "'Inter', sans-serif" }}>{errors.message}</p>}
+                  {errors.message && <p style={{ color: "#CA2A31", fontSize: "0.75rem", marginTop: "4px", fontFamily: "'Inter', sans-serif" }}>{errors.message}</p>}
                 </div>
 
                 {/* Submit */}
@@ -372,7 +372,7 @@ export default function ContactPage() {
                   type="submit"
                   disabled={submitting}
                   style={{
-                    background: submitting ? "rgba(255, 0, 0, 0.5)" : "#FF0000",
+                    background: submitting ? "rgba(255, 0, 0, 0.5)" : "#CA2A31",
                     color: "#FFFFFF",
                     border: "none",
                     borderRadius: "8px",
@@ -391,7 +391,7 @@ export default function ContactPage() {
                     alignSelf: "flex-start",
                   }}
                   onMouseEnter={e => { if (!submitting) e.currentTarget.style.background = "#CC0000" }}
-                  onMouseLeave={e => { if (!submitting) e.currentTarget.style.background = "#FF0000" }}
+                  onMouseLeave={e => { if (!submitting) e.currentTarget.style.background = "#CA2A31" }}
                 >
                   {submitting ? (
                     <>

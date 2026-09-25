@@ -11,7 +11,7 @@ function getStatusBadge(order) {
   const s = order.order_status
   const p = order.payment_status
   if (p === 'pending_verification') return { label: 'Payment Pending', color: 'bg-yellow-100 text-yellow-700' }
-  if (p === 'failed' || s === 'cancelled') return { label: 'Cancelled', color: 'bg-red-100 text-red-600' }
+  if (p === 'failed' || s === 'cancelled') return { label: 'Cancelled', color: 'bg-red-100 text-[#CA2A31]' }
   if (s === 'delivered') return { label: 'Delivered', color: 'bg-green-100 text-green-700' }
   if (s === 'shipping') return { label: 'Shipped', color: 'bg-orange-100 text-orange-700' }
   if (p === 'paid') return { label: 'Confirmed', color: 'bg-blue-100 text-blue-700' }
@@ -195,7 +195,7 @@ export default function OrdersPage() {
 
         {loading ? (
           <div className="flex justify-center py-20">
-            <div className="w-8 h-8 border-2 border-[#FF0000] border-t-transparent rounded-full animate-spin" />
+            <div className="w-8 h-8 border-2 border-[#CA2A31] border-t-transparent rounded-full animate-spin" />
           </div>
         ) : filtered.length === 0 ? (
           <div className="text-center py-20">

@@ -160,7 +160,7 @@ export default function ProductDetailPage() {
         </p>
         <button onClick={() => navigate('/products')}
           className="px-6 py-2 rounded-lg text-sm font-semibold"
-          style={{ background: '#FF0000', color: '#FFFFFF', fontFamily: "'Inter', sans-serif" }}>
+          style={{ background: '#CA2A31', color: '#FFFFFF', fontFamily: "'Inter', sans-serif" }}>
           Browse Products
         </button>
       </div>
@@ -174,10 +174,10 @@ export default function ProductDetailPage() {
   const hasTechDetails = techBars.length > 0 || techSpecs.length > 0
 
   const tags = [
-    { label: product.category, bg: 'bg-red-50', border: 'border-red-200', text: 'text-red-600' },
+    { label: product.category, bg: 'bg-red-50', border: 'border-red-200', text: 'text-[#CA2A31]' },
     ...(product.tags || []).slice(0, 3).map((t, i) => {
       const palettes = [
-        { bg: 'bg-red-50', border: 'border-red-200', text: 'text-red-600' },
+        { bg: 'bg-red-50', border: 'border-red-200', text: 'text-[#CA2A31]' },
         { bg: 'bg-gray-50', border: 'border-gray-200', text: 'text-gray-600' },
         { bg: 'bg-black/5', border: 'border-black/10', text: 'text-black' },
       ]
@@ -197,7 +197,7 @@ export default function ProductDetailPage() {
       </Helmet>
 
       {/* Spacer for fixed navbar */}
-      <div style={{ height: '80px' }} />
+      <div style={{ height: '64px' }} />
 
       <div className="max-w-7xl mx-auto px-6 lg:px-12 xl:px-20 py-10"
         style={{ background: '#FFFFFF' }}>
@@ -205,12 +205,12 @@ export default function ProductDetailPage() {
         {/* Breadcrumb */}
         <div className="flex items-center gap-2 text-xs mb-8"
           style={{ color: '#666666', fontFamily: "'Inter', sans-serif" }}>
-          <Link to="/" className="hover:text-[#FF0000] transition-colors">Home</Link>
+          <Link to="/" className="hover:text-[#CA2A31] transition-colors">Home</Link>
           <span>/</span>
-          <Link to="/products" className="hover:text-[#FF0000] transition-colors">Shop</Link>
+          <Link to="/products" className="hover:text-[#CA2A31] transition-colors">Shop</Link>
           <span>/</span>
           <Link to={`/products?category=${encodeURIComponent(product.category)}`}
-            className="hover:text-[#FF0000] transition-colors">{product.category}</Link>
+            className="hover:text-[#CA2A31] transition-colors">{product.category}</Link>
           <span>/</span>
           <span className="truncate max-w-[200px]" style={{ color: '#333333' }}>{product.name}</span>
         </div>
@@ -251,7 +251,7 @@ export default function ProductDetailPage() {
               <div className="flex gap-3 flex-wrap">
                 {images.map((img, i) => (
                   <button key={i} onClick={() => setImgIdx(i)}
-                    className={`w-20 h-20 rounded-lg overflow-hidden border-2 transition-all ${i === imgIdx ? 'border-[#FF0000] shadow-md' : 'border-gray-200 opacity-60 hover:opacity-100'}`}>
+                    className={`w-20 h-20 rounded-lg overflow-hidden border-2 transition-all ${i === imgIdx ? 'border-[#CA2A31] shadow-md' : 'border-gray-200 opacity-60 hover:opacity-100'}`}>
                     {isVideoUrl(img)
                       ? <video src={img} muted playsInline className="w-full h-full object-cover" />
                       : <img src={img} alt="" className="w-full h-full object-cover" onError={e => { e.target.src = '/product-fallback.webp' }} />
@@ -264,7 +264,7 @@ export default function ProductDetailPage() {
 
           {/* Right — info */}
           <div>
-            <p className="text-[#FF0000] text-xs uppercase tracking-[0.15em] font-bold mb-3"
+            <p className="text-[#CA2A31] text-xs uppercase tracking-[0.15em] font-bold mb-3"
               style={{ fontFamily: "'Inter', sans-serif" }}>{product.category}</p>
             <h1 className="text-4xl lg:text-5xl font-bold mb-4"
               style={{ fontFamily: "'Rajdhani', sans-serif", color: '#000000' }}>
@@ -276,7 +276,7 @@ export default function ProductDetailPage() {
 
             {/* Rating */}
             <div className="flex items-center gap-2 mb-6">
-              <div className="flex text-[#FF0000]">
+              <div className="flex text-[#CA2A31]">
                 {Array(5).fill(0).map((_, i) => <Star key={i} size={16} fill="currentColor" />)}
               </div>
               <span className="text-gray-500 text-sm" style={{ fontFamily: "'Inter', sans-serif" }}>
@@ -328,13 +328,30 @@ export default function ProductDetailPage() {
                   Available Variants
                 </p>
                 <div className="flex flex-wrap gap-2">
-                  {product.size.split(',').map(s => s.trim()).filter(Boolean).map(s => (
-                    <span key={s}
-                      className="px-4 py-2 bg-white border-2 border-gray-300 text-sm font-medium rounded-lg hover:border-[#FF0000] transition-colors cursor-pointer"
-                      style={{ color: '#000000', fontFamily: "'Inter', sans-serif" }}>
-                      {s}
-                    </span>
-                  ))}
+                  {product.size.split(',').map(s => s.trim()).filter(Boolean).map(s => {
+                    // Format size with proper units
+                    const formatSize = (size) => {
+                      const num = parseFloat(size)
+                      if (isNaN(num)) return size
+                      
+                      // Convert to appropriate unit
+                      if (num >= 1000) {
+                        return `${num / 1000} Ltr`
+                      } else if (num >= 1) {
+                        return `${num} ml`
+                      } else {
+                        return `${num * 1000} ml`
+                      }
+                    }
+                    
+                    return (
+                      <span key={s}
+                        className="px-4 py-2 bg-white border-2 border-gray-300 text-sm font-medium rounded-lg hover:border-[#CA2A31] transition-colors cursor-pointer"
+                        style={{ color: '#000000', fontFamily: "'Inter', sans-serif" }}>
+                        {formatSize(s)}
+                      </span>
+                    )
+                  })}
                 </div>
               </div>
             )}
@@ -343,7 +360,7 @@ export default function ProductDetailPage() {
             <div className="rounded-xl p-4 mb-6" style={{ background: '#F8F8F8', border: '1px solid #E5E5E5' }}>
               <p className="text-xs font-bold uppercase tracking-wider mb-2"
                 style={{ color: '#000000', fontFamily: "'Inter', sans-serif" }}>Availability</p>
-              <p className={`font-bold text-base ${(product.stock ?? 1) > 0 ? 'text-green-600' : 'text-red-600'}`}
+              <p className={`font-bold text-base ${(product.stock ?? 1) > 0 ? 'text-green-600' : 'text-[#CA2A31]'}`}
                 style={{ fontFamily: "'Inter', sans-serif" }}>
                 {(product.stock ?? 1) > 0
                   ? product.stock < 10 ? `Only ${product.stock} left in stock!` : '✓ In Stock'
@@ -368,7 +385,7 @@ export default function ProductDetailPage() {
             <div className="space-y-3 mb-6">
               <button onClick={handleBuyNow} disabled={product.stock === 0}
                 className="w-full flex items-center justify-center gap-2 py-4 rounded-xl font-bold text-base uppercase tracking-wider transition-all disabled:opacity-40"
-                style={{ background: '#FF0000', color: '#FFFFFF', fontFamily: "'Inter', sans-serif", boxShadow: '0 4px 16px rgba(255,0,0,0.25)' }}>
+                style={{ background: '#CA2A31', color: '#FFFFFF', fontFamily: "'Inter', sans-serif", boxShadow: '0 4px 16px rgba(255,0,0,0.25)' }}>
                 <ArrowRight size={18} /> Buy Now
               </button>
               <div className="flex gap-3">
@@ -388,7 +405,7 @@ export default function ProductDetailPage() {
                     if (navigator.share) navigator.share({ title: product.name, url: window.location.href }).catch(() => {})
                     else { navigator.clipboard.writeText(window.location.href); toast.success('Link copied!') }
                   }}
-                  className="w-14 h-14 rounded-xl border-2 border-gray-300 text-gray-600 flex items-center justify-center hover:border-[#FF0000] hover:text-[#FF0000] transition-all flex-shrink-0">
+                  className="w-14 h-14 rounded-xl border-2 border-gray-300 text-gray-600 flex items-center justify-center hover:border-[#CA2A31] hover:text-[#CA2A31] transition-all flex-shrink-0">
                   <Share2 size={20} />
                 </button>
               </div>
@@ -403,7 +420,7 @@ export default function ProductDetailPage() {
               ].map(b => (
                 <div key={b.label} className="rounded-xl py-3 px-2 text-center"
                   style={{ background: '#F8F8F8', border: '1px solid #E5E5E5' }}>
-                  <p className="text-[#FF0000] text-xl font-bold mb-1">{b.icon}</p>
+                  <p className="text-[#CA2A31] text-xl font-bold mb-1">{b.icon}</p>
                   <p className="text-xs font-medium" style={{ color: '#666666', fontFamily: "'Inter', sans-serif" }}>
                     {b.label}
                   </p>
@@ -418,7 +435,7 @@ export default function ProductDetailPage() {
           <section className="mt-16 pt-12" style={{ borderTop: '2px solid #F0F0F0' }}>
             <div className="mb-10">
               <p className="text-xs font-bold uppercase tracking-widest mb-2"
-                style={{ color: '#FF0000', fontFamily: "'Inter', sans-serif" }}>
+                style={{ color: '#CA2A31', fontFamily: "'Inter', sans-serif" }}>
                 SPECIFICATIONS
               </p>
               <h2 className="text-3xl font-bold"
@@ -485,7 +502,7 @@ export default function ProductDetailPage() {
           <section className="mt-16 pt-16" style={{ borderTop: '1px solid #E5E5E5' }}>
             <div className="text-center mb-12">
               <p className="text-sm font-bold mb-3 tracking-wider uppercase"
-                style={{ color: '#FF0000', fontFamily: "'Inter', sans-serif" }}>
+                style={{ color: '#CA2A31', fontFamily: "'Inter', sans-serif" }}>
                 RECOMMENDED FOR YOU
               </p>
               <h2 className="text-3xl md:text-4xl font-bold"
@@ -505,17 +522,17 @@ export default function ProductDetailPage() {
                           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                           onError={e => { e.target.src = '/product-fallback.webp' }} />
                     }
-                    <span className="absolute top-3 left-3 bg-white/90 text-[#FF0000] text-xs font-bold px-3 py-1 rounded-full"
+                    <span className="absolute top-3 left-3 bg-white/90 text-[#CA2A31] text-xs font-bold px-3 py-1 rounded-full"
                       style={{ fontFamily: "'Inter', sans-serif" }}>
                       {p.category}
                     </span>
                   </div>
                   <div className="p-4">
-                    <p className="text-sm font-semibold line-clamp-2 mb-2 group-hover:text-[#FF0000] transition-colors"
+                    <p className="text-sm font-semibold line-clamp-2 mb-2 group-hover:text-[#CA2A31] transition-colors"
                       style={{ color: '#000000', fontFamily: "'Inter', sans-serif" }}>
                       {p.name}
                     </p>
-                    <p className="text-base font-bold" style={{ color: '#FF0000', fontFamily: "'Inter', sans-serif" }}>
+                    <p className="text-base font-bold" style={{ color: '#CA2A31', fontFamily: "'Inter', sans-serif" }}>
                       {formatINR(p.price)}
                     </p>
                     {p.original_price && p.original_price > p.price && (
@@ -528,7 +545,7 @@ export default function ProductDetailPage() {
             <div className="text-center mt-8">
               <Link to={`/products?category=${encodeURIComponent(product.category)}`}
                 className="inline-flex items-center gap-2 px-8 py-4 rounded-xl font-bold transition-all hover:scale-105"
-                style={{ background: '#FF0000', color: '#FFFFFF', fontFamily: "'Inter', sans-serif" }}>
+                style={{ background: '#CA2A31', color: '#FFFFFF', fontFamily: "'Inter', sans-serif" }}>
                 View All {product.category} Products <ArrowRight size={20} />
               </Link>
             </div>

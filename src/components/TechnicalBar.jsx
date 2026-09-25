@@ -21,7 +21,18 @@ export default function TechnicalBar({ title, labels = [], selectedValue }) {
       borderRadius: 10,
       padding: '14px 18px 10px',
       marginBottom: 10,
-    }}>
+      transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+      cursor: 'pointer',
+    }}
+    onMouseEnter={(e) => {
+      e.currentTarget.style.transform = 'scale(1.02)'
+      e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)'
+    }}
+    onMouseLeave={(e) => {
+      e.currentTarget.style.transform = 'scale(1)'
+      e.currentTarget.style.boxShadow = 'none'
+    }}
+    >
       {/* Title */}
       <p style={{
         fontSize: '0.8125rem',

@@ -22,6 +22,16 @@ export default function TechnicalSpecs({ specs = [] }) {
             gap: 16,
             padding: '13px 20px',
             borderBottom: i < specs.length - 1 ? '1px solid #F3F3F3' : 'none',
+            transition: 'transform 0.3s ease, background-color 0.3s ease',
+            cursor: 'pointer',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'scale(1.02)'
+            e.currentTarget.style.backgroundColor = '#F8F8F8'
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'scale(1)'
+            e.currentTarget.style.backgroundColor = 'transparent'
           }}
         >
           {/* Spec name — left, grey */}

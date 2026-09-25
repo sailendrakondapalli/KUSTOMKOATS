@@ -32,7 +32,7 @@ const emptySpec = () => ({ spec_name: '', spec_value: '' })
 // ─────────────────────────────────────────────
 // STAT CARD
 // ─────────────────────────────────────────────
-function StatCard({ icon: Icon, label, value, color = '#FF0000' }) {
+function StatCard({ icon: Icon, label, value, color = '#CA2A31' }) {
   return (
     <div style={{
       background: '#FFFFFF', border: '1px solid #E5E5E5', borderRadius: 12,
@@ -68,7 +68,7 @@ function DashboardTab({ products, orders }) {
     <div>
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <StatCard icon={Package}    label="Total Products" value={products.length} color="#FF0000" />
+        <StatCard icon={Package}    label="Total Products" value={products.length} color="#CA2A31" />
         <StatCard icon={ShoppingBag} label="Pending Orders" value={pendingOrders}   color="#F59E0B" />
         <StatCard icon={DollarSign} label="Total Revenue"  value={`₹${totalRevenue.toLocaleString('en-IN')}`} color="#10B981" />
         <StatCard icon={AlertCircle} label="Low Stock"     value={lowStock}         color="#EF4444" />
@@ -80,7 +80,7 @@ function DashboardTab({ products, orders }) {
           <span style={{ fontWeight: 600, fontSize: '0.9375rem', fontFamily: "'Inter', sans-serif", color: '#000000' }}>
             Recent Orders
           </span>
-          <Link to="/admin/orders" style={{ fontSize: '0.8125rem', color: '#FF0000', textDecoration: 'none', fontFamily: "'Inter', sans-serif", fontWeight: 500 }}>
+          <Link to="/admin/orders" style={{ fontSize: '0.8125rem', color: '#CA2A31', textDecoration: 'none', fontFamily: "'Inter', sans-serif", fontWeight: 500 }}>
             View all →
           </Link>
         </div>
@@ -482,7 +482,7 @@ function ProductFormModal({ initialData, categories, onClose, onSaved }) {
     tab: (active) => ({
       padding: '8px 16px', borderRadius: 6, border: 'none', cursor: 'pointer', fontSize: '0.8125rem',
       fontFamily: "'Inter', sans-serif", fontWeight: active ? 600 : 400,
-      background: active ? '#FF0000' : 'transparent',
+      background: active ? '#CA2A31' : 'transparent',
       color: active ? '#FFFFFF' : '#666666', transition: 'all 0.15s',
     }),
   }
@@ -597,7 +597,7 @@ function ProductFormModal({ initialData, categories, onClose, onSaved }) {
                             </>
                           ) : uploadingIdx === idx ? (
                             <div style={{ textAlign: 'center', color: '#999999' }}>
-                              <div style={{ width: 24, height: 24, border: '2px solid #FF0000', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.8s linear infinite', margin: '0 auto 6px' }} />
+                              <div style={{ width: 24, height: 24, border: '2px solid #CA2A31', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.8s linear infinite', margin: '0 auto 6px' }} />
                               <span style={{ fontSize: '0.6875rem' }}>Uploading...</span>
                             </div>
                           ) : (
@@ -644,7 +644,7 @@ function ProductFormModal({ initialData, categories, onClose, onSaved }) {
               Cancel
             </button>
             <button type="submit" disabled={saving}
-              style={{ padding: '9px 24px', border: 'none', borderRadius: 8, background: saving ? '#FFAAAA' : '#FF0000', cursor: saving ? 'not-allowed' : 'pointer', fontSize: '0.875rem', fontFamily: "'Inter', sans-serif", color: '#FFFFFF', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 8 }}>
+              style={{ padding: '9px 24px', border: 'none', borderRadius: 8, background: saving ? '#FFAAAA' : '#CA2A31', cursor: saving ? 'not-allowed' : 'pointer', fontSize: '0.875rem', fontFamily: "'Inter', sans-serif", color: '#FFFFFF', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 8 }}>
               {saving ? <><div style={{ width: 14, height: 14, border: '2px solid #FFFFFF', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} /> Saving...</> : <><Save size={14} /> {form.id ? 'Save Changes' : 'Create Product'}</>}
             </button>
           </div>
@@ -722,7 +722,7 @@ function ProductsTab({ products, categories, onRefresh }) {
         </select>
         <button
           onClick={() => { setEditData(null); setShowForm(true) }}
-          style={{ padding: '8px 18px', background: '#FF0000', border: 'none', borderRadius: 7, color: '#FFFFFF', fontSize: '0.8125rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, fontFamily: "'Inter', sans-serif", flexShrink: 0 }}
+          style={{ padding: '8px 18px', background: '#CA2A31', border: 'none', borderRadius: 7, color: '#FFFFFF', fontSize: '0.8125rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, fontFamily: "'Inter', sans-serif", flexShrink: 0 }}
         >
           <Plus size={14} /> Add Product
         </button>
@@ -783,7 +783,7 @@ function ProductsTab({ products, categories, onRefresh }) {
                   <td style={{ padding: '12px 16px', textAlign: 'right' }}>
                     <button onClick={() => handleEdit(p)}
                       style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#888888', padding: '6px', borderRadius: 6, marginRight: 4, transition: 'all 0.15s' }}
-                      onMouseEnter={e => { e.currentTarget.style.color = '#FF0000'; e.currentTarget.style.background = '#FFF0F0' }}
+                      onMouseEnter={e => { e.currentTarget.style.color = '#CA2A31'; e.currentTarget.style.background = '#FFF0F0' }}
                       onMouseLeave={e => { e.currentTarget.style.color = '#888888'; e.currentTarget.style.background = 'transparent' }}>
                       <Edit2 size={15} />
                     </button>
@@ -856,7 +856,7 @@ export default function AdminProductsPage() {
                 display: 'flex', alignItems: 'center', gap: 7,
                 padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer',
                 fontSize: '0.8125rem', fontFamily: "'Inter', sans-serif", fontWeight: tab === t.id ? 600 : 400,
-                background: tab === t.id ? '#FF0000' : '#FFFFFF',
+                background: tab === t.id ? '#CA2A31' : '#FFFFFF',
                 color: tab === t.id ? '#FFFFFF' : '#444444',
                 boxShadow: tab === t.id ? '0 2px 8px rgba(255,0,0,0.2)' : 'none',
                 border: tab === t.id ? 'none' : '1px solid #E5E5E5',
@@ -869,7 +869,7 @@ export default function AdminProductsPage() {
 
         {loading ? (
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 200 }}>
-            <div style={{ width: 32, height: 32, border: '3px solid #FF0000', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+            <div style={{ width: 32, height: 32, border: '3px solid #CA2A31', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
           </div>
         ) : (
           <>

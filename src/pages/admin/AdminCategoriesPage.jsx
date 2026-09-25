@@ -115,14 +115,14 @@ export default function AdminCategoriesPage() {
             </p>
           </div>
           <button onClick={openAdd}
-            style={{ padding: '8px 18px', background: '#FF0000', border: 'none', borderRadius: 8, color: '#FFFFFF', fontSize: '0.8125rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, fontFamily: "'Inter', sans-serif" }}>
+            style={{ padding: '8px 18px', background: '#CA2A31', border: 'none', borderRadius: 8, color: '#FFFFFF', fontSize: '0.8125rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, fontFamily: "'Inter', sans-serif" }}>
             <Plus size={14} /> Add Category
           </button>
         </div>
 
         {loading ? (
           <div style={{ display: 'flex', justifyContent: 'center', padding: 60 }}>
-            <div style={{ width: 32, height: 32, border: '3px solid #FF0000', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+            <div style={{ width: 32, height: 32, border: '3px solid #CA2A31', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
           </div>
         ) : (
           <div style={S.card}>
@@ -164,7 +164,7 @@ export default function AdminCategoriesPage() {
                     <td style={{ padding: '12px 16px', textAlign: 'right' }}>
                       <button onClick={() => openEdit(cat)}
                         style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#888888', padding: 6, borderRadius: 6, marginRight: 4 }}
-                        onMouseEnter={e => { e.currentTarget.style.color = '#FF0000'; e.currentTarget.style.background = '#FFF0F0' }}
+                        onMouseEnter={e => { e.currentTarget.style.color = '#CA2A31'; e.currentTarget.style.background = '#FFF0F0' }}
                         onMouseLeave={e => { e.currentTarget.style.color = '#888888'; e.currentTarget.style.background = 'transparent' }}>
                         <Edit2 size={15} />
                       </button>
@@ -235,7 +235,7 @@ export default function AdminCategoriesPage() {
                   <button type="button" onClick={() => setShowForm(false)} style={{ padding: '8px 18px', border: '1px solid #E0E0E0', borderRadius: 7, background: '#FFFFFF', cursor: 'pointer', fontSize: '0.875rem', fontFamily: "'Inter', sans-serif", color: '#666666' }}>
                     Cancel
                   </button>
-                  <button type="submit" disabled={saving} style={{ padding: '8px 20px', border: 'none', borderRadius: 7, background: saving ? '#FFAAAA' : '#FF0000', cursor: saving ? 'not-allowed' : 'pointer', fontSize: '0.875rem', fontFamily: "'Inter', sans-serif", color: '#FFFFFF', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 7 }}>
+                  <button type="submit" disabled={saving} style={{ padding: '8px 20px', border: 'none', borderRadius: 7, background: saving ? '#FFAAAA' : '#CA2A31', cursor: saving ? 'not-allowed' : 'pointer', fontSize: '0.875rem', fontFamily: "'Inter', sans-serif", color: '#FFFFFF', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 7 }}>
                     {saving ? 'Saving...' : <><Save size={13} /> {editing ? 'Save Changes' : 'Create'}</>}
                   </button>
                 </div>

@@ -13,7 +13,7 @@
     --black-lighter:      #2A2A2A;
     
     /* Red accent */
-    --red:                #FF0000;
+    --red:                #CA2A31;
     --red-dark:           #CC0000;
     --red-light:          #FF3333;
     
@@ -34,7 +34,7 @@
     --border-light:       rgba(255,255,255,0.05);
     
     /* Accent colors */
-    --accent:             #FF0000;
+    --accent:             #CA2A31;
     --accent-hover:       #FF3333;
     
     /* Pearl effect colors */
@@ -74,8 +74,8 @@
 
   ::-webkit-scrollbar { width: 8px; }
   ::-webkit-scrollbar-track { background: #F0F0F0; }
-  ::-webkit-scrollbar-thumb { background: #FF0000; border-radius: 4px; }
-  ::-webkit-scrollbar-thumb:hover { background: #CC0000; }
+  ::-webkit-scrollbar-thumb { background: #888888; border-radius: 4px; }
+  ::-webkit-scrollbar-thumb:hover { background: #666666; }
 
   h1, h2, h3, h4, h5, h6 {
     color: #000000;
@@ -131,7 +131,7 @@
 
   /* Button Styles */
   .btn-primary {
-    background: linear-gradient(135deg, #FF0000 0%, #CC0000 100%);
+    background: linear-gradient(135deg, #CA2A31 0%, #CC0000 100%);
     color: #FFFFFF;
     padding: 0.875rem 2rem;
     font-weight: 600;
@@ -142,7 +142,7 @@
     transition: all 0.3s;
   }
   .btn-primary:hover {
-    background: linear-gradient(135deg, #FF3333 0%, #FF0000 100%);
+    background: linear-gradient(135deg, #FF3333 0%, #CA2A31 100%);
     transform: translateY(-2px);
     box-shadow: 0 8px 24px rgba(255, 0, 0, 0.4);
   }
@@ -154,13 +154,13 @@
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    border: 2px solid #FF0000;
+    border: 2px solid #CA2A31;
     cursor: pointer;
     transition: all 0.3s;
   }
   .btn-secondary:hover {
-    background: #FF0000;
-    border-color: #FF0000;
+    background: #CA2A31;
+    border-color: #CA2A31;
   }
 
   /* Typography */
@@ -200,7 +200,7 @@
     font-weight: 700;
     letter-spacing: 0.15em;
     text-transform: uppercase;
-    color: #FF0000;
+    color: #CA2A31;
   }
 
   /* Pearl effect animation */
@@ -253,7 +253,7 @@
   .xk-divider {
     width: 4rem;
     height: 2px;
-    background: linear-gradient(90deg, transparent, #FF0000, transparent);
+    background: linear-gradient(90deg, transparent, #CA2A31, transparent);
   }
 
   /* Grid */
@@ -309,7 +309,7 @@
 
   /* Primary Button */
   .btn-primary-equestrian {
-    background: #FF0000;
+    background: #CA2A31;
     color: #FFFFFF;
     font-weight: 600;
     font-size: 0.8125rem;
@@ -343,8 +343,8 @@
   }
   .btn-secondary-equestrian:hover {
     background: rgba(255, 255, 255, 0.1);
-    border-color: #FF0000;
-    color: #FF0000;
+    border-color: #CA2A31;
+    color: #CA2A31;
   }
 
   /* Eyebrow Label */
@@ -353,7 +353,7 @@
     letter-spacing: 0.25em;
     text-transform: uppercase;
     font-weight: 600;
-    color: #FF0000;
+    color: #CA2A31;
     font-family: 'Inter', sans-serif;
   }
 
@@ -395,9 +395,9 @@
 
   /* Legacy utilities (for admin panel compatibility) - DARK */
   .divine-gradient  { background: linear-gradient(135deg, #1A1A1A, #000000); }
-  .gold-gradient    { background: linear-gradient(135deg, #FF0000, #FF3333); }
+  .gold-gradient    { background: linear-gradient(135deg, #CA2A31, #FF3333); }
   .text-brown       { color: #FFFFFF; }
-  .text-amber       { color: #FF0000; }
+  .text-amber       { color: #CA2A31; }
   .bg-surface       { background-color: #1A1A1A; }
   .bg-surface-2     { background-color: #0A0A0A; }
   .border-brown     { border-color: rgba(255,255,255,0.1); }

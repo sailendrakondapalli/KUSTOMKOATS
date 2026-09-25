@@ -116,7 +116,7 @@ export default function ProductsPage() {
             </h1>
             {search && (
               <p className="text-sm mt-0.5" style={{ color: "#666666", fontFamily: "'Inter', sans-serif" }}>
-                Results for: <span className="font-semibold" style={{ color: "#FF0000" }}>"{search}"</span>
+                Results for: <span className="font-semibold" style={{ color: "#CA2A31" }}>"{search}"</span>
               </p>
             )}
           </div>
@@ -134,7 +134,7 @@ export default function ProductsPage() {
                 title="Grid view"
                 className={`p-1.5 rounded-md transition-all ${viewMode === 'grid' ? 'shadow-sm' : ''}`}
                 style={{ 
-                  background: viewMode === 'grid' ? '#FF0000' : 'transparent',
+                  background: viewMode === 'grid' ? '#CA2A31' : 'transparent',
                   color: viewMode === 'grid' ? '#FFFFFF' : '#666666'
                 }}
               >
@@ -145,7 +145,7 @@ export default function ProductsPage() {
                 title="List view"
                 className={`p-1.5 rounded-md transition-all ${viewMode === 'list' ? 'shadow-sm' : ''}`}
                 style={{ 
-                  background: viewMode === 'list' ? '#FF0000' : 'transparent',
+                  background: viewMode === 'list' ? '#CA2A31' : 'transparent',
                   color: viewMode === 'list' ? '#FFFFFF' : '#666666'
                 }}
               >
@@ -163,9 +163,9 @@ export default function ProductsPage() {
               onClick={() => setFilter('category', '')}
               className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold transition-all`}
               style={{
-                background: !category ? '#FF0000' : '#F8F8F8',
+                background: !category ? '#CA2A31' : '#F8F8F8',
                 color: !category ? '#FFFFFF' : '#333333',
-                border: `1px solid ${!category ? '#FF0000' : 'rgba(0, 0, 0, 0.1)'}`,
+                border: `1px solid ${!category ? '#CA2A31' : 'rgba(0, 0, 0, 0.1)'}`,
                 fontFamily: "'Inter', sans-serif"
               }}
             >
@@ -177,9 +177,9 @@ export default function ProductsPage() {
                 onClick={() => setFilter('category', cat)}
                 className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold transition-all`}
                 style={{
-                  background: category === cat || search.toLowerCase() === cat.toLowerCase() ? '#FF0000' : '#F8F8F8',
+                  background: category === cat || search.toLowerCase() === cat.toLowerCase() ? '#CA2A31' : '#F8F8F8',
                   color: category === cat || search.toLowerCase() === cat.toLowerCase() ? '#FFFFFF' : '#333333',
-                  border: `1px solid ${category === cat || search.toLowerCase() === cat.toLowerCase() ? '#FF0000' : 'rgba(0, 0, 0, 0.1)'}`,
+                  border: `1px solid ${category === cat || search.toLowerCase() === cat.toLowerCase() ? '#CA2A31' : 'rgba(0, 0, 0, 0.1)'}`,
                   fontFamily: "'Inter', sans-serif"
                 }}
               >
@@ -233,7 +233,7 @@ export default function ProductsPage() {
                         className={`w-full text-left px-4 py-2 text-xs transition-colors`}
                         style={{
                           background: sort === o.value ? '#F8F8F8' : 'transparent',
-                          color: sort === o.value ? '#FF0000' : '#333333',
+                          color: sort === o.value ? '#CA2A31' : '#333333',
                           fontFamily: "'Inter', sans-serif",
                           fontWeight: sort === o.value ? 600 : 400
                         }}
@@ -255,7 +255,7 @@ export default function ProductsPage() {
           {/* Sticky sidebar — desktop only */}
           <aside className="hidden lg:block w-[220px] flex-shrink-0">
             <div className="sticky top-20 rounded-2xl overflow-hidden shadow-sm" style={{ background: "#FFFFFF", border: "1px solid rgba(0, 0, 0, 0.1)" }}>
-              <div className="px-4 py-3" style={{ background: "#FF0000" }}>
+              <div className="px-4 py-3" style={{ background: "#CA2A31" }}>
                 <h2 className="text-xs font-bold uppercase tracking-widest" style={{ color: "#FFFFFF", fontFamily: "'Inter', sans-serif" }}>Categories</h2>
               </div>
               <nav className="py-2">
@@ -263,10 +263,10 @@ export default function ProductsPage() {
                   onClick={() => setFilter('category', '')}
                   className={`w-full flex items-center justify-between px-4 py-2.5 text-sm transition-all text-left`}
                   style={{
-                    color: !category ? '#FF0000' : '#333333',
+                    color: !category ? '#CA2A31' : '#333333',
                     fontWeight: !category ? 600 : 400,
                     background: !category ? '#FFF5F5' : 'transparent',
-                    borderLeft: !category ? '2px solid #FF0000' : '2px solid transparent',
+                    borderLeft: !category ? '2px solid #CA2A31' : '2px solid transparent',
                     fontFamily: "'Inter', sans-serif"
                   }}
                 >
@@ -288,17 +288,17 @@ export default function ProductsPage() {
                       onClick={() => setFilter('category', cat)}
                       className={`w-full flex items-center justify-between px-4 py-2.5 text-sm transition-all text-left`}
                       style={{
-                        color: active ? '#FF0000' : '#333333',
+                        color: active ? '#CA2A31' : '#333333',
                         fontWeight: active ? 600 : 400,
                         background: active ? '#FFF5F5' : 'transparent',
-                        borderLeft: active ? '2px solid #FF0000' : '2px solid transparent',
+                        borderLeft: active ? '2px solid #CA2A31' : '2px solid transparent',
                         fontFamily: "'Inter', sans-serif"
                       }}
                     >
                       <span className="truncate pr-2">{cat}</span>
                       {count > 0 && (
                         <span className={`flex-shrink-0 text-[10px] px-1.5 py-0.5 rounded-full`} style={{
-                          background: active ? '#FF0000' : '#F8F8F8',
+                          background: active ? '#CA2A31' : '#F8F8F8',
                           color: active ? '#FFFFFF' : '#666666',
                           border: active ? 'none' : '1px solid rgba(0, 0, 0, 0.1)'
                         }}>
@@ -319,7 +319,7 @@ export default function ProductsPage() {
             {!loading && products.length > 0 && (
               <div className="flex items-center justify-between mb-4">
                 <p className="text-xs" style={{ color: "#666666", fontFamily: "'Inter', sans-serif" }}>
-                  Showing <span className="font-medium" style={{ color: "#FF0000" }}>{(page - 1) * pageSize + 1}–{Math.min(page * pageSize, products.length)}</span> of <span className="font-medium" style={{ color: "#FF0000" }}>{products.length}</span>
+                  Showing <span className="font-medium" style={{ color: "#CA2A31" }}>{(page - 1) * pageSize + 1}–{Math.min(page * pageSize, products.length)}</span> of <span className="font-medium" style={{ color: "#CA2A31" }}>{products.length}</span>
                 </p>
                 <div className="flex items-center gap-2">
                   <span className="text-xs hidden sm:block" style={{ color: "#666666", fontFamily: "'Inter', sans-serif" }}>Per page:</span>
@@ -371,7 +371,7 @@ export default function ProductsPage() {
                   onClick={clearFilters}
                   className="px-6 py-2.5 rounded-xl text-sm font-semibold transition-all shadow-md"
                   style={{
-                    background: "#FF0000",
+                    background: "#CA2A31",
                     color: "#FFFFFF",
                     fontFamily: "'Inter', sans-serif"
                   }}
@@ -439,9 +439,9 @@ export default function ProductsPage() {
                               onClick={() => { setPage(p); window.scrollTo({ top: 0, behavior: 'smooth' }) }}
                               className={`w-8 h-8 text-xs rounded-lg transition-all`}
                               style={{
-                                background: p === page ? '#FF0000' : 'transparent',
+                                background: p === page ? '#CA2A31' : 'transparent',
                                 color: p === page ? '#FFFFFF' : '#333333',
-                                border: `1px solid ${p === page ? '#FF0000' : 'rgba(0, 0, 0, 0.1)'}`,
+                                border: `1px solid ${p === page ? '#CA2A31' : 'rgba(0, 0, 0, 0.1)'}`,
                                 fontFamily: "'Inter', sans-serif"
                               }}
                             >

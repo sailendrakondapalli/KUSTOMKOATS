@@ -15,7 +15,7 @@ export default function WholesalePage() {
           <div className="max-w-7xl mx-auto">
             <Link 
               to="/"
-              className="inline-flex items-center gap-2 text-black hover:text-[#FF0000] transition-colors mb-8"
+              className="inline-flex items-center gap-2 text-black hover:text-[#CA2A31] transition-colors mb-8"
               style={{ fontFamily: "'Inter', sans-serif" }}
             >
               <ArrowLeft size={20} />
@@ -41,7 +41,7 @@ export default function WholesalePage() {
         <section className="py-20 px-6 lg:px-12 xl:px-20">
           <div className="max-w-7xl mx-auto">
             <Link to="/wholesale/application" className="inline-flex items-center gap-2 px-8 py-4 rounded-lg font-bold transition-all hover:scale-105"
-              style={{ background: "#FF0000", color: "#FFFFFF", fontFamily: "'Inter', sans-serif" }}>
+              style={{ background: "#CA2A31", color: "#FFFFFF", fontFamily: "'Inter', sans-serif" }}>
               Apply for Wholesale Account
             </Link>
           </div>

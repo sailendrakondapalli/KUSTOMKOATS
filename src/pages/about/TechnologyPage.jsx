@@ -15,7 +15,7 @@ export default function TechnologyPage() {
           <div className="max-w-7xl mx-auto">
             <Link 
               to="/"
-              className="inline-flex items-center gap-2 text-white hover:text-[#FF0000] transition-colors mb-8"
+              className="inline-flex items-center gap-2 text-white hover:text-[#CA2A31] transition-colors mb-8"
               style={{ fontFamily: "'Inter', sans-serif" }}
             >
               <ArrowLeft size={20} />

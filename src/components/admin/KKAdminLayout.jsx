@@ -53,7 +53,7 @@ export default function KKAdminLayout({ children }) {
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               <div style={{
                 width: 36, height: 36, borderRadius: 6,
-                background: '#FF0000',
+                background: '#CA2A31',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 flexShrink: 0,
               }}>
@@ -86,18 +86,18 @@ export default function KKAdminLayout({ children }) {
                     borderRadius: 6,
                     textDecoration: 'none',
                     background: active ? 'rgba(255,0,0,0.12)' : 'transparent',
-                    borderLeft: `2px solid ${active ? '#FF0000' : 'transparent'}`,
+                    borderLeft: `2px solid ${active ? '#CA2A31' : 'transparent'}`,
                     color: active ? '#FFFFFF' : 'rgba(255,255,255,0.5)',
                     transition: 'all 0.15s',
                   }}
                   onMouseEnter={e => { if (!active) e.currentTarget.style.background = 'rgba(255,255,255,0.05)' }}
                   onMouseLeave={e => { if (!active) e.currentTarget.style.background = 'transparent' }}
                 >
-                  <Icon size={16} style={{ color: active ? '#FF0000' : 'currentColor', flexShrink: 0 }} />
+                  <Icon size={16} style={{ color: active ? '#CA2A31' : 'currentColor', flexShrink: 0 }} />
                   <span style={{ fontSize: '0.8125rem', fontFamily: "'Inter', sans-serif", fontWeight: active ? 600 : 400, flex: 1 }}>
                     {label}
                   </span>
-                  {active && <ChevronRight size={12} style={{ color: '#FF0000' }} />}
+                  {active && <ChevronRight size={12} style={{ color: '#CA2A31' }} />}
                 </Link>
               )
             })}

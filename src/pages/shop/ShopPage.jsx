@@ -51,7 +51,7 @@ export default function ShopPage() {
           <div className="max-w-7xl mx-auto">
             <Link 
               to="/"
-              className="inline-flex items-center gap-2 text-white hover:text-[#FF0000] transition-colors mb-6"
+              className="inline-flex items-center gap-2 text-white hover:text-[#CA2A31] transition-colors mb-6"
               style={{ fontFamily: "'Inter', sans-serif" }}
             >
               <ArrowLeft size={20} />
@@ -92,7 +92,7 @@ export default function ShopPage() {
                 <select
                   value={filter}
                   onChange={(e) => setFilter(e.target.value)}
-                  className="px-4 py-2 rounded-lg border border-gray-300 text-sm font-medium focus:outline-none focus:border-[#FF0000]"
+                  className="px-4 py-2 rounded-lg border border-gray-300 text-sm font-medium focus:outline-none focus:border-[#CA2A31]"
                   style={{ fontFamily: "'Inter', sans-serif", color: "#000000" }}
                 >
                   {categories.map(cat => (
@@ -104,7 +104,7 @@ export default function ShopPage() {
                 <select
                   value={sort}
                   onChange={(e) => setSort(e.target.value)}
-                  className="px-4 py-2 rounded-lg border border-gray-300 text-sm font-medium focus:outline-none focus:border-[#FF0000]"
+                  className="px-4 py-2 rounded-lg border border-gray-300 text-sm font-medium focus:outline-none focus:border-[#CA2A31]"
                   style={{ fontFamily: "'Inter', sans-serif", color: "#000000" }}
                 >
                   <option value="">Sort By</option>
@@ -137,7 +137,7 @@ export default function ShopPage() {
                   onClick={() => { setFilter('all'); setSort('') }}
                   className="px-6 py-3 rounded-lg font-medium transition-colors"
                   style={{ 
-                    background: "#FF0000",
+                    background: "#CA2A31",
                     color: "#FFFFFF",
                     fontFamily: "'Inter', sans-serif"
                   }}

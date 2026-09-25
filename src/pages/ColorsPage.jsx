@@ -50,16 +50,16 @@ export default function ColorsPage() {
 
       <div className="min-h-screen" style={{ background: "#FFFFFF" }}>
         {/* Hero Section */}
-        <section className="w-full px-6 lg:px-12 xl:px-20 py-20">
+        <section className="w-full px-6 lg:px-12 xl:px-20 py-20" style={{ background: "#000000" }}>
           <div className="max-w-7xl mx-auto text-center">
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6" 
-              style={{ fontFamily: "'Rajdhani', 'Inter', sans-serif", color: "#000000" }}>
+              style={{ fontFamily: "'Rajdhani', 'Inter', sans-serif", color: "#FFFFFF" }}>
               COLOR CATALOG
             </h1>
-            <p className="text-lg md:text-xl mb-4" style={{ color: "#333333", fontFamily: "'Inter', sans-serif" }}>
+            <p className="text-lg md:text-xl mb-4" style={{ color: "#CCCCCC", fontFamily: "'Inter', sans-serif" }}>
               Explore Over 300+ Automotive Grade Pearl Colors
             </p>
-            <p className="text-base max-w-3xl mx-auto" style={{ color: "#666666", fontFamily: "'Inter', sans-serif" }}>
+            <p className="text-base max-w-3xl mx-auto" style={{ color: "#CCCCCC", fontFamily: "'Inter', sans-serif" }}>
               From solid pearls to color-shifting effects, discover the perfect finish for your project
             </p>
           </div>
@@ -77,7 +77,7 @@ export default function ColorsPage() {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search colors by name..."
-                  className="w-full pl-12 pr-4 py-3 rounded-lg text-black placeholder-black/40 focus:outline-none focus:ring-2 focus:ring-[#FF0000]"
+                  className="w-full pl-12 pr-4 py-3 rounded-lg text-black placeholder-black/40 focus:outline-none focus:ring-2 focus:ring-[#CA2A31]"
                   style={{
                     background: "#F8F8F8",
                     border: "1px solid rgba(0, 0, 0, 0.1)",
@@ -91,7 +91,7 @@ export default function ColorsPage() {
                 onClick={() => setShowFilters(!showFilters)}
                 className="flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-colors"
                 style={{
-                  background: showFilters ? "#FF0000" : "#F8F8F8",
+                  background: showFilters ? "#CA2A31" : "#F8F8F8",
                   color: showFilters ? "#FFFFFF" : "#000000",
                   border: "1px solid rgba(0, 0, 0, 0.1)",
                   fontFamily: "'Inter', sans-serif"
@@ -118,9 +118,9 @@ export default function ColorsPage() {
                         onClick={() => setSelectedCategory(cat)}
                         className="px-4 py-2 rounded-lg text-sm font-medium transition-all"
                         style={{
-                          background: selectedCategory === cat ? "#FF0000" : "#FFFFFF",
+                          background: selectedCategory === cat ? "#CA2A31" : "#FFFFFF",
                           color: selectedCategory === cat ? "#FFFFFF" : "#333333",
-                          border: "1px solid " + (selectedCategory === cat ? "#FF0000" : "rgba(0, 0, 0, 0.1)"),
+                          border: "1px solid " + (selectedCategory === cat ? "#CA2A31" : "rgba(0, 0, 0, 0.1)"),
                           fontFamily: "'Inter', sans-serif"
                         }}
                       >
@@ -142,9 +142,9 @@ export default function ColorsPage() {
                         onClick={() => setSelectedColorFamily(family)}
                         className="px-4 py-2 rounded-lg text-sm font-medium transition-all"
                         style={{
-                          background: selectedColorFamily === family ? "#FF0000" : "#FFFFFF",
+                          background: selectedColorFamily === family ? "#CA2A31" : "#FFFFFF",
                           color: selectedColorFamily === family ? "#FFFFFF" : "#333333",
-                          border: "1px solid " + (selectedColorFamily === family ? "#FF0000" : "rgba(0, 0, 0, 0.1)"),
+                          border: "1px solid " + (selectedColorFamily === family ? "#CA2A31" : "rgba(0, 0, 0, 0.1)"),
                           fontFamily: "'Inter', sans-serif"
                         }}
                       >
@@ -168,7 +168,7 @@ export default function ColorsPage() {
                     setSelectedCategory('All')
                     setSelectedColorFamily('All')
                   }}
-                  className="text-sm font-medium hover:text-[#FF0000] transition-colors"
+                  className="text-sm font-medium hover:text-[#CA2A31] transition-colors"
                   style={{ color: "#333333", fontFamily: "'Inter', sans-serif" }}
                 >
                   Clear Filters
@@ -222,7 +222,7 @@ export default function ColorsPage() {
 
                         {/* Info */}
                         <div className="p-4">
-                          <p className="font-bold text-base mb-1 group-hover:text-[#FF0000] transition-colors"
+                          <p className="font-bold text-base mb-1 group-hover:text-[#CA2A31] transition-colors"
                             style={{ color: "#000000", fontFamily: "'Inter', sans-serif" }}>
                             {colorName}
                           </p>
@@ -261,7 +261,7 @@ export default function ColorsPage() {
                       setSelectedCategory(category)
                       window.scrollTo({ top: 0, behavior: 'smooth' })
                     }}
-                    className="text-sm font-medium hover:text-[#FF0000] transition-colors"
+                    className="text-sm font-medium hover:text-[#CA2A31] transition-colors"
                     style={{ color: "#333333", fontFamily: "'Inter', sans-serif" }}
                   >
                     View Colors →

@@ -1,4 +1,4 @@
-﻿import { create } from "zustand"
+import { create } from "zustand"
 import { supabase } from "../lib/supabase"
 
 const WL_KEY = "jewelry_wishlist"

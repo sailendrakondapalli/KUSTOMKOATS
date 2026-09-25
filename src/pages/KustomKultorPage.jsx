@@ -99,7 +99,7 @@ export default function KustomKultorPage() {
                   selectedCategory === "all" ? "" : "hover:scale-105"
                 }`}
                 style={{
-                  background: selectedCategory === "all" ? "#FF0000" : "#F8F8F8",
+                  background: selectedCategory === "all" ? "#CA2A31" : "#F8F8F8",
                   color: selectedCategory === "all" ? "#FFFFFF" : "#333333"
                 }}
               >
@@ -157,12 +157,12 @@ export default function KustomKultorPage() {
                         className="group block"
                       >
                         {/* Featured Image */}
-                        <div className="relative aspect-[4/3] rounded-lg overflow-hidden mb-4">
+                        <div className="relative aspect-[4/3] rounded-lg overflow-hidden mb-4" style={{ background: "#FFFFFF" }}>
                           {post.featured_image ? (
                             <img 
                               src={post.featured_image}
                               alt={post.title}
-                              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                              className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-105"
                             />
                           ) : (
                             <div 
@@ -183,7 +183,7 @@ export default function KustomKultorPage() {
                             <div className="text-2xl font-bold leading-none" style={{ color: "#000000" }}>
                               {day}
                             </div>
-                            <div className="text-xs font-bold mt-1" style={{ color: "#FF0000" }}>
+                            <div className="text-xs font-bold mt-1" style={{ color: "#CA2A31" }}>
                               {month}
                             </div>
                           </div>
@@ -205,7 +205,7 @@ export default function KustomKultorPage() {
                         {/* Content */}
                         <div>
                           <h3 
-                            className="text-xl font-bold mb-3 transition-colors group-hover:text-red-600"
+                            className="text-xl font-bold mb-3 transition-colors group-hover:text-[#CA2A31]"
                             style={{ 
                               fontFamily: "'Inter', sans-serif", 
                               color: "#000000",
@@ -249,7 +249,7 @@ export default function KustomKultorPage() {
                             className="inline-flex items-center gap-2 text-sm font-medium mt-4 transition-all group-hover:gap-3"
                             style={{ 
                               fontFamily: "'Inter', sans-serif", 
-                              color: "#FF0000"
+                              color: "#CA2A31"
                             }}
                           >
                             CONTINUE READING

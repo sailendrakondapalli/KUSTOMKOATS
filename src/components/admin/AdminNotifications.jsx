@@ -247,7 +247,7 @@ export default function AdminNotifications({ onNotificationClick }) {
                           )}
                           <button
                             onClick={(e) => handleDelete(notification.id, e)}
-                            className="p-1 text-red-600 hover:bg-red-100 rounded transition-colors"
+                            className="p-1 text-[#CA2A31] hover:bg-red-100 rounded transition-colors"
                             title="Delete"
                           >
                             <Trash2 size={14} />

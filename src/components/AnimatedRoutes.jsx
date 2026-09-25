@@ -67,7 +67,7 @@ const BlogPostPage = lazy(() => import('../pages/BlogPostPage'))
 const PageLoader = () => (
   <div className="min-h-[60vh] flex items-center justify-center" style={{ background: "#000000" }}>
     <div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin"
-      style={{ borderColor: "#FF0000", borderTopColor: "transparent" }} />
+      style={{ borderColor: "#CA2A31", borderTopColor: "transparent" }} />
   </div>
 )
 

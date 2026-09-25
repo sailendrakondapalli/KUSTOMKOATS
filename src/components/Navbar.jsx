@@ -24,6 +24,7 @@ export default function Navbar() {
   const searchRef = useRef(null)
   const isAdmin = checkIsAdmin(user)
   const isOnAdminPanel = pathname.startsWith("/admin")
+  const isHomePage = pathname === "/"
 
   useEffect(() => {
     if (!products.length) loadProducts()
@@ -33,17 +34,25 @@ export default function Navbar() {
     const handleScroll = () => {
       const currentScrollY = window.scrollY
       
-      // Always show navbar, change style based on scroll
-      if (currentScrollY > 100) {
-        setScrolled(true)
+      // Only apply scroll effect on HomePage
+      if (isHomePage) {
+        if (currentScrollY > 100) {
+          setScrolled(true)
+        } else {
+          setScrolled(false)
+        }
       } else {
-        setScrolled(false)
+        // Always show black navbar on non-home pages
+        setScrolled(true)
       }
     }
     
+    // Set initial state
+    handleScroll()
+    
     window.addEventListener("scroll", handleScroll)
     return () => window.removeEventListener("scroll", handleScroll)
-  }, [])
+  }, [isHomePage])
 
   useEffect(() => {
     const handler = (e) => {
@@ -96,16 +105,15 @@ export default function Navbar() {
     top: 0,
     left: 0,
     right: 0,
-    background: scrolled ? "#FFFFFF" : "transparent",
-    backdropFilter: scrolled ? "blur(0px)" : "none",
-    boxShadow: scrolled ? "0 2px 12px rgba(0,0,0,0.08)" : "none",
+    background: scrolled ? "#000000" : "transparent",
+    backdropFilter: scrolled ? "none" : "none",
+    boxShadow: scrolled ? "0 2px 12px rgba(0,0,0,0.3)" : "none",
     transition: "background 0.4s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
   }
 
-  // On hero (transparent), text should be white for readability against video/dark bg
-  // After scroll (white bg), text should be black
-  const textColor = scrolled ? "#000000" : "#FFFFFF"
-  const iconStyle = `w-10 h-10 flex items-center justify-center hover:text-[#FF0000] transition-colors duration-300`
+  // Text should always be white (transparent at top, black bg when scrolled)
+  const textColor = "#FFFFFF"
+  const iconStyle = `w-10 h-10 flex items-center justify-center hover:text-[#CA2A31] transition-colors duration-300`
 
   const navLinks = [
     { to: "/", label: "HOME" },
@@ -115,32 +123,19 @@ export default function Navbar() {
         { to: "/shop/xtreme-kolorz", label: "Xtreme Kolorz" },
         { to: "/shop/xtreme-wrap", label: "Xtreme Wrap" },
         { to: "/shop/accessories", label: "Accessories" },
-        { to: "/shop/wholesale", label: "Wholesale" },
       ]
     },
     { 
-      label: "KUSTOM KULTURE",
+      label: "KULTURE",
       submenu: [
         { to: "/kustom-kultor", label: "Blog" },
-        { to: "/kulture/journal", label: "Kustom Journal" },
-        { to: "/kulture/news", label: "News" },
-        { to: "/kulture/events", label: "Events" },
-        { to: "/kulture/projects", label: "Projects" },
-        { to: "/kulture/how-to", label: "How-To" },
-        { to: "/kulture/garages", label: "Garages" },
-        { to: "/kulture/detailing", label: "Detailing" },
-        { to: "/kulture/accessories", label: "Accessories" },
-        { to: "/kulture/university", label: "KK University" },
       ]
     },
     { 
       label: "WHOLESALE",
       submenu: [
         { to: "/wholesale/why-partner", label: "Why Partner With Us" },
-        { to: "/wholesale/dealer", label: "Dealer" },
-        { to: "/wholesale/distributor", label: "Distributor" },
-        { to: "/wholesale/wholesaler", label: "Wholesaler" },
-        { to: "/wholesale/application", label: "Application" },
+        { to: "/wholesale/application", label: "Wholesaler" },
       ]
     },
     { 
@@ -245,7 +240,7 @@ export default function Navbar() {
                     }}
                     onMouseEnter={e => {
                       e.currentTarget.style.background = "rgba(255,0,0,0.05)"
-                      e.currentTarget.style.color = "#FF0000"
+                      e.currentTarget.style.color = "#CA2A31"
                     }}
                     onMouseLeave={e => {
                       e.currentTarget.style.background = "transparent"
@@ -275,7 +270,7 @@ export default function Navbar() {
                 }}
                 onMouseEnter={e => {
                   e.currentTarget.style.background = "rgba(255,0,0,0.05)"
-                  e.currentTarget.style.color = "#FF0000"
+                  e.currentTarget.style.color = "#CA2A31"
                 }}
                 onMouseLeave={e => {
                   e.currentTarget.style.background = "transparent"
@@ -295,7 +290,7 @@ export default function Navbar() {
                 onClick={() => setMenuOpen(false)}
                 style={{
                   display: "block",
-                  background: "#FF0000",
+                  background: "#CA2A31",
                   color: "#FFFFFF",
                   padding: "10px 16px",
                   borderRadius: "4px",
@@ -320,17 +315,15 @@ export default function Navbar() {
 
   return (
     <>
-      <nav className="w-full px-6 lg:px-12 xl:px-20 h-20 flex items-center gap-6" style={{ ...navStyle, zIndex: 1000 }}>
+      <nav className="w-full px-6 lg:px-12 xl:px-20 h-14 flex items-center gap-6" style={{ ...navStyle, zIndex: 1000 }}>
         {/* Logo */}
         <Link to="/" className="flex items-center gap-3 flex-shrink-0" onClick={closeAll}>
-          <div className="rounded-lg p-2" style={{ background: scrolled ? "#000000" : "rgba(0,0,0,0.4)", transition: "background 0.4s" }}>
-            <img 
-              src="/logo.png" 
-              alt="Kustom Koats" 
-              className="h-6 md:h-8 w-auto object-contain"
-              style={{ maxWidth: '180px', filter: 'brightness(0) invert(1)' }}
-            />
-          </div>
+          <img 
+            src="/logo.png" 
+            alt="Kustom Koats" 
+            className="h-5 md:h-7 w-auto object-contain"
+            style={{ maxWidth: '180px', filter: 'brightness(0) invert(1)' }}
+          />
         </Link>
 
           {/* Desktop Navigation */}
@@ -345,7 +338,7 @@ export default function Navbar() {
                     onMouseLeave={() => setActiveDropdown(null)}
                   >
                     <button
-                      className={`px-5 h-10 flex items-center text-[0.875rem] font-medium tracking-wide hover:text-[#FF0000] transition-colors duration-300`}
+                      className={`px-5 h-10 flex items-center text-[0.875rem] font-medium tracking-wide hover:text-[#CA2A31] transition-colors duration-300`}
                       style={{ fontFamily: "'Inter', sans-serif", color: textColor }}
                     >
                       {item.label}
@@ -366,7 +359,7 @@ export default function Navbar() {
                           <Link
                             key={subItem.to}
                             to={subItem.to}
-                            className="block px-4 py-2.5 text-sm text-black hover:bg-[#F8F8F8] hover:text-[#FF0000] transition-colors"
+                            className="block px-4 py-2.5 text-sm text-black hover:bg-[#F8F8F8] hover:text-[#CA2A31] transition-colors"
                             style={{ fontFamily: "'Inter', sans-serif" }}
                             onClick={closeAll}
                           >
@@ -378,7 +371,7 @@ export default function Navbar() {
                   </div>
                 ) : (
                   <Link key={item.to} to={item.to} onClick={closeAll}
-                    className={`px-5 h-10 flex items-center text-[0.875rem] font-medium tracking-wide hover:text-[#FF0000] transition-colors duration-300`}
+                    className={`px-5 h-10 flex items-center text-[0.875rem] font-medium tracking-wide hover:text-[#CA2A31] transition-colors duration-300`}
                     style={{ fontFamily: "'Inter', sans-serif", color: textColor }}>
                     {item.label}
                   </Link>
@@ -390,17 +383,17 @@ export default function Navbar() {
           {/* Desktop Search */}
           <div ref={searchRef} className="hidden lg:block relative w-72 ml-auto">
             <form onSubmit={handleSearch} className="relative">
-              <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: scrolled ? "rgba(0,0,0,0.4)" : "rgba(255,255,255,0.6)", transition: "color 0.4s" }} />
+              <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: "rgba(255,255,255,0.6)" }} />
               <input
                 type="text" value={searchQuery} onChange={handleSearchChange}
                 placeholder="Search colors..."
                 className="w-full rounded-sm pl-11 pr-4 py-2.5 text-sm focus:outline-none transition-all duration-400"
                 style={{
-                  background: scrolled ? "#F8F8F8" : "rgba(255,255,255,0.15)",
-                  border: `1px solid ${scrolled ? "rgba(0,0,0,0.15)" : "rgba(255,255,255,0.3)"}`,
-                  color: scrolled ? "#000000" : "#FFFFFF",
+                  background: scrolled ? "rgba(255,255,255,0.1)" : "rgba(255,255,255,0.15)",
+                  border: "1px solid rgba(255,255,255,0.2)",
+                  color: "#FFFFFF",
                   fontFamily: "'Inter', sans-serif",
-                  transition: "background 0.4s, border 0.4s, color 0.4s",
+                  transition: "background 0.4s",
                 }}
               />
             </form>
@@ -423,7 +416,7 @@ export default function Navbar() {
                       <p className="text-black text-sm font-medium truncate" style={{ fontFamily: "'Inter', sans-serif" }}>{p.name}</p>
                       <p className="text-gray-600 text-xs">{p.category}</p>
                     </div>
-                    <span className="text-[#FF0000] text-sm font-semibold flex-shrink-0">
+                    <span className="text-[#CA2A31] text-sm font-semibold flex-shrink-0">
                       {p.price?.toLocaleString("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 })}
                     </span>
                   </button>
@@ -440,7 +433,7 @@ export default function Navbar() {
                   <div className="relative">
                     <Heart size={20} />
                     {wishlistItems.length > 0 && (
-                      <span className="absolute -top-1 -right-1 bg-[#FF0000] text-white text-[0.625rem] font-bold rounded-full w-4 h-4 flex items-center justify-center">
+                      <span className="absolute -top-1 -right-1 bg-[#CA2A31] text-white text-[0.625rem] font-bold rounded-full w-4 h-4 flex items-center justify-center">
                         {wishlistItems.length}
                       </span>
                     )}
@@ -450,7 +443,7 @@ export default function Navbar() {
                   <div className="relative">
                     <ShoppingCart size={20} />
                     {itemCount > 0 && (
-                      <span className="absolute -top-1 -right-1 bg-[#FF0000] text-white text-[0.625rem] font-bold rounded-full w-4 h-4 flex items-center justify-center">
+                      <span className="absolute -top-1 -right-1 bg-[#CA2A31] text-white text-[0.625rem] font-bold rounded-full w-4 h-4 flex items-center justify-center">
                         {itemCount}
                       </span>
                     )}
@@ -465,7 +458,7 @@ export default function Navbar() {
               <Link to={isOnAdminPanel ? "/" : "/admin"}
                 className="hidden sm:flex items-center gap-1.5 px-4 py-2 text-[0.6875rem] font-semibold rounded-sm transition-all tracking-wide uppercase"
                 style={{ 
-                  background: "#FF0000", 
+                  background: "#CA2A31", 
                   color: "#FFFFFF",
                   fontFamily: "'Inter', sans-serif" 
                 }}>
@@ -476,7 +469,7 @@ export default function Navbar() {
             {/* Hamburger button */}
             <button 
               className="lg:hidden p-2 transition-colors"
-              style={{ color: textColor, background: "none", border: "none", cursor: "pointer", transition: "color 0.4s" }}
+              style={{ color: "#FFFFFF", background: "none", border: "none", cursor: "pointer" }}
               onClick={() => setMenuOpen(!menuOpen)}
               aria-label="Toggle menu"
             >

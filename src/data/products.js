@@ -1,4 +1,4 @@
-﻿// Static category and tag defaults used across the app
+// Static category and tag defaults used across the app
 
 export const CATEGORIES = [
   "Xtreme Kolorz",
@@ -14,5 +14,5 @@ export const COLOR_FAMILIES = [
   "Black", "White", "Pink", "Yellow", "Silver", "Bronze"
 ]
 
-// Mock products removed — all products come from Supabase only
+// Mock products removed � all products come from Supabase only
 export const mockProducts = []

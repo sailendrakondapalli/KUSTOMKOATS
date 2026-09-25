@@ -71,11 +71,11 @@ export default function AccessoriesPage() {
 
       <div className="min-h-screen" style={{ background: "#FFFFFF" }}>
         {/* Hero */}
-        <section className="relative py-20 px-6 lg:px-12 xl:px-20" style={{ background: "#FFFFFF" }}>
+        <section className="relative py-20 px-6 lg:px-12 xl:px-20" style={{ background: "#000000" }}>
           <div className="max-w-7xl mx-auto">
             <Link 
               to="/"
-              className="inline-flex items-center gap-2 text-black hover:text-[#FF0000] transition-colors mb-8"
+              className="inline-flex items-center gap-2 text-white hover:text-[#CA2A31] transition-colors mb-8"
               style={{ fontFamily: "'Inter', sans-serif" }}
             >
               <ArrowLeft size={20} />
@@ -86,13 +86,13 @@ export default function AccessoriesPage() {
               className="text-4xl md:text-6xl font-bold mb-6"
               style={{ 
                 fontFamily: "'Bebas Neue', sans-serif",
-                color: '#000000',
+                color: '#FFFFFF',
                 letterSpacing: '2px'
               }}
             >
               ACCESSORIES
             </h1>
-            <p className="text-xl max-w-3xl" style={{ color: "#666666", fontFamily: "'Inter', sans-serif" }}>
+            <p className="text-xl max-w-3xl" style={{ color: "#CCCCCC", fontFamily: "'Inter', sans-serif" }}>
               Complete your custom finish with professional tools and accessories. Everything you need for perfect application.
             </p>
           </div>
@@ -102,7 +102,7 @@ export default function AccessoriesPage() {
         <section className="py-20 px-6 lg:px-12 xl:px-20">
           <div className="max-w-7xl mx-auto">
             <div className="text-center mb-16">
-              <p className="text-sm font-bold mb-3 tracking-wider uppercase" style={{ color: "#FF0000", fontFamily: "'Inter', sans-serif" }}>
+              <p className="text-sm font-bold mb-3 tracking-wider uppercase" style={{ color: "#CA2A31", fontFamily: "'Inter', sans-serif" }}>
                 PROFESSIONAL TOOLS
               </p>
               <h2 className="text-3xl md:text-4xl font-bold"
@@ -116,7 +116,7 @@ export default function AccessoriesPage() {
                 <div key={category.title} className="p-8 rounded-lg hover:shadow-xl transition-all" 
                   style={{ background: "#F8F8F8", border: "1px solid rgba(0, 0, 0, 0.1)" }}>
                   <div className="inline-flex items-center justify-center w-16 h-16 rounded-full mb-6"
-                    style={{ background: "rgba(255, 0, 0, 0.05)", color: "#FF0000" }}>
+                    style={{ background: "rgba(255, 0, 0, 0.05)", color: "#CA2A31" }}>
                     {category.icon}
                   </div>
                   
@@ -131,7 +131,7 @@ export default function AccessoriesPage() {
                   <ul className="space-y-2 mb-6">
                     {category.items.map((item) => (
                       <li key={item} className="flex items-center gap-2">
-                        <span style={{ color: "#FF0000" }}>•</span>
+                        <span style={{ color: "#CA2A31" }}>•</span>
                         <span className="text-sm" style={{ color: "#666666", fontFamily: "'Inter', sans-serif" }}>{item}</span>
                       </li>
                     ))}
@@ -139,11 +139,11 @@ export default function AccessoriesPage() {
                   
                   <Link
                     to={`/products?category=accessories`}
-                    className="inline-block text-sm font-bold tracking-wide uppercase transition-colors hover:text-[#FF0000]"
+                    className="inline-block text-sm font-bold tracking-wide uppercase transition-colors hover:text-[#CA2A31]"
                     style={{ 
                       fontFamily: "'Inter', sans-serif",
                       color: "#000000",
-                      borderBottom: "2px solid #FF0000",
+                      borderBottom: "2px solid #CA2A31",
                       paddingBottom: "2px"
                     }}
                   >
@@ -159,7 +159,7 @@ export default function AccessoriesPage() {
         <section className="py-20 px-6 lg:px-12 xl:px-20" style={{ background: "#F8F8F8" }}>
           <div className="max-w-7xl mx-auto">
             <div className="text-center mb-16">
-              <p className="text-sm font-bold mb-3 tracking-wider uppercase" style={{ color: "#FF0000", fontFamily: "'Inter', sans-serif" }}>
+              <p className="text-sm font-bold mb-3 tracking-wider uppercase" style={{ color: "#CA2A31", fontFamily: "'Inter', sans-serif" }}>
                 SHOP NOW
               </p>
               <h2 className="text-3xl md:text-4xl font-bold mb-4"
@@ -200,35 +200,6 @@ export default function AccessoriesPage() {
           </div>
         </section>
 
-        {/* Why Quality Tools Matter */}
-        <section className="py-20 px-6 lg:px-12 xl:px-20" style={{ background: "#F8F8F8" }}>
-          <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-3xl font-bold mb-6" style={{ fontFamily: "'Rajdhani', sans-serif", color: "#000000" }}>
-              Quality Tools = Quality Results
-            </h2>
-            <p className="text-lg mb-12" style={{ color: "#666666", fontFamily: "'Inter', sans-serif" }}>
-              Professional-grade tools ensure consistent application, reduce waste, and deliver show-winning finishes every time.
-            </p>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {[
-                { title: "Better Application", desc: "Precise control and even coverage" },
-                { title: "Less Waste", desc: "Efficient material usage" },
-                { title: "Professional Results", desc: "Consistent, high-quality finishes" }
-              ].map((item) => (
-                <div key={item.title} className="p-6 rounded-lg" style={{ background: "#FFFFFF" }}>
-                  <h4 className="text-lg font-bold mb-2" style={{ color: "#000000", fontFamily: "'Inter', sans-serif" }}>
-                    {item.title}
-                  </h4>
-                  <p className="text-sm" style={{ color: "#666666", fontFamily: "'Inter', sans-serif" }}>
-                    {item.desc}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
         {/* CTA */}
         <section className="py-20 px-6 lg:px-12 xl:px-20">
           <div className="max-w-4xl mx-auto text-center">
@@ -241,7 +212,7 @@ export default function AccessoriesPage() {
             <Link
               to="/contact"
               className="inline-flex items-center gap-2 px-8 py-4 rounded-lg font-bold transition-all hover:scale-105"
-              style={{ background: "#FF0000", color: "#FFFFFF", fontFamily: "'Inter', sans-serif" }}
+              style={{ background: "#CA2A31", color: "#FFFFFF", fontFamily: "'Inter', sans-serif" }}
             >
               Contact Our Experts
             </Link>

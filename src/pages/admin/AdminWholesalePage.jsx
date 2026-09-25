@@ -177,7 +177,7 @@ export default function AdminWholesalePage() {
         {/* Table */}
         {loading ? (
           <div style={{ display: 'flex', justifyContent: 'center', padding: 60 }}>
-            <div className="w-8 h-8 rounded-full border-4 border-red-600 border-t-transparent animate-spin" />
+            <div className="w-8 h-8 rounded-full border-4 border-[#CA2A31] border-t-transparent animate-spin" />
           </div>
         ) : filtered.length === 0 ? (
           <div style={{ background: '#FFFFFF', border: '1px solid #E5E5E5', borderRadius: 12, padding: '60px 24px', textAlign: 'center' }}>
@@ -231,7 +231,7 @@ export default function AdminWholesalePage() {
                         <button
                           onClick={() => { setSelected(app); setAdminNotes(app.admin_notes || '') }}
                           style={{ background: 'none', border: '1px solid #E0E0E0', cursor: 'pointer', color: '#666666', padding: '5px 12px', borderRadius: 6, fontSize: '0.75rem', fontFamily: "'Inter', sans-serif", display: 'inline-flex', alignItems: 'center', gap: 5 }}
-                          onMouseEnter={e => { e.currentTarget.style.borderColor = '#FF0000'; e.currentTarget.style.color = '#FF0000' }}
+                          onMouseEnter={e => { e.currentTarget.style.borderColor = '#CA2A31'; e.currentTarget.style.color = '#CA2A31' }}
                           onMouseLeave={e => { e.currentTarget.style.borderColor = '#E0E0E0'; e.currentTarget.style.color = '#666666' }}
                         >
                           <Eye size={12} /> Review
