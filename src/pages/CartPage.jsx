@@ -4,6 +4,7 @@ import { Trash2, Plus, Minus, ShoppingBag, ArrowRight, Heart } from 'lucide-reac
 import { useCartStore } from '../store/cartStore'
 import { useAuthStore } from '../store/authStore'
 import { useWishlistStore } from '../store/wishlistStore'
+import { useWholesaler } from '../hooks/useWholesaler'
 import { formatINR } from '../utils/format'
 import { isVideoUrl } from '../services/storageService'
 import toast from 'react-hot-toast'
@@ -14,6 +15,9 @@ export default function CartPage() {
   const { user } = useAuthStore()
   const { toggleWishlist } = useWishlistStore()
   const navigate = useNavigate()
+  
+  // Check if user is an approved wholesaler
+  const { isWholesaler } = useWholesaler()
 
   // Selected item IDs (default: all selected)
   const [selectedIds, setSelectedIds] = useState(() => new Set())
@@ -44,7 +48,16 @@ export default function CartPage() {
   }
 
   const selectedItems = items.filter(i => selectedIds.has(i.id || i.product_id))
-  const selectedTotal = selectedItems.reduce((s, i) => s + (i.products?.price || 0) * i.quantity, 0)
+  
+  // Calculate total using wholesale prices for wholesalers
+  const selectedTotal = selectedItems.reduce((s, i) => {
+    const product = i.products || {}
+    const price = isWholesaler && product.wholesale_price 
+      ? product.wholesale_price 
+      : product.price || 0
+    return s + price * i.quantity
+  }, 0)
+  
   const hasOutOfStock = selectedItems.some(i => i.products?.stock === 0)
 
   // Cart abandonment reminder after 3 minutes of inactivity
@@ -143,6 +156,13 @@ export default function CartPage() {
               const fallback = '/Horse Riding-fallback.webp'
               const key = item.id || item.product_id
               const isSelected = selectedIds.has(key)
+              
+              // Calculate display price based on wholesaler status
+              const displayPrice = isWholesaler && product.wholesale_price 
+                ? product.wholesale_price 
+                : product.price || 0
+              const hasWholesaleDiscount = isWholesaler && product.wholesale_price && product.wholesale_price < product.price
+              
               return (
                 <motion.div
                   key={key}
@@ -188,6 +208,9 @@ export default function CartPage() {
                       <h3 className="text-black text-sm font-semibold hover:text-gray-700 transition-colors line-clamp-2">{product.name}</h3>
                     </Link>
                     <p className="text-gray-600 text-xs mt-1 font-medium">{product.category}</p>
+                    {hasWholesaleDiscount && (
+                      <p className="text-blue-600 text-xs mt-1 font-semibold">✓ Wholesale Price Applied</p>
+                    )}
                     {product.stock === 0 && <p className="text-red-500 text-xs mt-1">⚠ Out of stock</p>}
                     <div className="flex items-center justify-between mt-3">
                       <div className="flex items-center gap-2">
@@ -200,7 +223,12 @@ export default function CartPage() {
                         </button>
                       </div>
                       <div className="flex items-center gap-3">
-                        <span className="text-black font-bold text-sm">{formatINR((product.price || 0) * item.quantity)}</span>
+                        <div className="text-right">
+                          {hasWholesaleDiscount && (
+                            <p className="text-gray-400 text-[0.625rem] line-through">{formatINR(product.price * item.quantity)}</p>
+                          )}
+                          <span className="text-black font-bold text-sm">{formatINR(displayPrice * item.quantity)}</span>
+                        </div>
                         <button onClick={() => handleRemove(item)} title="Remove" className="text-gray-500 hover:text-red-500 transition-colors">
                           <Trash2 size={15} />
                         </button>
@@ -225,12 +253,18 @@ export default function CartPage() {
             <p className="text-gray-500 text-sm text-center py-4">No items selected</p>
           ) : (
             <div className="space-y-3 mb-4">
-              {selectedItems.map(item => (
-                <div key={item.id || item.product_id} className="flex justify-between text-sm">
-                  <span className="text-gray-700 truncate mr-2">{item.products?.name} × {item.quantity}</span>
-                  <span className="text-black shrink-0 font-medium">{formatINR((item.products?.price || 0) * item.quantity)}</span>
-                </div>
-              ))}
+              {selectedItems.map(item => {
+                const product = item.products || {}
+                const displayPrice = isWholesaler && product.wholesale_price 
+                  ? product.wholesale_price 
+                  : product.price || 0
+                return (
+                  <div key={item.id || item.product_id} className="flex justify-between text-sm">
+                    <span className="text-gray-700 truncate mr-2">{product.name} × {item.quantity}</span>
+                    <span className="text-black shrink-0 font-medium">{formatINR(displayPrice * item.quantity)}</span>
+                  </div>
+                )
+              })}
             </div>
           )}
 

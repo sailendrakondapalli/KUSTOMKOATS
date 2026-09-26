@@ -4,6 +4,7 @@ import { Heart, ShoppingCart, ArrowRight, CheckCircle, MapPin, Sparkles } from '
 import { useAuthStore } from '../store/authStore'
 import { useCartStore } from '../store/cartStore'
 import { useWishlistStore } from '../store/wishlistStore'
+import { useWholesaler } from '../hooks/useWholesaler'
 import { formatINR } from '../utils/format'
 import toast from 'react-hot-toast'
 
@@ -37,10 +38,18 @@ function TagBadges({ tags }) {
 }
 
 /* --- GRID CARD --- */
-function GridCard({ product, inCart, wishlisted, onAddToCart, onWishlist }) {
+function GridCard({ product, inCart, wishlisted, onAddToCart, onWishlist, isWholesaler }) {
   const media = product.images?.[0] || FALLBACK_IMG
   const mediaIsVideo = isVideo(media)
   const origPrice = product.original_price || product.compare_price
+  
+  // Determine price to display based on wholesaler status
+  const displayPrice = isWholesaler && product.wholesale_price 
+    ? product.wholesale_price 
+    : product.price
+  
+  // Check if there's a wholesale discount
+  const hasWholesaleDiscount = isWholesaler && product.wholesale_price && product.wholesale_price < product.price
 
   return (
     <motion.div
@@ -70,8 +79,16 @@ function GridCard({ product, inCart, wishlisted, onAddToCart, onWishlist }) {
             </div>
           )}
 
+          {/* Wholesale Badge */}
+          {isWholesaler && hasWholesaleDiscount && (
+            <span className="absolute top-3 left-3 flex items-center gap-1 bg-blue-600 text-white text-[0.625rem] px-2 py-1 rounded font-semibold"
+              style={{ fontFamily: "'Inter', sans-serif" }}>
+              Wholesale Price
+            </span>
+          )}
+          
           {/* Certified Badge */}
-          {product.tags?.includes('certified') && (
+          {!isWholesaler && product.tags?.includes('certified') && (
             <span className="absolute top-3 left-3 flex items-center gap-1 bg-green-600 text-white text-[0.625rem] px-2 py-1 rounded font-semibold"
               style={{ fontFamily: "'Inter', sans-serif" }}>
               <CheckCircle size={10} /> Certified
@@ -79,7 +96,7 @@ function GridCard({ product, inCart, wishlisted, onAddToCart, onWishlist }) {
           )}
           
           {/* New Badge */}
-          {!product.tags?.includes('certified') && product.tags?.includes('new') && (
+          {!isWholesaler && !product.tags?.includes('certified') && product.tags?.includes('new') && (
             <span className="absolute top-3 left-3 bg-[#CA2A31] text-white text-[0.625rem] px-2 py-1 rounded font-bold"
               style={{ fontFamily: "'Inter', sans-serif" }}>
               New
@@ -128,9 +145,14 @@ function GridCard({ product, inCart, wishlisted, onAddToCart, onWishlist }) {
           <div className="mt-auto">
             <div className="flex items-center gap-2">
               <span className="font-semibold text-base" style={{ fontFamily: "'Inter', sans-serif", color: "#000000" }}>
-                {formatINR(product.price)}
+                {formatINR(displayPrice)}
               </span>
-              {origPrice && origPrice > product.price && (
+              {hasWholesaleDiscount && (
+                <span className="text-gray-400 text-xs line-through">
+                  {formatINR(product.price)}
+                </span>
+              )}
+              {!hasWholesaleDiscount && origPrice && origPrice > product.price && (
                 <span className="text-gray-400 text-xs line-through">
                   {formatINR(origPrice)}
                 </span>
@@ -168,11 +190,19 @@ function GridCard({ product, inCart, wishlisted, onAddToCart, onWishlist }) {
 }
 
 /* --- LIST CARD --- */
-function ListCard({ product, inCart, wishlisted, onAddToCart, onWishlist }) {
+function ListCard({ product, inCart, wishlisted, onAddToCart, onWishlist, isWholesaler }) {
   const media = product.images?.[0] || FALLBACK_IMG
   const mediaIsVideo = isVideo(media)
   const origPrice = product.original_price || product.compare_price
   const inStock = product.stock > 0
+  
+  // Determine price to display based on wholesaler status
+  const displayPrice = isWholesaler && product.wholesale_price 
+    ? product.wholesale_price 
+    : product.price
+  
+  // Check if there's a wholesale discount
+  const hasWholesaleDiscount = isWholesaler && product.wholesale_price && product.wholesale_price < product.price
 
   return (
     <motion.div
@@ -213,6 +243,12 @@ function ListCard({ product, inCart, wishlisted, onAddToCart, onWishlist }) {
                 style={{ fontFamily: "'Inter', sans-serif" }}>
                 {product.category}
               </span>
+              {isWholesaler && hasWholesaleDiscount && (
+                <span className="text-[0.625rem] text-blue-600 font-semibold uppercase tracking-wider px-2 py-0.5 bg-blue-50 rounded border border-blue-100"
+                  style={{ fontFamily: "'Inter', sans-serif" }}>
+                  Wholesale
+                </span>
+              )}
             </div>
             
             <h3 className="text-sm font-medium line-clamp-2 group-hover:text-[#CA2A31] transition-colors leading-tight mb-2"
@@ -230,17 +266,22 @@ function ListCard({ product, inCart, wishlisted, onAddToCart, onWishlist }) {
             
             <div className="flex items-center gap-3 mt-2">
               <span className="font-semibold text-base" style={{ fontFamily: "'Inter', sans-serif", color: "#000000" }}>
-                {formatINR(product.price)}
+                {formatINR(displayPrice)}
               </span>
-              {origPrice && origPrice > product.price && (
+              {hasWholesaleDiscount && (
                 <span className="text-gray-400 text-xs line-through">
-                  {formatINR(origPrice)}
+                  {formatINR(product.price)}
                 </span>
               )}
-              {origPrice && origPrice > product.price && (
-                <span className="text-green-600 text-[0.625rem] font-bold" style={{ fontFamily: "'Inter', sans-serif" }}>
-                  -{Math.round(((origPrice - product.price) / origPrice) * 100)}%
-                </span>
+              {!hasWholesaleDiscount && origPrice && origPrice > product.price && (
+                <>
+                  <span className="text-gray-400 text-xs line-through">
+                    {formatINR(origPrice)}
+                  </span>
+                  <span className="text-green-600 text-[0.625rem] font-bold" style={{ fontFamily: "'Inter', sans-serif" }}>
+                    -{Math.round(((origPrice - product.price) / origPrice) * 100)}%
+                  </span>
+                </>
               )}
               <span className={`flex items-center gap-1.5 text-[0.625rem] font-semibold ml-auto ${
                 inStock ? 'text-green-600' : 'text-[#CA2A31]'
@@ -295,6 +336,9 @@ export default function ProductCard({ product, layout = 'grid' }) {
   const { addToCart, items } = useCartStore()
   const { toggleWishlist, isWishlisted } = useWishlistStore()
   const navigate = useNavigate()
+  
+  // Check if user is an approved wholesaler
+  const { isWholesaler } = useWholesaler()
 
   const wishlisted = isWishlisted(product.id)
   const inCart = items.some(i => i.product_id === product.id)
@@ -322,6 +366,6 @@ export default function ProductCard({ product, layout = 'grid' }) {
     }
   }
 
-  const shared = { product, inCart, wishlisted, onAddToCart: handleAddToCart, onWishlist: handleWishlist }
+  const shared = { product, inCart, wishlisted, onAddToCart: handleAddToCart, onWishlist: handleWishlist, isWholesaler }
   return layout === 'list' ? <ListCard {...shared} /> : <GridCard {...shared} />
 }

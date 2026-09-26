@@ -7,6 +7,7 @@ import { useAuthStore } from '../store/authStore'
 import { useCartStore } from '../store/cartStore'
 import { useWishlistStore } from '../store/wishlistStore'
 import { useRecentlyViewedStore } from '../store/recentlyViewedStore'
+import { useWholesaler } from '../hooks/useWholesaler'
 import { supabase } from '../lib/supabase'
 import { formatINR } from '../utils/format'
 import TechnicalBar from '../components/TechnicalBar'
@@ -22,6 +23,9 @@ export default function ProductDetailPage() {
   const { addToCart, items } = useCartStore()
   const { toggleWishlist, isWishlisted } = useWishlistStore()
   const { add: addRecentlyViewed } = useRecentlyViewedStore()
+  
+  // Check if user is an approved wholesaler
+  const { isWholesaler } = useWholesaler()
 
   const [product, setProduct] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -34,6 +38,14 @@ export default function ProductDetailPage() {
 
   const wishlisted = product ? isWishlisted(product.id) : false
   const inCart = product ? items.some(i => i.product_id === product.id) : false
+  
+  // Determine price to display based on wholesaler status
+  const displayPrice = product && isWholesaler && product.wholesale_price 
+    ? product.wholesale_price 
+    : product?.price || 0
+  
+  // Check if there's a wholesale discount
+  const hasWholesaleDiscount = product && isWholesaler && product.wholesale_price && product.wholesale_price < product.price
 
   useEffect(() => {
     setLoading(true)
@@ -286,11 +298,29 @@ export default function ProductDetailPage() {
 
             {/* Price */}
             <div className="mb-6 pb-6" style={{ borderBottom: '1px solid #E5E5E5' }}>
+              {isWholesaler && hasWholesaleDiscount && (
+                <div className="mb-3 flex items-center gap-2">
+                  <span className="text-xs font-bold uppercase tracking-wider px-3 py-1.5 bg-blue-100 text-blue-700 rounded-full border border-blue-200"
+                    style={{ fontFamily: "'Inter', sans-serif" }}>
+                    Wholesale Price
+                  </span>
+                </div>
+              )}
               <div className="flex items-baseline gap-4 mb-2">
                 <p className="text-4xl font-bold" style={{ color: '#000000', fontFamily: "'Inter', sans-serif" }}>
-                  {formatINR(product.price)}
+                  {formatINR(displayPrice)}
                 </p>
-                {product.original_price && product.original_price > product.price && (
+                {hasWholesaleDiscount && (
+                  <>
+                    <p className="text-xl text-gray-400 line-through" style={{ fontFamily: "'Inter', sans-serif" }}>
+                      {formatINR(product.price)}
+                    </p>
+                    <span className="bg-blue-100 text-blue-700 text-xs font-bold px-3 py-1 rounded-full">
+                      SAVE {Math.round(((product.price - product.wholesale_price) / product.price) * 100)}%
+                    </span>
+                  </>
+                )}
+                {!hasWholesaleDiscount && product.original_price && product.original_price > product.price && (
                   <>
                     <p className="text-xl text-gray-400 line-through" style={{ fontFamily: "'Inter', sans-serif" }}>
                       {formatINR(product.original_price)}

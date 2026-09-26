@@ -7,50 +7,25 @@ const PX = "px-6 lg:px-12 xl:px-20"
 export default function WhyKustomKoatsNeon() {
   const features = [
     {
-      icon: (
-        <svg width="80" height="80" viewBox="0 0 80 80" fill="none">
-          <path d="M25 15L30 40L40 35L50 40L55 15M40 35V55M30 55H50M25 65H55M20 70H60" 
-            stroke="#CA2A31" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-        </svg>
-      ),
+      icon: "/Spray Gun.png",
       title: "PREMIUM AUTOMOTIVE FINISHES",
       subtitle: "",
       description: "Professional-grade coatings designed for the highest quality and standout results."
     },
     {
-      icon: (
-        <svg width="80" height="80" viewBox="0 0 80 80" fill="none">
-          <path d="M40 20C40 20 30 25 30 35C30 45 40 50 40 60C40 50 50 45 50 35C50 25 40 20 40 20Z" 
-            stroke="#CA2A31" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-          <circle cx="40" cy="40" r="25" stroke="#CA2A31" strokeWidth="2" strokeDasharray="4 4"/>
-        </svg>
-      ),
+      icon: "/Chameleone.png",
       title: "EXTREME COLOR EFFECTS",
       subtitle: "",
       description: "Extreme Color Effects"
     },
     {
-      icon: (
-        <svg width="80" height="80" viewBox="0 0 80 80" fill="none">
-          <path d="M40 15L25 20L25 35C25 48 32 55 40 58C48 55 55 48 55 35L55 20L40 15Z" 
-            stroke="#CA2A31" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-          <path d="M33 35L37 40L47 30" stroke="#CA2A31" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-        </svg>
-      ),
+      icon: "/Sheild.png",
       title: "BUILD TO LAST",
       subtitle: "",
       description: "Durable, high-performance coatings engineered to withstand the test of time."
     },
     {
-      icon: (
-        <svg width="80" height="80" viewBox="0 0 80 80" fill="none">
-          <circle cx="40" cy="40" r="22" stroke="#CA2A31" strokeWidth="2.5"/>
-          <path d="M25 40C25 40 30 30 40 30C50 30 55 40 55 40C55 40 50 50 40 50C30 50 25 40 25 40Z" 
-            stroke="#CA2A31" strokeWidth="2.5" fill="none"/>
-          <circle cx="40" cy="40" r="5" fill="#CA2A31"/>
-          <path d="M20 35L25 40L20 45M60 35L55 40L60 45" stroke="#CA2A31" strokeWidth="2" strokeLinecap="round"/>
-        </svg>
-      ),
+      icon: "/Globe.png",
       title: "TRUSTED FORMULAS WORLDWIDE",
       subtitle: "",
       description: "Chameleon, candy and color-shifting technologies that create unforgettable looks."
@@ -121,7 +96,16 @@ export default function WhyKustomKoatsNeon() {
                     
                     {/* Icon */}
                     <div className="mb-4 md:mb-6 transition-transform duration-500 group-hover:scale-110">
-                      {feature.icon}
+                      <img 
+                        src={feature.icon} 
+                        alt={feature.title}
+                        style={{
+                          width: '80px',
+                          height: '80px',
+                          objectFit: 'contain',
+                          filter: 'drop-shadow(0 0 10px rgba(202, 42, 49, 0.5))'
+                        }}
+                      />
                     </div>
                     
                     {/* Title */}

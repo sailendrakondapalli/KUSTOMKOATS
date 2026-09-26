@@ -826,49 +826,25 @@ function FirstOrderSection() {
 function WhyKustomKoatsSection() {
   const features = [
     {
-      icon: (
-        <svg width="80" height="80" viewBox="0 0 80 80" fill="none">
-          <path d="M25 15L30 25H50L55 15M15 35H65L60 55H20L15 35Z" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-          <circle cx="25" cy="60" r="5" stroke="currentColor" strokeWidth="2.5"/>
-          <circle cx="55" cy="60" r="5" stroke="currentColor" strokeWidth="2.5"/>
-          <path d="M35 45L40 40L50 50" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-        </svg>
-      ),
+      icon: "/Spray Gun.png",
       title: "PREMIUM AUTOMOTIVE FINISHES",
       subtitle: "EXTREME COLOR EFFECTS",
       description: "Designed + grade coatings exclusively used by enthusiasts. Topped for the highest quality material for ultimate results and standout finish."
     },
     {
-      icon: (
-        <svg width="80" height="80" viewBox="0 0 80 80" fill="none">
-          <path d="M40 15C25 15 15 25 15 40C15 55 25 65 40 65C55 65 65 55 65 40" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
-          <path d="M40 25V40H55" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-          <circle cx="40" cy="40" r="3" fill="currentColor"/>
-        </svg>
-      ),
+      icon: "/Chameleone.png",
       title: "BUILD TO LAST",
       subtitle: "",
       description: "Durable, high - performance materials stand the test of time - providing lasting impact and unforgettable looks"
     },
     {
-      icon: (
-        <svg width="80" height="80" viewBox="0 0 80 80" fill="none">
-          <path d="M40 15L50 35L70 38L55 52L58 72L40 62L22 72L25 52L10 38L30 35L40 15Z" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-          <path d="M35 40L38 45L45 38" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-        </svg>
-      ),
+      icon: "/Sheild.png",
       title: "TRUSTED FORMULAS",
       subtitle: "WORLDWIDE",
       description: "Time-tested, commercial color chemistries proven to deliver vivid, long-lasting and unforgettable looks"
     },
     {
-      icon: (
-        <svg width="80" height="80" viewBox="0 0 80 80" fill="none">
-          <circle cx="40" cy="40" r="25" stroke="currentColor" strokeWidth="2.5"/>
-          <path d="M40 20V40L55 50" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-          <path d="M20 50L30 60M60 20L50 30M20 30L30 20M60 60L50 50" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
-        </svg>
-      ),
+      icon: "/Globe.png",
       title: "",
       subtitle: "",
       description: ""
@@ -1001,10 +977,6 @@ function WhyKustomKoatsSection() {
               <div 
                 className="mb-8 transition-all duration-500 group-hover:scale-110"
                 style={{
-                  color: idx === 0 ? '#FF00FF' : 
-                         idx === 1 ? '#8A2BE2' : 
-                         idx === 2 ? '#FF0080' : 
-                         '#0096FF',
                   filter: `drop-shadow(0 0 20px ${
                     idx === 0 ? '#FF00FF80' : 
                     idx === 1 ? '#8A2BE280' : 
@@ -1013,7 +985,15 @@ function WhyKustomKoatsSection() {
                   })`
                 }}
               >
-                {feature.icon}
+                <img 
+                  src={feature.icon} 
+                  alt={feature.title}
+                  style={{
+                    width: '80px',
+                    height: '80px',
+                    objectFit: 'contain'
+                  }}
+                />
               </div>
 
               {/* Title */}

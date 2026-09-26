@@ -38,11 +38,134 @@ export default function WhyKustomKoatsPage() {
           </div>
         </section>
 
+        {/* Features Section */}
         <section className="py-20 px-6 lg:px-12 xl:px-20">
           <div className="max-w-7xl mx-auto">
-            <p className="text-lg mb-8" style={{ color: "#666666", fontFamily: "'Inter', sans-serif" }}>
-              Content coming soon.
-            </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+              {/* Column 1 - Spray Gun */}
+              <div className="text-center group">
+                <div className="mb-6 flex justify-center">
+                  <div className="w-24 h-24 flex items-center justify-center transition-transform duration-300 group-hover:scale-110">
+                    <img 
+                      src="/Spray Gun.png" 
+                      alt="Premium Application"
+                      className="w-full h-full object-contain"
+                    />
+                  </div>
+                </div>
+                <h3 
+                  className="text-xl font-bold mb-3"
+                  style={{ 
+                    fontFamily: "'Rajdhani', sans-serif",
+                    color: '#000000'
+                  }}
+                >
+                  Premium Application
+                </h3>
+                <p 
+                  className="text-sm leading-relaxed"
+                  style={{ 
+                    color: "#666666",
+                    fontFamily: "'Inter', sans-serif"
+                  }}
+                >
+                  Professional-grade spray technology ensures flawless, even coverage with every application. Our advanced formulation delivers consistent results.
+                </p>
+              </div>
+
+              {/* Column 2 - Chameleon */}
+              <div className="text-center group">
+                <div className="mb-6 flex justify-center">
+                  <div className="w-24 h-24 flex items-center justify-center transition-transform duration-300 group-hover:scale-110">
+                    <img 
+                      src="/Chameleone.png" 
+                      alt="Color Shifting Magic"
+                      className="w-full h-full object-contain"
+                    />
+                  </div>
+                </div>
+                <h3 
+                  className="text-xl font-bold mb-3"
+                  style={{ 
+                    fontFamily: "'Rajdhani', sans-serif",
+                    color: '#000000'
+                  }}
+                >
+                  Color Shifting Magic
+                </h3>
+                <p 
+                  className="text-sm leading-relaxed"
+                  style={{ 
+                    color: "#666666",
+                    fontFamily: "'Inter', sans-serif"
+                  }}
+                >
+                  Experience stunning color-shifting effects that transform your vehicle. Our chameleon pearls create mesmerizing visual depth and character.
+                </p>
+              </div>
+
+              {/* Column 3 - Shield */}
+              <div className="text-center group">
+                <div className="mb-6 flex justify-center">
+                  <div className="w-24 h-24 flex items-center justify-center transition-transform duration-300 group-hover:scale-110">
+                    <img 
+                      src="/Sheild.png" 
+                      alt="Superior Protection"
+                      className="w-full h-full object-contain"
+                    />
+                  </div>
+                </div>
+                <h3 
+                  className="text-xl font-bold mb-3"
+                  style={{ 
+                    fontFamily: "'Rajdhani', sans-serif",
+                    color: '#000000'
+                  }}
+                >
+                  Superior Protection
+                </h3>
+                <p 
+                  className="text-sm leading-relaxed"
+                  style={{ 
+                    color: "#666666",
+                    fontFamily: "'Inter', sans-serif"
+                  }}
+                >
+                  Advanced protective coating shields your vehicle from UV rays, weathering, and environmental damage. Long-lasting durability guaranteed.
+                </p>
+              </div>
+
+              {/* Column 4 - Globe */}
+              <div className="text-center group">
+                <div className="mb-6 flex justify-center">
+                  <div className="w-24 h-24 flex items-center justify-center transition-transform duration-300 group-hover:scale-110">
+                    <img 
+                      src="/Globe.png" 
+                      alt="Global Standards"
+                      className="w-full h-full object-contain"
+                    />
+                  </div>
+                </div>
+                <h3 
+                  className="text-xl font-bold mb-3"
+                  style={{ 
+                    fontFamily: "'Rajdhani', sans-serif",
+                    color: '#000000'
+                  }}
+                >
+                  Global Standards
+                </h3>
+                <p 
+                  className="text-sm leading-relaxed"
+                  style={{ 
+                    color: "#666666",
+                    fontFamily: "'Inter', sans-serif"
+                  }}
+                >
+                  Meets international quality standards and environmental regulations. Trusted by professionals worldwide for exceptional results.
+                </p>
+              </div>
+            </div>
           </div>
         </section>
       </div>

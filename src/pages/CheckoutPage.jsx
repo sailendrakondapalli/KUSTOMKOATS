@@ -4,6 +4,7 @@ import { motion } from "framer-motion"
 import { MapPin, Plus, Check, CheckCircle, Upload, Copy, Smartphone, AlertCircle, Loader2, Zap, Ticket, X as XIcon, Lock, CreditCard } from "lucide-react"
 import { useCartStore } from "../store/cartStore"
 import { useAuthStore } from "../store/authStore"
+import { useWholesaler } from "../hooks/useWholesaler"
 import { createRazorpayOrder, createPendingOrder, verifyRazorpayPayment } from '../services/orderService'
 import { fetchAddresses, saveAddress } from "../services/addressService"
 import { fetchActiveCodes, fetchUsedCodeIds, validatePromoCode, recordPromoUse, calcItemDiscount, checkEligibility } from "../services/promoService"
@@ -80,6 +81,9 @@ export default function CheckoutPage() {
   const { user } = useAuthStore()
   const navigate = useNavigate()
   const location = useLocation()
+  
+  // Check if user is an approved wholesaler
+  const { isWholesaler } = useWholesaler()
 
   // Buy Now mode: single product passed via navigation state, bypasses cart
   const buyNowData = location.state?.buyNow || null
@@ -93,7 +97,14 @@ export default function CheckoutPage() {
     ? [{ id: `buynow_${buyNowData.product.id}`, product_id: buyNowData.product.id, quantity: buyNowData.quantity, products: buyNowData.product }]
     : (selectedFromCart || cartItems)
 
-  const total = items.reduce((s, i) => s + (i.products?.price || 0) * i.quantity, 0)
+  // Calculate total using wholesale prices for wholesalers
+  const total = items.reduce((s, i) => {
+    const product = i.products || {}
+    const price = isWholesaler && product.wholesale_price 
+      ? product.wholesale_price 
+      : product.price || 0
+    return s + price * i.quantity
+  }, 0)
 
   // Promo code state
   const [promoInput, setPromoInput] = useState("")
