@@ -115,7 +115,7 @@ export const useAdminStore = create((set, get) => ({
     })
     const cityData = Object.entries(cityMap).map(([city, count]) => ({ city, count })).sort((a, b) => b.count - a.count).slice(0, 8)
 
-    // Top products — look up name from products store if not in order item join
+    // Top products - look up name from products store if not in order item join
     const prodMap = {}
     orders.forEach(o => {
       o.order_items?.forEach(item => {
@@ -126,7 +126,7 @@ export const useAdminStore = create((set, get) => ({
           name = found?.name
         }
         if (!name) return // skip if still unknown
-        const short = name.length > 20 ? name.slice(0, 20) + "…" : name
+        const short = name.length > 20 ? name.slice(0, 20) + "..." : name
         prodMap[short] = (prodMap[short] || 0) + item.quantity
       })
     })

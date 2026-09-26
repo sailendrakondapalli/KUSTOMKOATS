@@ -14,5 +14,5 @@ export const COLOR_FAMILIES = [
   "Black", "White", "Pink", "Yellow", "Silver", "Bronze"
 ]
 
-// Mock products removed — all products come from Supabase only
+// Mock products removed - all products come from Supabase only
 export const mockProducts = []
