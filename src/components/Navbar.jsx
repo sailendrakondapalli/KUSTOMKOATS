@@ -125,17 +125,13 @@ export default function Navbar() {
         { to: "/shop/accessories", label: "Accessories" },
       ]
     },
-    { 
-      label: "KULTURE",
-      submenu: [
-        { to: "/kustom-kultor", label: "Blog" },
-      ]
-    },
+    { to: "/kulture/journal", label: "KULTURE" },
+    { to: "/kustom-kultor", label: "BLOG" },
     { 
       label: "WHOLESALE",
       submenu: [
         { to: "/wholesale/why-partner", label: "Why Partner With Us" },
-        { to: "/wholesale/application", label: "Wholesaler" },
+        { to: "/wholesale/application", label: "Become a Wholesaler" },
       ]
     },
     { 
@@ -143,7 +139,6 @@ export default function Navbar() {
       submenu: [
         { to: "/about/story", label: "Our Story" },
         { to: "/about/philosophy", label: "Our Philosophy" },
-        { to: "/about/technology", label: "Technology / Formulation" },
         { to: "/about/why-kustom-koats", label: "Why Kustom Koats" },
       ]
     },
@@ -315,14 +310,14 @@ export default function Navbar() {
 
   return (
     <>
-      <nav className="w-full px-6 lg:px-12 xl:px-20 h-14 flex items-center gap-6" style={{ ...navStyle, zIndex: 1000 }}>
+      <nav className="w-full px-3 sm:px-6 lg:px-12 xl:px-20 h-16 sm:h-14 flex items-center gap-2 sm:gap-6" style={{ ...navStyle, zIndex: 1000, boxSizing: 'border-box', width: '100%', overflow: 'visible' }}>
         {/* Logo */}
-        <Link to="/" className="flex items-center gap-3 flex-shrink-0 group" onClick={closeAll}>
+        <Link to="/" className="flex items-center gap-3 flex-shrink-0 group" onClick={closeAll} style={{ minWidth: '80px', maxWidth: '140px' }}>
           <img 
             src="/logo.png" 
             alt="Kustom Koats" 
-            className="h-5 md:h-7 w-auto object-contain transition-transform duration-300 group-hover:scale-110"
-            style={{ maxWidth: '180px', filter: 'brightness(0) invert(1)' }}
+            className="h-4 sm:h-5 md:h-7 w-auto object-contain transition-transform duration-300 group-hover:scale-110"
+            style={{ maxWidth: '100%', minWidth: '80px', filter: 'brightness(0) invert(1)' }}
           />
         </Link>
 
@@ -428,12 +423,12 @@ export default function Navbar() {
           </div>
 
           {/* Right Icons */}
-          <div className="flex items-center gap-2 flex-shrink-0 ml-auto lg:ml-0">
+          <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0 ml-auto lg:ml-0" style={{ minWidth: 'fit-content' }}>
             {!isOnAdminPanel && (
               <>
-                <Link to="/wishlist" className={iconStyle} title="Wishlist" style={{ color: textColor, transition: "color 0.4s" }}>
+                <Link to="/wishlist" className="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center hover:text-[#CA2A31] transition-colors duration-300 flex-shrink-0" title="Wishlist" style={{ color: textColor, transition: "color 0.4s" }}>
                   <div className="relative">
-                    <Heart size={20} />
+                    <Heart size={16} className="sm:w-5 sm:h-5" />
                     {wishlistItems.length > 0 && (
                       <span className="absolute -top-1 -right-1 bg-[#CA2A31] text-white text-[0.625rem] font-bold rounded-full w-4 h-4 flex items-center justify-center">
                         {wishlistItems.length}
@@ -441,9 +436,9 @@ export default function Navbar() {
                     )}
                   </div>
                 </Link>
-                <Link to="/cart" className={iconStyle} title="Cart" style={{ color: textColor, transition: "color 0.4s" }}>
+                <Link to="/cart" className="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center hover:text-[#CA2A31] transition-colors duration-300 flex-shrink-0" title="Cart" style={{ color: textColor, transition: "color 0.4s" }}>
                   <div className="relative">
-                    <ShoppingCart size={20} />
+                    <ShoppingCart size={16} className="sm:w-5 sm:h-5" />
                     {itemCount > 0 && (
                       <span className="absolute -top-1 -right-1 bg-[#CA2A31] text-white text-[0.625rem] font-bold rounded-full w-4 h-4 flex items-center justify-center">
                         {itemCount}
@@ -451,14 +446,14 @@ export default function Navbar() {
                     )}
                   </div>
                 </Link>
-                <Link to={user ? "/profile" : "/login"} className={iconStyle} title={user ? "Profile" : "Login"} style={{ color: textColor, transition: "color 0.4s" }}>
-                  <User size={20} />
+                <Link to={user ? "/profile" : "/login"} className="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center hover:text-[#CA2A31] transition-colors duration-300 flex-shrink-0" title={user ? "Profile" : "Login"} style={{ color: textColor, transition: "color 0.4s" }}>
+                  <User size={16} className="sm:w-5 sm:h-5" />
                 </Link>
               </>
             )}
             {isAdmin && (
               <Link to={isOnAdminPanel ? "/" : "/admin"}
-                className="hidden sm:flex items-center gap-1.5 px-4 py-2 text-[0.6875rem] font-semibold rounded-sm transition-all tracking-wide uppercase"
+                className="hidden sm:flex items-center gap-1.5 px-3 sm:px-4 py-2 text-[0.6875rem] font-semibold rounded-sm transition-all tracking-wide uppercase flex-shrink-0"
                 style={{ 
                   background: "#CA2A31", 
                   color: "#FFFFFF",
@@ -468,19 +463,31 @@ export default function Navbar() {
               </Link>
             )}
 
-            {/* Hamburger button */}
+            {/* Hamburger button - ALWAYS visible and clickable on mobile */}
             <button 
-              className="lg:hidden p-2 transition-colors"
-              style={{ color: "#FFFFFF", background: "none", border: "none", cursor: "pointer" }}
+              className="lg:hidden p-1 sm:p-2 transition-colors flex-shrink-0"
+              style={{ 
+                color: "#FFFFFF", 
+                background: "none", 
+                border: "none", 
+                cursor: "pointer",
+                position: 'relative',
+                zIndex: 50,
+                minWidth: '32px',
+                minHeight: '32px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
               onClick={() => setMenuOpen(!menuOpen)}
               aria-label="Toggle menu"
             >
               {menuOpen ? (
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="sm:w-6 sm:h-6">
                   <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
                 </svg>
               ) : (
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="sm:w-6 sm:h-6">
                   <path d="M3 12H21M3 6H21M3 18H21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
               )}

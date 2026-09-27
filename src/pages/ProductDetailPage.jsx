@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
+import { createPortal } from 'react-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Helmet } from 'react-helmet-async'
 import { Heart, ShoppingCart, ArrowRight, ArrowLeft, Share2, Star } from 'lucide-react'
@@ -35,6 +36,9 @@ export default function ProductDetailPage() {
   const [techBars, setTechBars] = useState([])
   const [techSpecs, setTechSpecs] = useState([])
   const [techLoading, setTechLoading] = useState(false)
+  const [showStickyBar, setShowStickyBar] = useState(false)
+
+  const mediaRef = useRef(null)
 
   const wishlisted = product ? isWishlisted(product.id) : false
   const inCart = product ? items.some(i => i.product_id === product.id) : false
@@ -115,6 +119,33 @@ export default function ProductDetailPage() {
         loadRelated()
       })
   }, [id])
+
+  // Show sticky mobile bar (title + price) once user scrolls past the product image.
+  // Trigger as soon as the image is hidden behind the fixed navbar (64px), not only
+  // once it's fully past the very top of the viewport.
+  useEffect(() => {
+    if (!product) return
+
+    const NAVBAR_HEIGHT = 64
+
+    const handleScroll = () => {
+      if (!mediaRef.current) return
+      const { bottom } = mediaRef.current.getBoundingClientRect()
+      setShowStickyBar(bottom <= NAVBAR_HEIGHT)
+    }
+
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    window.addEventListener('resize', handleScroll)
+    // Run once after layout settles (images etc. may still be loading)
+    handleScroll()
+    const t = setTimeout(handleScroll, 300)
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll)
+      window.removeEventListener('resize', handleScroll)
+      clearTimeout(t)
+    }
+  }, [product])
 
   const handleAddToCart = async () => {
     if (inCart) { navigate('/cart'); return }
@@ -211,6 +242,44 @@ export default function ProductDetailPage() {
       {/* Spacer for fixed navbar */}
       <div style={{ height: '64px' }} />
 
+      {/* Sticky mobile mini-header: title + price, shown after scrolling past product image.
+          Rendered via portal to document.body because ancestor PageTransition applies a
+          CSS transform, which would otherwise break position:fixed containment. */}
+      {createPortal(
+        <AnimatePresence>
+          {showStickyBar && product && (
+            <motion.div
+              initial={{ y: -60, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: -60, opacity: 0 }}
+              transition={{ duration: 0.25, ease: 'easeOut' }}
+              className="lg:hidden fixed left-0 right-0 z-[1500] flex items-center justify-between gap-3 px-4 py-3"
+              style={{
+                top: '64px',
+                background: '#FFFFFF',
+                borderBottom: '1px solid #E5E5E5',
+                boxShadow: '0 2px 12px rgba(0,0,0,0.06)'
+              }}
+            >
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-bold truncate" style={{ color: '#000000', fontFamily: "'Inter', sans-serif" }}>
+                  {product.name}
+                </p>
+                <p className="text-sm font-bold" style={{ color: '#CA2A31', fontFamily: "'Inter', sans-serif" }}>
+                  {formatINR(displayPrice)}
+                </p>
+              </div>
+              <button onClick={handleBuyNow} disabled={product.stock === 0}
+                className="flex-shrink-0 px-4 py-2 rounded-lg font-bold text-xs uppercase tracking-wider transition-all disabled:opacity-40"
+                style={{ background: '#CA2A31', color: '#FFFFFF', fontFamily: "'Inter', sans-serif" }}>
+                Buy Now
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
+
       <div className="max-w-7xl mx-auto px-6 lg:px-12 xl:px-20 py-10"
         style={{ background: '#FFFFFF' }}>
 
@@ -232,8 +301,14 @@ export default function ProductDetailPage() {
 
           {/* Left — media */}
           <div className="lg:sticky lg:top-24 lg:h-fit space-y-4">
-            <div className="relative aspect-square rounded-xl overflow-hidden"
+            <div ref={mediaRef} className="relative aspect-square rounded-xl overflow-hidden"
               style={{ background: '#F8F8F8', border: '1px solid #E5E5E5' }}>
+              {/* Wishlist heart - top of product photo */}
+              <button onClick={handleWishlist}
+                aria-label={wishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
+                className={`absolute top-4 right-4 z-10 w-11 h-11 rounded-full flex items-center justify-center shadow-lg transition-all hover:scale-110 ${wishlisted ? 'bg-red-500 text-white' : 'bg-white/90 text-gray-700 hover:text-red-500'}`}>
+                <Heart size={20} fill={wishlisted ? 'currentColor' : 'none'} />
+              </button>
               <AnimatePresence mode="wait">
                 <motion.div key={imgIdx} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="w-full h-full">
                   {isCurrentVideo ? (
@@ -426,10 +501,6 @@ export default function ProductDetailPage() {
                     ? <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                     : inCart ? <><ArrowRight size={18} /> View Cart</> : <><ShoppingCart size={18} /> Add to Cart</>}
                 </button>
-                <button onClick={handleWishlist}
-                  className={`w-14 h-14 rounded-xl border-2 flex items-center justify-center transition-all flex-shrink-0 ${wishlisted ? 'bg-red-500 border-red-500 text-white' : 'border-gray-300 text-gray-600 hover:border-red-400 hover:text-red-400'}`}>
-                  <Heart size={20} fill={wishlisted ? 'currentColor' : 'none'} />
-                </button>
                 <button
                   onClick={() => {
                     if (navigator.share) navigator.share({ title: product.name, url: window.location.href }).catch(() => {})
@@ -509,6 +580,22 @@ export default function ProductDetailPage() {
                         selectedValue={bar.selected_value}
                       />
                     ))}
+                    {(product.tech_details_title || product.tech_details_description) && (
+                      <div className="mt-4">
+                        {product.tech_details_title && (
+                          <h4 className="text-sm font-bold mb-2"
+                            style={{ color: '#000000', fontFamily: "'Inter', sans-serif" }}>
+                            {product.tech_details_title}
+                          </h4>
+                        )}
+                        {product.tech_details_description && (
+                          <p className="text-sm leading-relaxed"
+                            style={{ color: '#666666', fontFamily: "'Inter', sans-serif" }}>
+                            {product.tech_details_description}
+                          </p>
+                        )}
+                      </div>
+                    )}
                   </div>
                 )}
 

@@ -14,7 +14,7 @@ export default function ApplicationPage() {
     email: '',
     phone_number: '',
     business_name: '',
-    application_type: 'dealer',
+    application_type: 'wholesale',
     city: '',
     state: '',
     pincode: '',
@@ -52,7 +52,7 @@ export default function ApplicationPage() {
         email: '',
         phone_number: '',
         business_name: '',
-        application_type: 'dealer',
+        application_type: 'wholesale',
         city: '',
         state: '',
         pincode: '',
@@ -151,11 +151,9 @@ export default function ApplicationPage() {
                   style={{ color: "#000000", fontFamily: "'Inter', sans-serif", letterSpacing: "1.5px" }}>
                   Application Type *
                 </label>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 gap-4">
                   {[
-                    { value: 'dealer', label: 'Dealer', desc: 'Local retail partners' },
-                    { value: 'distributor', label: 'Distributor', desc: 'Regional distribution' },
-                    { value: 'wholesaler', label: 'Wholesaler', desc: 'Bulk purchasing' }
+                    { value: 'wholesale', label: 'Wholesale', desc: 'Bulk purchasing' }
                   ].map(type => (
                     <label key={type.value} className="cursor-pointer">
                       <input

@@ -24,6 +24,8 @@ const emptyProduct = () => ({
   images: [], tags: [], size: '',
   techBars: [],
   techSpecs: [],
+  techDetailsTitle: '',
+  techDetailsDescription: '',
 })
 
 const emptyBar  = () => ({ title: '', labels: ['', '', ''], selected_value: '' })
@@ -169,7 +171,7 @@ function StatusBadge({ status }) {
 // ─────────────────────────────────────────────
 // TECHNICAL DETAILS EDITOR (inside product form)
 // ─────────────────────────────────────────────
-function TechDetailsEditor({ techBars, techSpecs, onChange }) {
+function TechDetailsEditor({ techBars, techSpecs, techDetailsTitle, techDetailsDescription, onChange }) {
   const updateBar = (i, field, val) => {
     const updated = techBars.map((b, idx) => idx === i ? { ...b, [field]: val } : b)
     onChange('techBars', updated)
@@ -212,10 +214,16 @@ function TechDetailsEditor({ techBars, techSpecs, onChange }) {
     input:   { width: '100%', padding: '8px 12px', border: '1px solid #E0E0E0', borderRadius: 6, fontSize: '0.8125rem', fontFamily: "'Inter', sans-serif", color: '#000000', background: '#FFFFFF', outline: 'none', boxSizing: 'border-box' },
     secHead: { fontSize: '0.875rem', fontWeight: 700, color: '#000000', fontFamily: "'Inter', sans-serif", marginBottom: 4, display: 'flex', alignItems: 'center', gap: 8 },
     hint:    { fontSize: '0.6875rem', color: '#999999', fontWeight: 400 },
-    card:    { background: '#FAFAFA', border: '1px solid #EBEBEB', borderRadius: 10, padding: '14px 16px', marginBottom: 10, position: 'relative' },
+    // Bar cards: first bar (index 0) is square-cornered and not scrollable.
+    // All other bars are rounded and horizontally scrollable, with a fixed red→black gradient.
+    cardFirst: { background: '#FAFAFA', border: '1px solid #EBEBEB', borderRadius: 0, padding: '14px 16px', marginBottom: 10, position: 'relative', overflow: 'visible' },
+    cardOther: { background: '#FAFAFA', border: '1px solid #EBEBEB', borderRadius: 10, padding: '14px 16px', marginBottom: 10, position: 'relative', overflowX: 'auto', maxWidth: '100%' },
     delBtn:  { position: 'absolute', top: 10, right: 10, background: 'none', border: 'none', cursor: 'pointer', color: '#EF4444', padding: 4, borderRadius: 4 },
     addBtn:  { display: 'inline-flex', alignItems: 'center', gap: 6, padding: '7px 14px', border: '1px dashed #CCCCCC', borderRadius: 6, background: 'transparent', cursor: 'pointer', fontSize: '0.8125rem', color: '#666666', fontFamily: "'Inter', sans-serif" },
   }
+
+  // Bars after the first one always show a red→black mixed gradient track
+  const RED_BLACK_GRADIENT = 'linear-gradient(to right, #CA2A31, #000000)'
 
   return (
     <div>
@@ -231,8 +239,10 @@ function TechDetailsEditor({ techBars, techSpecs, onChange }) {
           </p>
         </div>
 
-        {techBars.map((bar, bi) => (
-          <div key={bi} style={S.card}>
+        {techBars.map((bar, bi) => {
+          const isFirstBar = bi === 0
+          return (
+          <div key={bi} style={isFirstBar ? S.cardFirst : S.cardOther}>
             <button style={S.delBtn} type="button" onClick={() => removeBar(bi)} title="Remove bar">
               <X size={14} />
             </button>
@@ -241,7 +251,7 @@ function TechDetailsEditor({ techBars, techSpecs, onChange }) {
             <div style={{ marginBottom: 10, paddingRight: 28 }}>
               <label style={S.label}>Bar Title</label>
               <input
-                style={S.input}
+                style={{ ...S.input, fontSize: '0.6875rem' }}
                 value={bar.title}
                 onChange={e => updateBar(bi, 'title', e.target.value)}
                 placeholder="e.g. Color Vibe"
@@ -251,9 +261,9 @@ function TechDetailsEditor({ techBars, techSpecs, onChange }) {
             {/* Labels row */}
             <div style={{ marginBottom: 12 }}>
               <label style={S.label}>Labels <span style={S.hint}>(left → right)</span></label>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center' }}>
+              <div style={{ display: 'flex', flexWrap: isFirstBar ? 'wrap' : 'nowrap', gap: 6, alignItems: 'center', overflowX: isFirstBar ? 'visible' : 'auto', paddingBottom: isFirstBar ? 0 : 4 }}>
                 {(bar.labels || []).map((lbl, li) => (
-                  <div key={li} style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+                  <div key={li} style={{ display: 'flex', alignItems: 'center', gap: 3, flexShrink: 0 }}>
                     <input
                       style={{ ...S.input, width: 90, padding: '6px 10px' }}
                       value={lbl}
@@ -268,7 +278,7 @@ function TechDetailsEditor({ techBars, techSpecs, onChange }) {
                     )}
                   </div>
                 ))}
-                <button type="button" style={{ ...S.addBtn, padding: '5px 10px', fontSize: '0.75rem' }}
+                <button type="button" style={{ ...S.addBtn, padding: '5px 10px', fontSize: '0.75rem', flexShrink: 0 }}
                   onClick={() => addBarLabel(bi)}>
                   <Plus size={11} /> Add
                 </button>
@@ -277,29 +287,68 @@ function TechDetailsEditor({ techBars, techSpecs, onChange }) {
 
             {/* Live draggable preview */}
             {bar.title && (bar.labels || []).filter(Boolean).length >= 2 ? (
-              <div>
-                <label style={{ ...S.label, marginBottom: 8 }}>
-                  Drag to set selected value:
-                </label>
-                <TechnicalBarEditor
-                  title={bar.title}
-                  labels={(bar.labels || []).filter(Boolean)}
-                  selectedValue={bar.selected_value}
-                  onChange={val => updateBar(bi, 'selected_value', val)}
-                />
-              </div>
+              isFirstBar ? (
+                <div>
+                  <label style={{ ...S.label, marginBottom: 8 }}>
+                    Preview:
+                  </label>
+                  <TechnicalBarEditor
+                    title={bar.title}
+                    labels={(bar.labels || []).filter(Boolean)}
+                    selectedValue={bar.selected_value}
+                    onChange={val => updateBar(bi, 'selected_value', val)}
+                    readOnly
+                  />
+                </div>
+              ) : (
+                <div style={{ overflowX: 'auto', paddingBottom: 4 }}>
+                  <label style={{ ...S.label, marginBottom: 8 }}>
+                    Drag to set selected value:
+                  </label>
+                  <div style={{ minWidth: 320 }}>
+                    <TechnicalBarEditor
+                      title={bar.title}
+                      labels={(bar.labels || []).filter(Boolean)}
+                      selectedValue={bar.selected_value}
+                      onChange={val => updateBar(bi, 'selected_value', val)}
+                      gradientOverride={RED_BLACK_GRADIENT}
+                    />
+                  </div>
+                </div>
+              )
             ) : (
               <div style={{ padding: '10px 12px', background: '#F5F5F5', borderRadius: 7, fontSize: '0.75rem', color: '#AAAAAA', fontFamily: "'Inter', sans-serif" }}>
                 Fill in title + at least 2 labels to see the draggable preview
               </div>
             )}
           </div>
-        ))}
+          )
+        })}
 
         <button type="button" style={S.addBtn}
           onClick={() => onChange('techBars', [...techBars, emptyBar()])}>
           <Plus size={14} /> Add Technical Bar
         </button>
+
+        {/* Title + Description shown after all bars, for the Technical Details section as a whole */}
+        <div style={{ marginTop: 16 }}>
+          <label style={S.label}>Section Title <span style={S.hint}>(shown after the bars)</span></label>
+          <input
+            style={S.input}
+            value={techDetailsTitle || ''}
+            onChange={e => onChange('techDetailsTitle', e.target.value)}
+            placeholder="e.g. Why It Performs"
+          />
+        </div>
+        <div style={{ marginTop: 12 }}>
+          <label style={S.label}>Section Description</label>
+          <textarea
+            style={{ ...S.input, resize: 'vertical', minHeight: 70 }}
+            value={techDetailsDescription || ''}
+            onChange={e => onChange('techDetailsDescription', e.target.value)}
+            placeholder="Extra context or summary shown below the technical bars..."
+          />
+        </div>
       </div>
 
       {/* ── Technical Specs ── */}
@@ -399,6 +448,8 @@ function ProductFormModal({ initialData, categories, onClose, onSaved }) {
           wholesale_price: form.wholesale_price ? parseFloat(form.wholesale_price) : null,
           dealer_price:    form.dealer_price    ? parseFloat(form.dealer_price)    : null,
           custom_id: form.custom_id || null,
+          tech_details_title: form.techDetailsTitle || null,
+          tech_details_description: form.techDetailsDescription || null,
         }),
       })
 
@@ -437,6 +488,7 @@ function ProductFormModal({ initialData, categories, onClose, onSaved }) {
           .map((b, i) => ({
             product_id: productId,
             title: b.title.trim(),
+            description: (b.description || '').trim(),
             labels: b.labels.filter(l => l.trim()),
             selected_value: b.selected_value || b.labels.find(l => l.trim()) || '',
             sort_order: i,
@@ -632,6 +684,8 @@ function ProductFormModal({ initialData, categories, onClose, onSaved }) {
               <TechDetailsEditor
                 techBars={form.techBars}
                 techSpecs={form.techSpecs}
+                techDetailsTitle={form.techDetailsTitle}
+                techDetailsDescription={form.techDetailsDescription}
                 onChange={(key, val) => setField(key, val)}
               />
             )}
@@ -688,6 +742,8 @@ function ProductsTab({ products, categories, onRefresh }) {
       size:            product.size            || '',
       techBars: (barsRes.data || []).map(b => ({ ...b, labels: b.labels || [] })),
       techSpecs: specsRes.data || [],
+      techDetailsTitle: product.tech_details_title || '',
+      techDetailsDescription: product.tech_details_description || '',
     })
     setShowForm(true)
   }

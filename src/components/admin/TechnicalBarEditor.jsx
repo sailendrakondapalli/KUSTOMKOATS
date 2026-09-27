@@ -62,7 +62,7 @@ const generateBlendedGradient = (labels) => {
   return `linear-gradient(to right, ${stops})`
 }
 
-export default function TechnicalBarEditor({ title, labels = [], selectedValue, onChange }) {
+export default function TechnicalBarEditor({ title, labels = [], selectedValue, onChange, gradientOverride, hideHint = false, readOnly = false }) {
   if (!labels.length) return null
 
   const trackRef = useRef(null)
@@ -80,8 +80,8 @@ export default function TechnicalBarEditor({ title, labels = [], selectedValue, 
   // Get the color for the currently selected label (for thumb and badge)
   const selectedColor = getLabelColor(labels[selectedIndex] || labels[0])
   
-  // Generate the blended gradient for the entire bar
-  const blendedGradient = generateBlendedGradient(labels)
+  // Generate the blended gradient for the entire bar (unless overridden by parent)
+  const blendedGradient = gradientOverride || generateBlendedGradient(labels)
 
   // Convert pointer X → nearest label index
   const pctToLabelIdx = useCallback((clientX) => {
@@ -98,23 +98,46 @@ export default function TechnicalBarEditor({ title, labels = [], selectedValue, 
   }, [labels])
 
   const handlePointerDown = (e) => {
+    if (readOnly) return
     e.currentTarget.setPointerCapture(e.pointerId)
     setDragging(true)
     onChange(labels[pctToLabelIdx(e.clientX)])
   }
   const handlePointerMove = (e) => {
-    if (!dragging) return
+    if (readOnly || !dragging) return
     const newIdx = pctToLabelIdx(e.clientX)
     if (labels[newIdx] !== selectedValue) onChange(labels[newIdx])
   }
   const handlePointerUp = (e) => {
+    if (readOnly) return
     e.currentTarget.releasePointerCapture(e.pointerId)
     setDragging(false)
   }
 
   // Handle label click
   const handleLabelClick = (label) => {
+    if (readOnly) return
     onChange(label)
+  }
+
+  // Read-only mode: render just the plain mixed-color bar, no title, no thumb,
+  // no clickable labels, no hint text — purely decorative.
+  if (readOnly) {
+    return (
+      <div style={{
+        background: '#FFFFFF',
+        border: '1px solid #E8E8E8',
+        borderRadius: 10,
+        padding: '14px 18px',
+        marginBottom: 8,
+      }}>
+        <div style={{
+          height: 4,
+          borderRadius: 999,
+          background: blendedGradient,
+        }} />
+      </div>
+    )
   }
 
   return (
@@ -128,7 +151,7 @@ export default function TechnicalBarEditor({ title, labels = [], selectedValue, 
     }}>
       {/* Title + selected value badge */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-        <p style={{ fontSize: '0.8125rem', fontWeight: 500, color: '#2A2A2A', fontFamily: "'Inter', sans-serif", margin: 0 }}>
+        <p style={{ fontSize: '0.625rem', fontWeight: 500, color: '#2A2A2A', fontFamily: "'Inter', sans-serif", margin: 0 }}>
           {title}
         </p>
         {selectedValue && (
@@ -231,9 +254,11 @@ export default function TechnicalBarEditor({ title, labels = [], selectedValue, 
       </div>
 
       {/* Hint */}
-      <p style={{ fontSize: '0.625rem', color: '#CCCCCC', fontFamily: "'Inter', sans-serif", margin: '4px 0 0' }}>
-        ← drag slider or click labels to adjust →
-      </p>
+      {!hideHint && (
+        <p style={{ fontSize: '0.625rem', color: '#CCCCCC', fontFamily: "'Inter', sans-serif", margin: '4px 0 0' }}>
+          ← drag slider or click labels to adjust →
+        </p>
+      )}
     </div>
   )
 }

@@ -7,33 +7,33 @@ const PX = "px-6 lg:px-12 xl:px-20"
 export default function WhyKustomKoatsNeon() {
   const features = [
     {
-      icon: "/Spray Gun.png",
+      image: "/Spray Gun.png",
       title: "PREMIUM AUTOMOTIVE FINISHES",
       subtitle: "",
       description: "Professional-grade coatings designed for the highest quality and standout results."
     },
     {
-      icon: "/Chameleone.png",
+      image: "/Chameleone.png",
       title: "EXTREME COLOR EFFECTS",
       subtitle: "",
-      description: "Extreme Color Effects"
+      description: "Chosen by enthusiasts, customizers and professionals across the globe"
     },
     {
-      icon: "/Sheild.png",
+      image: "/Sheild.png",
       title: "BUILD TO LAST",
       subtitle: "",
       description: "Durable, high-performance coatings engineered to withstand the test of time."
     },
     {
-      icon: "/Globe.png",
+      image: "/Globe.png",
       title: "TRUSTED FORMULAS WORLDWIDE",
       subtitle: "",
-      description: "Chameleon, candy and color-shifting technologies that create unforgettable looks."
+      description: "Trusted by automotive professionals and enthusiasts in countries around the world."
     }
   ]
 
   return (
-    <section className="relative w-full py-24 overflow-hidden" 
+    <section className="relative w-full py-12 sm:py-16 md:py-24 overflow-hidden" 
       style={{ 
         background: "#000000",
         position: "relative",
@@ -49,73 +49,75 @@ export default function WhyKustomKoatsNeon() {
       <div className={`relative max-w-7xl mx-auto ${PX}`}>
         {/* Header */}
         <ScrollReveal>
-          <div className="text-center mb-16">
-            <p className="text-xs font-bold mb-4 tracking-[0.3em] uppercase" 
+          <div className="text-center mb-8 sm:mb-12 md:mb-16">
+            <p className="text-base sm:text-lg md:text-xl font-bold mb-3 sm:mb-4 tracking-[0.3em] uppercase" 
               style={{ color: "#CA2A31", fontFamily: "'Inter', sans-serif" }}>
               WHY KUSTOM KOATS ?
             </p>
-            <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 tracking-tight"
+            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold mb-4 sm:mb-6 tracking-tight px-4"
               style={{ 
                 fontFamily: "'Rajdhani', sans-serif", 
                 color: "#FFFFFF",
                 textTransform: "uppercase",
-                letterSpacing: "0.05em"
+                letterSpacing: "0.05em",
+                lineHeight: "1.1"
               }}>
               PREMIUM FINISHES. MAXIMUM IMPACT.
             </h2>
-            <p className="text-sm md:text-base max-w-3xl mx-auto leading-relaxed" 
+            <p className="text-xs sm:text-sm md:text-base max-w-3xl mx-auto leading-relaxed px-4" 
               style={{ color: "#FFFFFF", fontFamily: "'Inter', sans-serif", opacity: 0.8 }}>
               At Kustom Koats, we don't just make colors - we create experiences.
-              <br />
+              <br className="hidden sm:block" />
               Engineered for performance. Design to turn heads.
             </p>
           </div>
         </ScrollReveal>
 
         {/* iPhone mockup container */}
-        <div className="relative max-w-5xl mx-auto mb-12">
-          {/* iPhone frame */}
-          <div className="relative mx-auto rounded-[3rem] overflow-hidden"
+        <div className="relative max-w-5xl mx-auto mb-8 sm:mb-12">
+          {/* iPhone frame - auto height on mobile, aspect ratio on desktop */}
+          <div className="relative mx-auto w-full rounded-[2rem] sm:rounded-[3rem] overflow-visible md:overflow-hidden md:aspect-video"
             style={{ 
               maxWidth: "900px",
-              aspectRatio: "16/9",
               background: "#000000",
-              border: "8px solid #1a1a1a",
-              boxShadow: "0 0 80px rgba(255, 0, 0, 0.3), 0 0 120px rgba(255, 0, 0, 0.2)"
-            }}>
+              border: "6px solid #1a1a1a",
+              boxShadow: "0 0 60px rgba(255, 0, 0, 0.25), 0 0 100px rgba(255, 0, 0, 0.15)"
+            }}
+          >
             
-            {/* Feature cards grid */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-0 h-full p-4 md:p-8">
+            {/* Feature cards grid - 2 columns on mobile, 4 on md+ */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-x-2 gap-y-2 sm:gap-x-3 sm:gap-y-3 md:gap-0 p-4 sm:p-6 md:p-8 md:h-full"
+              style={{ minHeight: 'auto' }}
+            >
               {features.map((feature, idx) => (
                 <ScrollReveal key={idx} delay={idx * 0.15}>
-                  <div className="relative group h-full flex flex-col items-center justify-start text-center p-4 md:p-6"
-                    style={{
-                      borderRight: idx < 3 ? "1px solid rgba(255, 255, 255, 0.1)" : "none",
-                      borderBottom: idx < 2 ? "1px solid rgba(255, 255, 255, 0.1)" : "none"
-                    }}>
+                  <div 
+                    className={`relative group flex flex-col items-center justify-start text-center p-4 sm:p-5 md:p-6 md:h-full
+                      ${idx % 2 === 0 ? 'border-r border-white/10' : ''} 
+                      ${idx < 2 ? 'border-b border-white/10' : ''}
+                      md:border-b-0
+                      ${idx < 3 ? 'md:border-r md:border-white/10' : 'md:border-r-0'}
+                    `}
+                  >
                     
-                    {/* Icon */}
-                    <div className="mb-4 md:mb-6 transition-transform duration-500 group-hover:scale-110">
+                    {/* Image - scaled down on mobile, fixed height row so all images align */}
+                    <div className="mb-4 sm:mb-5 md:mb-7 h-14 sm:h-16 md:h-20 flex items-center justify-center transition-transform duration-500 group-hover:scale-110">
                       <img 
-                        src={feature.icon} 
+                        src={feature.image} 
                         alt={feature.title}
-                        style={{
-                          width: '80px',
-                          height: '80px',
-                          objectFit: 'contain',
-                          filter: 'drop-shadow(0 0 10px rgba(202, 42, 49, 0.5))'
-                        }}
+                        className="h-full w-auto object-contain scale-75 sm:scale-90 md:scale-100"
+                        style={{ filter: "drop-shadow(0 0 8px rgba(202, 42, 49, 0.4))" }}
                       />
                     </div>
                     
-                    {/* Title */}
+                    {/* Title - fixed height row so all descriptions start on the same line */}
                     {feature.title && (
-                      <h3 className="text-xs md:text-sm font-bold mb-1 tracking-wider" 
+                      <h3 className="w-full text-[0.65rem] sm:text-xs md:text-sm font-bold mb-4 sm:mb-5 md:mb-6 tracking-wider px-1 sm:px-2 flex items-center justify-center md:h-12 lg:h-10" 
                         style={{ 
                           color: "#FFFFFF", 
                           fontFamily: "'Inter', sans-serif",
                           textTransform: "uppercase",
-                          lineHeight: "1.3"
+                          lineHeight: "1.7"
                         }}>
                         {feature.title}
                       </h3>
@@ -123,7 +125,7 @@ export default function WhyKustomKoatsNeon() {
                     
                     {/* Subtitle */}
                     {feature.subtitle && (
-                      <p className="text-xs font-bold mb-3 tracking-wider uppercase"
+                      <p className="text-[0.6rem] sm:text-xs font-bold mb-2 sm:mb-3 tracking-wider uppercase"
                         style={{ 
                           color: "#CA2A31", 
                           fontFamily: "'Inter', sans-serif" 
@@ -134,11 +136,12 @@ export default function WhyKustomKoatsNeon() {
                     
                     {/* Description */}
                     {feature.description && (
-                      <p className="text-[10px] md:text-xs leading-relaxed" 
+                      <p className="text-[0.6rem] sm:text-xs md:text-xs px-1 sm:px-2" 
                         style={{ 
                           color: "#FFFFFF", 
                           fontFamily: "'Inter', sans-serif",
-                          lineHeight: "1.5",
+                          lineHeight: "2",
+                          letterSpacing: "0.02em",
                           opacity: 0.7
                         }}>
                         {feature.description}
@@ -146,7 +149,7 @@ export default function WhyKustomKoatsNeon() {
                     )}
                     
                     {/* Bottom accent line */}
-                    <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-12 h-0.5 transition-all duration-300 group-hover:w-20"
+                    <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-8 sm:w-12 h-0.5 transition-all duration-300 group-hover:w-16 sm:group-hover:w-20"
                       style={{
                         background: "#CA2A31"
                       }} />

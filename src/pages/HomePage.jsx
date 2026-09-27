@@ -15,59 +15,56 @@ const PX = "px-6 lg:px-12 xl:px-20"
 
 /* --- Hero Section --- */
 function HeroSection() {
-  // Animation variants for word-by-word reveal
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.08,
-        delayChildren: 0.2
-      }
-    }
-  }
-
-  const wordVariants = {
-    hidden: { 
-      opacity: 0, 
-      y: 25 
-    },
-    visible: { 
-      opacity: 1, 
-      y: 0,
-      transition: {
-        duration: 0.5,
-        ease: [0.22, 1, 0.36, 1]
-      }
-    }
-  }
-
-  // Split text into words for animation - each word on same line
-  const AnimatedWords = ({ text, className, style }) => {
-    const words = text.split(' ')
-    return (
-      <motion.div 
-        className={className}
-        style={style}
-        variants={containerVariants}
-        initial="hidden"
-        animate="visible"
-      >
-        {words.map((word, index) => (
-          <motion.span
-            key={index}
-            variants={wordVariants}
-            style={{ display: 'inline-block', marginRight: '0.25em' }}
-          >
-            {word}
-          </motion.span>
-        ))}
-      </motion.div>
-    )
-  }
-
   return (
-    <section className="relative w-full overflow-hidden" style={{ height: "clamp(550px, 85vh, 800px)", background: "#000000" }}>
+    <section 
+      className="relative w-full overflow-hidden" 
+      style={{ 
+        height: "100vh", 
+        minHeight: "600px",
+        width: "100vw",
+        background: "#000000" 
+      }}
+    >
+      {/* Responsive CSS for mobile */}
+      <style>{`
+        @media (max-width: 767px) {
+          section[style*="100vh"] {
+            height: 100svh !important;
+            min-height: 600px !important;
+          }
+          .hero-content-container {
+            left: 20px !important;
+            top: 50% !important;
+            transform: translateY(-50%) !important;
+            width: calc(100% - 40px) !important;
+          }
+          .hero-heading-text {
+            font-size: clamp(48px, 12vw, 62px) !important;
+            line-height: 0.95 !important;
+            max-width: 100% !important;
+            width: 100% !important;
+          }
+        }
+        @media (min-width: 768px) and (max-width: 1023px) {
+          .hero-content-container {
+            left: 35px !important;
+            top: 120px !important;
+          }
+          .hero-heading-text {
+            font-size: 72px !important;
+          }
+        }
+        @media (min-width: 1024px) {
+          .hero-content-container {
+            left: 40px !important;
+            top: 125px !important;
+          }
+          .hero-heading-text {
+            font-size: 86px !important;
+          }
+        }
+      `}</style>
+      
       {/* Video Background */}
       <video
         autoPlay
@@ -75,104 +72,134 @@ function HeroSection() {
         muted
         playsInline
         className="absolute inset-0 w-full h-full object-cover"
-        style={{ opacity: 0.7 }}
+        style={{ 
+          position: "absolute",
+          top: 0,
+          left: 0,
+          width: "100%",
+          height: "100%",
+          objectFit: "cover",
+          objectPosition: "center center",
+          zIndex: 0
+        }}
       >
         <source src="/Kustom Koats Hero Page.mov" type="video/mp4" />
       </video>
       
-      {/* Content - Left Aligned */}
-      <div className="relative w-full h-full flex flex-col items-start justify-center px-6 sm:px-12 lg:px-16 max-w-7xl">
-        <div className="text-left space-y-0">
-          {/* Small Top Text */}
-          <AnimatedWords
-            text="INSPIRED BY PASSION"
-            className="text-xs md:text-sm font-bold tracking-widest mb-4"
-            style={{ 
-              fontFamily: "'Montserrat', sans-serif",
-              fontWeight: 700,
-              letterSpacing: '0.15em',
-              color: '#FFFFFF',
-              textShadow: '0 2px 10px rgba(0, 0, 0, 0.8)'
-            }}
-          />
-          
-          {/* Main Heading - Stacked Lines */}
-          <div className="space-y-0 mb-8">
-            <AnimatedWords
-              text="MAKE YOUR"
-              className="block text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight leading-none"
-              style={{ 
-                fontFamily: "'Montserrat', sans-serif",
-                fontWeight: 800,
-                color: '#FFFFFF',
-                textShadow: '0 4px 20px rgba(0, 0, 0, 0.8), 0 0 30px rgba(255, 0, 0, 0.3)',
-                marginBottom: '-0.1em'
-              }}
-            />
-            <AnimatedWords
-              text="PRESENCE"
-              className="block text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight leading-none"
-              style={{ 
-                fontFamily: "'Montserrat', sans-serif",
-                fontWeight: 800,
-                color: '#FFFFFF',
-                textShadow: '0 4px 20px rgba(0, 0, 0, 0.8), 0 0 30px rgba(255, 0, 0, 0.3)',
-                marginBottom: '-0.1em'
-              }}
-            />
-            <AnimatedWords
-              text="FEEL"
-              className="block text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight leading-none"
-              style={{ 
-                fontFamily: "'Montserrat', sans-serif",
-                fontWeight: 800,
-                color: '#FFFFFF',
-                textShadow: '0 4px 20px rgba(0, 0, 0, 0.8), 0 0 30px rgba(255, 0, 0, 0.3)',
-                marginBottom: '-0.1em'
-              }}
-            />
-            <AnimatedWords
-              text="IMPOSSIBLE"
-              className="block text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight leading-none"
-              style={{ 
-                fontFamily: "'Montserrat', sans-serif",
-                fontWeight: 800,
-                color: '#FFFFFF',
-                textShadow: '0 4px 20px rgba(0, 0, 0, 0.8), 0 0 30px rgba(255, 0, 0, 0.3)',
-                marginBottom: '-0.1em'
-              }}
-            />
-            <AnimatedWords
-              text="TO IGNORE"
-              className="block text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight leading-none"
-              style={{ 
-                fontFamily: "'Montserrat', sans-serif",
-                fontWeight: 800,
-                color: '#FFFFFF',
-                textShadow: '0 4px 20px rgba(0, 0, 0, 0.8), 0 0 30px rgba(255, 0, 0, 0.3)'
-              }}
-            />
-          </div>
-        </div>
-
-        {/* CTA Button - Left Aligned */}
+      {/* Dark Overlay */}
+      <div 
+        className="absolute inset-0"
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: "rgba(0, 0, 0, 0.30)",
+          zIndex: 1
+        }}
+      />
+      
+      {/* Hero Content - Left Aligned, Upper Portion */}
+      <div 
+        className="hero-content-container"
+        style={{ 
+          position: "absolute",
+          left: "40px",
+          top: "125px",
+          zIndex: 10,
+          width: "400px"
+        }}
+      >
+        {/* Eyebrow Text */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 2 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+        >
+          <p style={{
+            fontFamily: "'Bebas Neue', sans-serif",
+            fontSize: "24px",
+            fontWeight: 400,
+            letterSpacing: "2px",
+            lineHeight: "1",
+            color: "#FFFFFF",
+            marginBottom: "12px",
+            textShadow: "0 2px 10px rgba(0, 0, 0, 0.8)"
+          }}>
+            INSPIRED BY PASSION
+          </p>
+        </motion.div>
+        
+        {/* Main Heading - 5 Lines, Exact Breaks */}
+        <motion.div
+          initial={{ opacity: 0, y: 25 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.4 }}
+        >
+          <h1 
+            className="hero-heading-text"
+            style={{
+              fontFamily: "'Bebas Neue', sans-serif",
+              fontWeight: 400,
+              fontSize: "86px",
+              lineHeight: "0.94",
+              letterSpacing: "1px",
+              textTransform: "uppercase",
+              color: "#FFFFFF",
+              width: "380px",
+              maxWidth: "380px",
+              textShadow: "0 4px 20px rgba(0, 0, 0, 0.8), 0 0 30px rgba(255, 0, 0, 0.3)",
+              marginBottom: "0"
+            }}
+          >
+            MAKE YOUR<br />
+            PRESENCE<br />
+            FEEL<br />
+            IMPOSSIBLE<br />
+            TO IGNORE
+          </h1>
+        </motion.div>
+
+        {/* CTA Button */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 1.2 }}
+          style={{ marginTop: "55px" }}
         >
           <Link 
             to="/shop/xtreme-kolorz"
-            className="inline-flex items-center gap-3 px-8 py-4 rounded-sm font-bold text-sm tracking-widest uppercase transition-all duration-300 hover:scale-105"
             style={{ 
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "12px",
+              width: "220px",
+              height: "62px",
+              fontFamily: "'Bebas Neue', sans-serif",
+              fontSize: "21px",
+              fontWeight: 400,
+              letterSpacing: "1.5px",
               background: "#FFFFFF",
               color: "#000000",
-              fontFamily: "'Montserrat', sans-serif",
-              fontWeight: 700,
-              letterSpacing: '0.1em'
+              border: "none",
+              borderRadius: "3px",
+              textDecoration: "none",
+              textTransform: "uppercase",
+              transition: "all 0.3s ease"
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = "scale(1.05)"
+              e.currentTarget.style.boxShadow = "0 8px 24px rgba(255, 255, 255, 0.3)"
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = "scale(1)"
+              e.currentTarget.style.boxShadow = "none"
             }}
           >
             DISCOVER MORE
+            <ArrowRight size={20} />
           </Link>
         </motion.div>
       </div>
@@ -188,6 +215,8 @@ function FeaturedCategoriesSection() {
     'Accessories': null
   })
   const [loading, setLoading] = useState(true)
+  const scrollRef = useRef(null)
+  const isPausedRef = useRef(false)
 
   useEffect(() => {
     const loadCategoryProducts = async () => {
@@ -235,11 +264,51 @@ function FeaturedCategoriesSection() {
     }
   ]
 
+  // Auto-scroll the mobile carousel to the next card every 4 seconds
+  useEffect(() => {
+    const container = scrollRef.current
+    if (!container) return
+
+    const interval = setInterval(() => {
+      if (isPausedRef.current) return
+
+      const cardWidth = container.firstChild
+        ? container.firstChild.getBoundingClientRect().width + 16 // width + gap-4 (1rem)
+        : container.clientWidth
+
+      const maxScroll = container.scrollWidth - container.clientWidth
+      const nextScroll = container.scrollLeft + cardWidth
+
+      if (nextScroll >= maxScroll - 5) {
+        // Loop back to the start
+        container.scrollTo({ left: 0, behavior: 'smooth' })
+      } else {
+        container.scrollTo({ left: nextScroll, behavior: 'smooth' })
+      }
+    }, 4000)
+
+    return () => clearInterval(interval)
+  }, [categories.length])
+
+  // Pause auto-scroll briefly when the user manually interacts
+  const pauseAutoScroll = () => {
+    isPausedRef.current = true
+    clearTimeout(pauseAutoScroll._timer)
+    pauseAutoScroll._timer = setTimeout(() => {
+      isPausedRef.current = false
+    }, 5000)
+  }
+
   return (
     <section className={`w-full py-16 ${PX}`} style={{ background: "#FFFFFF", position: "relative", zIndex: 5 }}>
       <div className="max-w-7xl mx-auto">
-        {/* Mobile: Horizontal Scroll */}
-        <div className="md:hidden flex gap-6 overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-hide"
+        {/* Mobile: Horizontal Scroll - peek next item, auto-advances every 4s */}
+        <div 
+          ref={scrollRef}
+          onTouchStart={pauseAutoScroll}
+          onMouseDown={pauseAutoScroll}
+          onWheel={pauseAutoScroll}
+          className="md:hidden flex gap-4 overflow-x-auto pb-4 pl-1 snap-x snap-mandatory scrollbar-hide"
           style={{ 
             scrollbarWidth: 'none',
             msOverflowStyle: 'none',
@@ -251,7 +320,7 @@ function FeaturedCategoriesSection() {
             const targetLink = product ? `/products/${product.id}` : category.link
             
             return (
-              <div key={category.title} className="flex-shrink-0 w-[80vw] snap-center">
+              <div key={category.title} className="flex-shrink-0 w-[72vw] snap-start">
                 <Link to={targetLink} className="relative group block">
                   <div className="relative aspect-[4/3] rounded-lg mb-4 overflow-hidden">
                     {loading ? (

@@ -58,7 +58,6 @@ const ApplicationPage = lazy(() => import('../pages/wholesale/ApplicationPage'))
 // About pages
 const OurStoryPage = lazy(() => import('../pages/about/OurStoryPage'))
 const OurPhilosophyPage = lazy(() => import('../pages/about/OurPhilosophyPage'))
-const TechnologyPage = lazy(() => import('../pages/about/TechnologyPage'))
 const WhyKustomKoatsPage = lazy(() => import('../pages/about/WhyKustomKoatsPage'))
 
 // Blog pages
@@ -301,15 +300,6 @@ export default function AnimatedRoutes() {
             <ErrorBoundary>
               <Suspense fallback={<PageLoader />}>
                 <OurPhilosophyPage />
-              </Suspense>
-            </ErrorBoundary>
-          </PageTransition>
-        } />
-        <Route path="/about/technology" element={
-          <PageTransition>
-            <ErrorBoundary>
-              <Suspense fallback={<PageLoader />}>
-                <TechnologyPage />
               </Suspense>
             </ErrorBoundary>
           </PageTransition>
