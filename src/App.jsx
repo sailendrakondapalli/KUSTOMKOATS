@@ -23,6 +23,7 @@ const AdminBlogPage       = lazy(() => import('./pages/admin/AdminBlogPage'))
 const AdminPromoCodesPage = lazy(() => import('./pages/admin/AdminPromoCodesPage'))
 const AdminTestimonialsPage = lazy(() => import('./pages/admin/AdminTestimonialsPage'))
 const AdminPageContentEditor = lazy(() => import('./pages/admin/AdminPageContentEditor'))
+const AdminFAQPage = lazy(() => import('./pages/admin/AdminFAQPage'))
 
 const PageLoader = () => (
   <div className="min-h-screen flex items-center justify-center" style={{ background: '#FFFFFF' }}>
@@ -179,6 +180,13 @@ export default function App() {
               <ErrorBoundary>
                 <Suspense fallback={<AdminLoader />}>
                   <AdminPageContentEditor />
+                </Suspense>
+              </ErrorBoundary>
+            } />
+            <Route path="/admin/faqs" element={
+              <ErrorBoundary>
+                <Suspense fallback={<AdminLoader />}>
+                  <AdminFAQPage />
                 </Suspense>
               </ErrorBoundary>
             } />

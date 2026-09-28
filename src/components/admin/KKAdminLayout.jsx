@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router-dom'
 import {
   Package, Tag, ShoppingBag, Users,
   Store, Menu, X, ChevronRight, Handshake,
-  BarChart2, FileText, Ticket, MessageSquare, BookOpen
+  BarChart2, FileText, Ticket, MessageSquare, BookOpen, HelpCircle
 } from 'lucide-react'
 
 const NAV_ITEMS = [
@@ -17,6 +17,7 @@ const NAV_ITEMS = [
   { path: '/admin/wholesale',  label: 'Wholesale',   icon: Handshake },
   { path: '/admin/blog',       label: 'Blog',        icon: FileText },
   { path: '/admin/page-content', label: 'Page Content', icon: BookOpen },
+  { path: '/admin/faqs',       label: 'FAQs',        icon: HelpCircle },
 ]
 
 export default function KKAdminLayout({ children }) {
