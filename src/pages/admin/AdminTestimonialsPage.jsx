@@ -190,17 +190,11 @@ export default function AdminTestimonialsPage() {
       <Helmet><title>Testimonials | Admin | Kustom Koats</title></Helmet>
       <KKAdminLayout>
         {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
-          <div>
-            <h1 style={{ fontFamily: "'Rajdhani', sans-serif", fontSize: '1.5rem', fontWeight: 700, color: '#000000', margin: 0 }}>Testimonials</h1>
-            <p style={{ fontSize: '0.8125rem', color: '#888888', fontFamily: "'Inter', sans-serif", marginTop: 2 }}>
-              Manage customer reviews and testimonials
-            </p>
-          </div>
-          <button onClick={openAdd}
-            style={{ padding: '8px 18px', background: '#CA2A31', border: 'none', borderRadius: 8, color: '#FFFFFF', fontSize: '0.8125rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, fontFamily: "'Inter', sans-serif" }}>
-            <Plus size={14} /> Add Testimonial
-          </button>
+        <div style={{ marginBottom: 20 }}>
+          <h1 style={{ fontFamily: "'Rajdhani', sans-serif", fontSize: '1.5rem', fontWeight: 700, color: '#000000', margin: 0 }}>Testimonials</h1>
+          <p style={{ fontSize: '0.8125rem', color: '#888888', fontFamily: "'Inter', sans-serif", marginTop: 2 }}>
+            Manage customer reviews and testimonials
+          </p>
         </div>
 
         {loading ? (

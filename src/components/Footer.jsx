@@ -5,7 +5,31 @@ import { CONTACT_INFO } from '../config/contact'
 export default function Footer() {
   return (
     <footer style={{ background: "#FFFFFF", borderTop: "1px solid rgba(0, 0, 0, 0.1)" }} className="mt-20">
-      <div className="w-full px-6 lg:px-12 xl:px-20 py-16">
+      <style>{`
+        .footer-link {
+          position: relative;
+          display: inline-block;
+          text-decoration: none;
+          color: #333333;
+          transition: color 0.3s;
+        }
+        .footer-link::after {
+          content: '';
+          position: absolute;
+          bottom: -2px;
+          left: 0;
+          width: 0;
+          height: 2px;
+          background: #CA2A31;
+          transition: width 0.3s ease-out;
+        }
+        .footer-link:hover {
+          color: #CA2A31;
+        }
+        .footer-link:hover::after {
+          width: 100%;
+        }
+      `}</style>      <div className="w-full px-6 lg:px-12 xl:px-20 py-16">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-10 lg:gap-16">
 
           {/* Brand */}
@@ -54,10 +78,8 @@ export default function Footer() {
                 { to: "/shop/wholesale", label: "Wholesale" }
               ].map(item => (
                 <li key={item.to}>
-                  <Link to={item.to} className="text-sm transition-colors duration-300" 
-                    style={{ color: "#333333", fontFamily: "'Inter', sans-serif" }}
-                    onMouseEnter={e => e.currentTarget.style.color = "#CA2A31"}
-                    onMouseLeave={e => e.currentTarget.style.color = "#333333"}>
+                  <Link to={item.to} className="footer-link text-sm"
+                    style={{ fontFamily: "'Inter', sans-serif" }}>
                     {item.label}
                   </Link>
                 </li>
@@ -79,10 +101,8 @@ export default function Footer() {
                 { to: "/contact", label: "Contact" },
               ].map(item => (
                 <li key={item.to}>
-                  <Link to={item.to} className="text-sm transition-colors duration-300" 
-                    style={{ color: "#333333", fontFamily: "'Inter', sans-serif" }}
-                    onMouseEnter={e => e.currentTarget.style.color = "#CA2A31"}
-                    onMouseLeave={e => e.currentTarget.style.color = "#333333"}>
+                  <Link to={item.to} className="footer-link text-sm"
+                    style={{ fontFamily: "'Inter', sans-serif" }}>
                     {item.label}
                   </Link>
                 </li>
@@ -154,9 +174,9 @@ export default function Footer() {
           style={{ color: "#666666", fontFamily: "'Inter', sans-serif" }}>
           <span>© {new Date().getFullYear()} {CONTACT_INFO.company.parent}. All rights reserved.</span>
           <div className="flex gap-6">
-            <Link to="/privacy-policy" className="hover:text-[#CA2A31] transition-colors">Privacy Policy</Link>
-            <Link to="/shipping-policy" className="hover:text-[#CA2A31] transition-colors">Shipping</Link>
-            <Link to="/refund-policy" className="hover:text-[#CA2A31] transition-colors">Returns</Link>
+            <Link to="/privacy-policy" className="footer-link">Privacy Policy</Link>
+            <Link to="/shipping-policy" className="footer-link">Shipping</Link>
+            <Link to="/refund-policy" className="footer-link">Returns</Link>
           </div>
         </div>
       </div>

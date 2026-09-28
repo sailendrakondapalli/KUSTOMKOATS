@@ -124,8 +124,7 @@ function HeroSection() {
             letterSpacing: "2px",
             lineHeight: "1",
             color: "#FFFFFF",
-            marginBottom: "12px",
-            textShadow: "0 2px 10px rgba(0, 0, 0, 0.8)"
+            marginBottom: "12px"
           }}>
             INSPIRED BY PASSION
           </p>
@@ -149,7 +148,6 @@ function HeroSection() {
               color: "#FFFFFF",
               width: "380px",
               maxWidth: "380px",
-              textShadow: "0 4px 20px rgba(0, 0, 0, 0.8), 0 0 30px rgba(255, 0, 0, 0.3)",
               marginBottom: "0"
             }}
           >
@@ -364,7 +362,7 @@ function FeaturedCategoriesSection() {
                         paddingBottom: "2px"
                       }}
                     >
-                      {product ? 'VIEW PRODUCT' : 'SHOP NOW'}
+                      {product ? 'VIEW PRODUCTS' : 'SHOP NOW'}
                     </div>
                   </div>
                 </Link>
@@ -425,7 +423,7 @@ function FeaturedCategoriesSection() {
                         paddingBottom: "2px"
                       }}
                     >
-                      {product ? 'VIEW PRODUCT' : 'SHOP NOW'}
+                      {product ? 'VIEW PRODUCTS' : 'SHOP NOW'}
                     </div>
                   </div>
                 </Link>
@@ -655,7 +653,7 @@ function SignatureSeriesSection() {
                         color: "#CA2A31"
                       }}
                     >
-                      Read more 
+                      Know More
                       <ArrowRight size={14} />
                     </div>
                   </Link>

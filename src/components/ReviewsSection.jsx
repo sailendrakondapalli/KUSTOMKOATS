@@ -61,9 +61,14 @@ export default function ReviewsSection() {
   const [comment, setComment] = useState("")
   const [submitting, setSubmitting] = useState(false)
   const [showForm, setShowForm] = useState(false)
+  const [page, setPage] = useState(0)          // current page index (0-based)
   // Anonymous review fields
   const [guestName, setGuestName] = useState("")
   const [guestEmail, setGuestEmail] = useState("")
+
+  const PAGE_SIZE = 6
+  const totalPages = Math.ceil(reviews.length / PAGE_SIZE)
+  const visibleReviews = reviews.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
 
   const avgRating = reviews.length ? (reviews.reduce((s, r) => s + r.rating, 0) / reviews.length).toFixed(1) : null
 
@@ -82,6 +87,15 @@ export default function ReviewsSection() {
         setLoading(false)
       })
   }, [])
+
+  // Auto-advance to next page every 5 seconds
+  useEffect(() => {
+    if (totalPages <= 1) return
+    const timer = setInterval(() => {
+      setPage(p => (p + 1) % totalPages)
+    }, 5000)
+    return () => clearInterval(timer)
+  }, [totalPages])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -311,11 +325,45 @@ export default function ReviewsSection() {
           No reviews yet. Be the first!
         </p>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {reviews.map(r => (
-            <ReviewCard key={r.id} review={r} />
-          ))}
-        </div>
+        <>
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={page}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -12 }}
+              transition={{ duration: 0.4 }}
+              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
+            >
+              {visibleReviews.map(r => (
+                <ReviewCard key={r.id} review={r} />
+              ))}
+            </motion.div>
+          </AnimatePresence>
+
+          {/* Page indicator dots + manual navigation */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-center gap-2 mt-8">
+              {Array.from({ length: totalPages }).map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => setPage(i)}
+                  style={{
+                    width: i === page ? 24 : 8,
+                    height: 8,
+                    borderRadius: 999,
+                    background: i === page ? '#CA2A31' : '#E0E0E0',
+                    border: 'none',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease',
+                    padding: 0,
+                  }}
+                  aria-label={`Page ${i + 1}`}
+                />
+              ))}
+            </div>
+          )}
+        </>
       )}
     </section>
   )

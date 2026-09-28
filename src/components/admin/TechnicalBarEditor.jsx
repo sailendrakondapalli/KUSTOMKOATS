@@ -128,14 +128,37 @@ export default function TechnicalBarEditor({ title, labels = [], selectedValue, 
         background: '#FFFFFF',
         border: '1px solid #E8E8E8',
         borderRadius: 10,
-        padding: '14px 18px',
+        padding: '14px 18px 10px',
         marginBottom: 8,
       }}>
+        {/* Gradient bar */}
         <div style={{
           height: 4,
           borderRadius: 999,
           background: blendedGradient,
+          marginBottom: 10,
         }} />
+        {/* Label names shown below the bar */}
+        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+          {labels.map((label, i) => {
+            const labelColor = getLabelColor(label)
+            return (
+              <span key={i} style={{
+                fontSize: '0.6875rem',
+                fontFamily: "'Inter', sans-serif",
+                color: labelColor,
+                fontWeight: 600,
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                maxWidth: `${Math.floor(100 / labels.length) - 2}%`,
+                textAlign: i === 0 ? 'left' : i === labels.length - 1 ? 'right' : 'center',
+              }}>
+                {label}
+              </span>
+            )
+          })}
+        </div>
       </div>
     )
   }

@@ -465,7 +465,7 @@ export default function Navbar() {
 
             {/* Hamburger button - ALWAYS visible and clickable on mobile */}
             <button 
-              className="lg:hidden p-1 sm:p-2 transition-colors flex-shrink-0"
+              className="flex lg:hidden p-1 sm:p-2 transition-colors flex-shrink-0"
               style={{ 
                 color: "#FFFFFF", 
                 background: "none", 
@@ -475,7 +475,6 @@ export default function Navbar() {
                 zIndex: 50,
                 minWidth: '32px',
                 minHeight: '32px',
-                display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center'
               }}
