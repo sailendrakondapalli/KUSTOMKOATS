@@ -247,6 +247,7 @@ function FeaturedCategoriesSection() {
   const [loading, setLoading] = useState(true)
   const scrollRef = useRef(null)
   const isPausedRef = useRef(false)
+  const activeIndexRef = useRef(0)
 
   useEffect(() => {
     const loadCategoryProducts = async () => {
@@ -294,28 +295,27 @@ function FeaturedCategoriesSection() {
     }
   ]
 
-  // Auto-scroll the mobile carousel to the next card every 4 seconds
+  // Auto-scroll the mobile carousel to the next card every 2 seconds
   useEffect(() => {
-    const container = scrollRef.current
-    if (!container) return
+    if (categories.length === 0) return
 
     const interval = setInterval(() => {
       if (isPausedRef.current) return
+      const container = scrollRef.current
+      if (!container) return
 
-      const cardWidth = container.firstChild
-        ? container.firstChild.getBoundingClientRect().width + 16 // width + gap-4 (1rem)
-        : container.clientWidth
+      const children = Array.from(container.children)
+      if (children.length === 0) return
 
-      const maxScroll = container.scrollWidth - container.clientWidth
-      const nextScroll = container.scrollLeft + cardWidth
+      // Move to next index, loop back to 0 at the end
+      const nextIndex = (activeIndexRef.current + 1) % children.length
+      activeIndexRef.current = nextIndex
 
-      if (nextScroll >= maxScroll - 5) {
-        // Loop back to the start
-        container.scrollTo({ left: 0, behavior: 'smooth' })
-      } else {
-        container.scrollTo({ left: nextScroll, behavior: 'smooth' })
+      const target = children[nextIndex]
+      if (target) {
+        container.scrollTo({ left: target.offsetLeft, behavior: 'smooth' })
       }
-    }, 4000)
+    }, 2000)
 
     return () => clearInterval(interval)
   }, [categories.length])
