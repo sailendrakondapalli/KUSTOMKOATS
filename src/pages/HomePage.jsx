@@ -16,51 +16,113 @@ const PX = "px-6 lg:px-12 xl:px-20"
 /* --- Hero Section --- */
 function HeroSection() {
   return (
-    <section 
-      className="relative w-full overflow-hidden" 
-      style={{ 
-        height: "100vh", 
-        minHeight: "600px",
-        width: "100vw",
-        background: "#000000" 
-      }}
+    <section
+      className="hero-section relative w-full overflow-hidden"
+      style={{ width: "100vw", background: "#000000" }}
     >
-      {/* Responsive CSS for mobile */}
+      {/* Responsive CSS */}
       <style>{`
-        @media (max-width: 767px) {
-          section[style*="100vh"] {
-            height: 100svh !important;
-            min-height: 600px !important;
-          }
-          .hero-content-container {
-            left: 20px !important;
-            top: 50% !important;
-            transform: translateY(-50%) !important;
-            width: calc(100% - 40px) !important;
-          }
-          .hero-heading-text {
-            font-size: clamp(48px, 12vw, 62px) !important;
-            line-height: 0.95 !important;
-            max-width: 100% !important;
-            width: 100% !important;
+        .hero-section {
+          height: 100vh;
+          min-height: 600px;
+        }
+        @supports (height: 100svh) {
+          .hero-section {
+            height: 100svh;
           }
         }
+
+        /* Single wrapper — all children share the same left edge */
+        .hero-content {
+          position: absolute;
+          top: 120px;
+          left: 0;
+          right: 0;
+          padding-left: 7%;
+          padding-right: 7%;
+          z-index: 10;
+          display: flex;
+          flex-direction: column;
+          align-items: flex-start;
+        }
+
+        .hero-content > * {
+          margin-left: 0;
+          text-align: left;
+        }
+
+        .hero-eyebrow {
+          font-family: 'Bebas Neue', sans-serif;
+          font-size: 20px;
+          font-weight: 400;
+          letter-spacing: 3px;
+          line-height: 1;
+          color: #FFFFFF;
+          margin-bottom: 12px;
+          text-align: left;
+        }
+
+        .hero-heading-text {
+          font-family: 'Bebas Neue', sans-serif;
+          font-weight: 400;
+          font-size: 86px;
+          line-height: 0.94;
+          letter-spacing: 1px;
+          text-transform: uppercase;
+          color: #FFFFFF;
+          text-align: left;
+          margin-bottom: 0;
+          width: 380px;
+          max-width: 380px;
+        }
+
+        .hero-button-wrap {
+          margin-top: 55px;
+          text-align: left;
+        }
+
+        /* Tablet */
         @media (min-width: 768px) and (max-width: 1023px) {
-          .hero-content-container {
-            left: 35px !important;
-            top: 120px !important;
+          .hero-content {
+            top: 120px;
           }
           .hero-heading-text {
-            font-size: 72px !important;
+            font-size: 72px;
+            width: 340px;
+            max-width: 340px;
           }
         }
-        @media (min-width: 1024px) {
-          .hero-content-container {
-            left: 40px !important;
-            top: 125px !important;
+
+        /* Mobile */
+        @media (max-width: 767px) {
+          .hero-content {
+            top: 80px;
+            transform: none;
+            padding-left: 6px;
+            padding-right: 6px;
           }
           .hero-heading-text {
-            font-size: 86px !important;
+            font-size: clamp(78px, 24vw, 104px);
+            line-height: 0.91;
+            width: 100%;
+            max-width: 100%;
+            letter-spacing: -1px;
+          }
+          .hero-eyebrow {
+            font-size: 22px;
+            letter-spacing: 3px;
+            margin-bottom: 10px;
+          }
+          .hero-button-wrap {
+            margin-top: 28px;
+            width: auto;
+          }
+          .hero-cta-btn {
+            width: 220px !important;
+            max-width: 220px !important;
+            height: 58px !important;
+            font-size: 20px !important;
+            border-radius: 4px !important;
           }
         }
       `}</style>
@@ -100,57 +162,25 @@ function HeroSection() {
         }}
       />
       
-      {/* Hero Content - Left Aligned, Upper Portion */}
-      <div 
-        className="hero-content-container"
-        style={{ 
-          position: "absolute",
-          left: "40px",
-          top: "125px",
-          zIndex: 10,
-          width: "400px"
-        }}
-      >
-        {/* Eyebrow Text */}
+      {/* Hero Content — single wrapper, all children share same left edge */}
+      <div className="hero-content">
+
+        {/* Eyebrow */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
+          transition={{ duration: 0.6, delay: 0.25 }}
         >
-          <p style={{
-            fontFamily: "'Bebas Neue', sans-serif",
-            fontSize: "24px",
-            fontWeight: 400,
-            letterSpacing: "2px",
-            lineHeight: "1",
-            color: "#FFFFFF",
-            marginBottom: "12px"
-          }}>
-            INSPIRED BY PASSION
-          </p>
+          <p className="hero-eyebrow">INSPIRED BY PASSION</p>
         </motion.div>
-        
-        {/* Main Heading - 5 Lines, Exact Breaks */}
+
+        {/* Main Heading */}
         <motion.div
           initial={{ opacity: 0, y: 25 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.4 }}
+          transition={{ duration: 0.8, delay: 0.45 }}
         >
-          <h1 
-            className="hero-heading-text"
-            style={{
-              fontFamily: "'Bebas Neue', sans-serif",
-              fontWeight: 400,
-              fontSize: "86px",
-              lineHeight: "0.94",
-              letterSpacing: "1px",
-              textTransform: "uppercase",
-              color: "#FFFFFF",
-              width: "380px",
-              maxWidth: "380px",
-              marginBottom: "0"
-            }}
-          >
+          <h1 className="hero-heading-text">
             MAKE YOUR<br />
             PRESENCE<br />
             FEEL<br />
@@ -161,17 +191,17 @@ function HeroSection() {
 
         {/* CTA Button */}
         <motion.div
+          className="hero-button-wrap"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 1.2 }}
-          style={{ marginTop: "55px" }}
         >
-          <Link 
+          <Link
             to="/shop/xtreme-kolorz"
-            style={{ 
+            className="hero-cta-btn"
+            style={{
               display: "inline-flex",
               alignItems: "center",
-              justifyContent: "center",
               gap: "12px",
               width: "220px",
               height: "62px",
@@ -185,11 +215,12 @@ function HeroSection() {
               borderRadius: "3px",
               textDecoration: "none",
               textTransform: "uppercase",
+              justifyContent: "center",
               transition: "all 0.3s ease"
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.transform = "scale(1.05)"
-              e.currentTarget.style.boxShadow = "0 8px 24px rgba(255, 255, 255, 0.3)"
+              e.currentTarget.style.boxShadow = "0 8px 24px rgba(255,255,255,0.3)"
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.transform = "scale(1)"
@@ -200,6 +231,7 @@ function HeroSection() {
             <ArrowRight size={20} />
           </Link>
         </motion.div>
+
       </div>
     </section>
   )
