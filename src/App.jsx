@@ -24,6 +24,7 @@ const AdminPromoCodesPage = lazy(() => import('./pages/admin/AdminPromoCodesPage
 const AdminTestimonialsPage = lazy(() => import('./pages/admin/AdminTestimonialsPage'))
 const AdminPageContentEditor = lazy(() => import('./pages/admin/AdminPageContentEditor'))
 const AdminFAQPage = lazy(() => import('./pages/admin/AdminFAQPage'))
+const AdminFooterLinksPage = lazy(() => import('./pages/admin/AdminFooterLinksPage'))
 
 const PageLoader = () => (
   <div className="min-h-screen flex items-center justify-center" style={{ background: '#FFFFFF' }}>
@@ -187,6 +188,13 @@ export default function App() {
               <ErrorBoundary>
                 <Suspense fallback={<AdminLoader />}>
                   <AdminFAQPage />
+                </Suspense>
+              </ErrorBoundary>
+            } />
+            <Route path="/admin/footer-links" element={
+              <ErrorBoundary>
+                <Suspense fallback={<AdminLoader />}>
+                  <AdminFooterLinksPage />
                 </Suspense>
               </ErrorBoundary>
             } />

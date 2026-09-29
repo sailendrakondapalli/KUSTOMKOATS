@@ -524,6 +524,42 @@ export default function AnimatedRoutes() {
             </ErrorBoundary>
           </PageTransition>
         } />
+        <Route path="/military-discount" element={
+          <PageTransition>
+            <ErrorBoundary>
+              <Suspense fallback={<PageLoader />}>
+                <PolicyPage />
+              </Suspense>
+            </ErrorBoundary>
+          </PageTransition>
+        } />
+        <Route path="/kk-rewards" element={
+          <PageTransition>
+            <ErrorBoundary>
+              <Suspense fallback={<PageLoader />}>
+                <PolicyPage />
+              </Suspense>
+            </ErrorBoundary>
+          </PageTransition>
+        } />
+        <Route path="/privacy-choices" element={
+          <PageTransition>
+            <ErrorBoundary>
+              <Suspense fallback={<PageLoader />}>
+                <PolicyPage />
+              </Suspense>
+            </ErrorBoundary>
+          </PageTransition>
+        } />
+        <Route path="/order-protection" element={
+          <PageTransition>
+            <ErrorBoundary>
+              <Suspense fallback={<PageLoader />}>
+                <PolicyPage />
+              </Suspense>
+            </ErrorBoundary>
+          </PageTransition>
+        } />
       </Routes>
     </AnimatePresence>
   )

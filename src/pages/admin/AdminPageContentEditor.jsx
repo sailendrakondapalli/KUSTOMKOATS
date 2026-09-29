@@ -9,6 +9,13 @@ const PAGES = [
   { key: 'why-partner', label: 'Why Partner With Us', path: '/wholesale/why-partner' },
   { key: 'our-story', label: 'Our Story', path: '/about/story' },
   { key: 'our-philosophy', label: 'Our Philosophy', path: '/about/philosophy' },
+  { key: 'shipping-policy', label: 'Shipping Policy', path: '/shipping-policy' },
+  { key: 'refund-policy', label: 'Refund Policy', path: '/refund-policy' },
+  { key: 'privacy-policy', label: 'Privacy Policy', path: '/privacy-policy' },
+  { key: 'military-discount', label: 'Military & First Responder Discounts', path: '/military-discount' },
+  { key: 'kk-rewards', label: 'KK Point Rewards', path: '/kk-rewards' },
+  { key: 'privacy-choices', label: 'Your Privacy Choices', path: '/privacy-choices' },
+  { key: 'order-protection', label: 'Order Protection', path: '/order-protection' },
 ]
 
 const emptySection = () => ({ heading: '', body: '' })
@@ -109,7 +116,7 @@ export default function AdminPageContentEditor() {
           <div>
             <h1 style={{ fontFamily: "'Rajdhani', sans-serif", fontSize: '1.5rem', fontWeight: 700, color: '#000000', margin: 0 }}>Page Content</h1>
             <p style={{ fontSize: '0.8125rem', color: '#888888', fontFamily: "'Inter', sans-serif", marginTop: 2 }}>
-              Edit content for Why Partner, Our Story, and Our Philosophy pages
+              Edit content for marketing and policy pages linked from the site footer
             </p>
           </div>
           {activePage && (

@@ -1,8 +1,71 @@
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { Mail, Phone, MapPin, Globe } from 'lucide-react'
 import { CONTACT_INFO } from '../config/contact'
+import { supabase } from '../lib/supabase'
+
+// TODO: replace with the real Facebook community URL when provided
+const FACEBOOK_COMMUNITY_URL = 'https://facebook.com/'
+
+// Fallback links used if the footer_links table is empty or fails to load
+const FALLBACK_PRODUCT_CATEGORIES = [
+  { url: "/shop/xtreme-kolorz", label: "Xtreme Kolorz" },
+  { url: "/shop/xtreme-wrap", label: "Xtreme Wrap" },
+  { url: "/shop/accessories", label: "Accessories" },
+  { url: "/shop/wholesale", label: "Wholesale" }
+]
+const FALLBACK_QUICK_LINKS = [
+  { url: "/contact", label: "Contact Us" },
+  { url: "/faq", label: "FAQ's" },
+  { url: "/shipping-policy", label: "Shipping Policy" },
+  { url: "/shop/wholesale", label: "Wholesale" },
+  { url: "/military-discount", label: "Military & First Responder Discounts" },
+  { url: "/kk-rewards", label: "KK Point Rewards" },
+  { url: "/kulture/university", label: "KK University" },
+  { url: "/privacy-choices", label: "Your Privacy Choices" },
+  { url: "/order-protection", label: "Order Protection" }
+]
+
+function isExternalUrl(url) {
+  return /^https?:\/\//i.test(url)
+}
+
+// lucide-react (installed version) has no brand icons, so Facebook is a plain inline SVG
+function FacebookIcon({ size = 16 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M22 12.06C22 6.505 17.523 2 12 2S2 6.505 2 12.06c0 5.02 3.657 9.184 8.438 9.94v-7.03H7.898v-2.91h2.54V9.845c0-2.507 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562v1.878h2.773l-.443 2.91h-2.33V22c4.78-.756 8.437-4.92 8.437-9.94Z"/>
+    </svg>
+  )
+}
 
 export default function Footer() {
+  const [productCategories, setProductCategories] = useState(FALLBACK_PRODUCT_CATEGORIES)
+  const [quickLinks, setQuickLinks] = useState(FALLBACK_QUICK_LINKS)
+
+  useEffect(() => {
+    const loadFooterLinks = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('footer_links')
+          .select('*')
+          .eq('is_active', true)
+          .order('sort_order', { ascending: true })
+
+        if (error) throw error
+        if (data && data.length > 0) {
+          const categories = data.filter(l => l.section === 'product_categories')
+          const quick = data.filter(l => l.section === 'quick_links')
+          if (categories.length > 0) setProductCategories(categories)
+          if (quick.length > 0) setQuickLinks(quick)
+        }
+      } catch (err) {
+        console.error('Failed to load footer links, using fallback:', err)
+      }
+    }
+    loadFooterLinks()
+  }, [])
+
   return (
     <footer style={{ background: "#FFFFFF", borderTop: "1px solid rgba(0, 0, 0, 0.1)" }} className="mt-20">
       <style>{`
@@ -30,7 +93,7 @@ export default function Footer() {
           width: 100%;
         }
       `}</style>      <div className="w-full px-6 lg:px-12 xl:px-20 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-10 lg:gap-16">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-10 lg:gap-16">
 
           {/* Brand */}
           <div className="col-span-1 md:col-span-2">
@@ -71,17 +134,19 @@ export default function Footer() {
           <div>
             <h4 className="text-sm font-bold mb-4 tracking-wider uppercase" style={{ color: "#000000", fontFamily: "'Inter', sans-serif" }}>Product Categories</h4>
             <ul className="space-y-3">
-              {[
-                { to: "/shop/xtreme-kolorz", label: "Xtreme Kolorz" },
-                { to: "/shop/xtreme-wrap", label: "Xtreme Wrap" },
-                { to: "/shop/accessories", label: "Accessories" },
-                { to: "/shop/wholesale", label: "Wholesale" }
-              ].map(item => (
-                <li key={item.to}>
-                  <Link to={item.to} className="footer-link text-sm"
-                    style={{ fontFamily: "'Inter', sans-serif" }}>
-                    {item.label}
-                  </Link>
+              {productCategories.map((item, idx) => (
+                <li key={item.id || idx}>
+                  {isExternalUrl(item.url) ? (
+                    <a href={item.url} target="_blank" rel="noopener noreferrer" className="footer-link text-sm"
+                      style={{ fontFamily: "'Inter', sans-serif" }}>
+                      {item.label}
+                    </a>
+                  ) : (
+                    <Link to={item.url} className="footer-link text-sm"
+                      style={{ fontFamily: "'Inter', sans-serif" }}>
+                      {item.label}
+                    </Link>
+                  )}
                 </li>
               ))}
             </ul>
@@ -91,19 +156,48 @@ export default function Footer() {
           <div>
             <h4 className="text-sm font-bold mb-4 tracking-wider uppercase" style={{ color: "#000000", fontFamily: "'Inter', sans-serif" }}>Quick Links</h4>
             <ul className="space-y-3">
-              {[
-                { to: "/", label: "Home" },
-                { to: "/faq", label: "FAQ" },
-                { to: "/contact", label: "Contact" },
-              ].map(item => (
-                <li key={item.to}>
-                  <Link to={item.to} className="footer-link text-sm"
-                    style={{ fontFamily: "'Inter', sans-serif" }}>
-                    {item.label}
-                  </Link>
+              {quickLinks.map((item, idx) => (
+                <li key={item.id || idx}>
+                  {isExternalUrl(item.url) ? (
+                    <a href={item.url} target="_blank" rel="noopener noreferrer" className="footer-link text-sm"
+                      style={{ fontFamily: "'Inter', sans-serif" }}>
+                      {item.label}
+                    </a>
+                  ) : (
+                    <Link to={item.url} className="footer-link text-sm"
+                      style={{ fontFamily: "'Inter', sans-serif" }}>
+                      {item.label}
+                    </Link>
+                  )}
                 </li>
               ))}
             </ul>
+          </div>
+
+          {/* Join Kustom Kulture */}
+          <div>
+            <h4 className="text-sm font-bold mb-4 tracking-wider uppercase" style={{ color: "#000000", fontFamily: "'Inter', sans-serif" }}>
+              Join Kustom Kulture
+            </h4>
+            <p className="text-sm font-medium mb-3" style={{ color: "#000000", fontFamily: "'Inter', sans-serif" }}>
+              Where customization has no limits.
+            </p>
+            <p className="text-sm leading-relaxed mb-4" style={{ color: "#333333", fontFamily: "'Inter', sans-serif" }}>
+              Join the Kustom Kulture community and connect with people who love making their rides truly their own. Discover custom builds, share your projects, get inspiration, exchange tips and tricks, know more about your and be part of a community built around the passion for customization.
+            </p>
+            <p className="text-sm font-semibold mb-5" style={{ color: "#000000", fontFamily: "'Inter', sans-serif" }}>
+              Your ride. Your style. Your Kulture.
+            </p>
+            <a
+              href={FACEBOOK_COMMUNITY_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-5 py-3 rounded-lg font-bold text-sm uppercase tracking-wide transition-all duration-300 hover:scale-105"
+              style={{ background: "#CA2A31", color: "#FFFFFF", fontFamily: "'Inter', sans-serif" }}
+            >
+              <FacebookIcon size={16} />
+              Join Kustom Kulture — It's Free
+            </a>
           </div>
         </div>
 
