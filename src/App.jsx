@@ -12,8 +12,6 @@ import { useAuthStore } from './store/authStore'
 import { useCartStore } from './store/cartStore'
 import { useWishlistStore } from './store/wishlistStore'
 import { LanguageProvider } from './context/LanguageContext'
-import './utils/testRazorpay' // For testing payment integration
-import './utils/testShiprocket' // For testing Shiprocket integration
 
 // Admin pages (loaded separately — no Navbar/Footer)
 const AdminProductsPage  = lazy(() => import('./pages/admin/AdminProductsPage'))
