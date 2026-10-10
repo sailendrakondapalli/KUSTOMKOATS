@@ -8,6 +8,7 @@ import { useWholesaler } from "../hooks/useWholesaler"
 import { createRazorpayOrder, createPendingOrder, verifyRazorpayPayment } from '../services/orderService'
 import { fetchAddresses, saveAddress } from "../services/addressService"
 import { fetchActiveCodes, fetchUsedCodeIds, validatePromoCode, recordPromoUse, calcItemDiscount, checkEligibility } from "../services/promoService"
+import { createShiprocketOrder } from '../services/shiprocketService'
 import { supabase } from "../lib/supabase"
 import { formatINR } from "../utils/format"
 import toast from "react-hot-toast"
@@ -276,7 +277,7 @@ export default function CheckoutPage() {
         key: import.meta.env.VITE_RAZORPAY_KEY_ID,
         amount: razorpayOrder.amount,
         currency: razorpayOrder.currency,
-        name: 'Royal Hoof Store',
+        name: 'Kustom Koats',
         description: `Order for ${items.length} item(s)`,
         order_id: razorpayOrder.id,
         
@@ -291,7 +292,56 @@ export default function CheckoutPage() {
               order_id: dbOrder.id
             })
             
-            // Step 5: Clear cart and redirect to success
+            // Step 5: Create Shiprocket order (OPTIONAL - won't block checkout)
+            try {
+              // Get customer phone from address (address has phone field)
+              const customerPhone = addr.phone || guestPhone || ''
+              
+              const shiprocketOrderData = {
+                order_id: dbOrder.id.toString(),
+                order_date: new Date().toISOString().split('T')[0],
+                pickup_location: 'work',  // Your Shiprocket pickup location
+                customer_name: user ? user.user_metadata?.full_name : guestName,
+                customer_last_name: '', // Split if needed
+                customer_email: user?.email || guestEmail,
+                customer_phone: customerPhone,
+                billing_address: addr.address1,
+                billing_address_2: addr.address2 || '',
+                billing_city: addr.city,
+                billing_pincode: addr.pincode,
+                billing_state: addr.state,
+                billing_country: 'India',
+                shipping_is_billing: true,
+                order_items: items.map(item => ({
+                  name: item.products?.name || 'Product',
+                  sku: item.products?.custom_id || item.product_id.toString(),
+                  units: item.quantity,
+                  selling_price: isWholesaler && item.products?.wholesale_price ? item.products.wholesale_price : (item.products?.price || 0),
+                  discount: 0,
+                  tax: 0,
+                  hsn: ''
+                })),
+                payment_method: 'Prepaid',
+                sub_total: total,
+                shipping_charges: shipping,
+                total_discount: discount,
+                length: 10,
+                breadth: 10,
+                height: 10,
+                weight: items.reduce((sum, i) => sum + (i.quantity * 0.5), 0) // 0.5kg per item
+              }
+              
+              console.log('📦 Creating Shiprocket order with phone:', customerPhone)
+              const shipment = await createShiprocketOrder(shiprocketOrderData)
+              console.log('✅ Shiprocket order created successfully:', shipment)
+            } catch (shiprocketError) {
+              // Payment succeeded - Shiprocket failure won't block the order
+              console.warn('⚠️ Shiprocket order creation failed (payment still successful):', shiprocketError)
+              console.log('📋 Create shipment manually in Shiprocket dashboard')
+              // Order is still successful, just log the error
+            }
+            
+            // Step 6: Clear cart and redirect to success
             if (!isBuyNow) {
               if (selectedFromCart) {
                 for (const item of selectedFromCart) {
