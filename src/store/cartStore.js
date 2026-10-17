@@ -116,6 +116,28 @@ export const useCartStore = create((set, get) => ({
     set({ items: [] })
   },
 
+  addBundleToCart: async (bundle, userId) => {
+    if (!bundle || !bundle.bundle_items || bundle.bundle_items.length === 0) {
+      throw new Error('Invalid bundle data')
+    }
+
+    // Add each product in the bundle to cart with specified quantities
+    const addPromises = bundle.bundle_items.map(async (item) => {
+      const product = item.products
+      const quantity = item.quantity || 1
+
+      // Add the product to cart (multiple times if quantity > 1)
+      for (let i = 0; i < quantity; i++) {
+        await get().addToCart(product, userId)
+      }
+    })
+
+    await Promise.all(addPromises)
+    
+    // Return count of items added
+    return bundle.bundle_items.reduce((sum, item) => sum + (item.quantity || 1), 0)
+  },
+
   getTotal: () => get().items.reduce((s, i) => s + (i.products?.price || 0) * i.quantity, 0),
   getCount: () => get().items.reduce((s, i) => s + i.quantity, 0),
 }))

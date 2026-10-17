@@ -3,7 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom'
 import { createPortal } from 'react-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Helmet } from 'react-helmet-async'
-import { Heart, ShoppingCart, ArrowRight, ArrowLeft, Share2, Star } from 'lucide-react'
+import { Heart, ShoppingCart, ArrowRight, ArrowLeft, Share2, Star, X } from 'lucide-react'
 import { useAuthStore } from '../store/authStore'
 import { useCartStore } from '../store/cartStore'
 import { useWishlistStore } from '../store/wishlistStore'
@@ -13,6 +13,7 @@ import { supabase } from '../lib/supabase'
 import { formatINR } from '../utils/format'
 import TechnicalBar from '../components/TechnicalBar'
 import TechnicalSpecs from '../components/TechnicalSpecs'
+import RelatedBundles from '../components/RelatedBundles'
 import toast from 'react-hot-toast'
 
 const isVideoUrl = (url) => url && /\.(mp4|mov|webm|ogg)(\?|$)/i.test(url)
@@ -425,6 +426,87 @@ export default function ProductDetailPage() {
               </div>
             )}
 
+            {/* Product Specs */}
+            <div className="rounded-xl mb-6 overflow-hidden" style={{ background: '#FFFFFF', border: '1px solid #E5E5E5' }}>
+              <div className="flex items-center justify-between px-4 py-3" style={{ background: '#F8F8F8', borderBottom: '1px solid #E5E5E5' }}>
+                <h3 className="text-sm font-bold uppercase tracking-wider m-0"
+                  style={{ color: '#000000', fontFamily: "'Inter', sans-serif" }}>
+                  Product Specs
+                </h3>
+                <button className="text-gray-600 hover:text-[#CA2A31] transition-colors">
+                  <X size={18} />
+                </button>
+              </div>
+              <div className="divide-y divide-gray-100">
+                {product.category && (
+                  <div className="flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition-colors">
+                    <span className="text-sm text-gray-600" style={{ fontFamily: "'Inter', sans-serif" }}>Category</span>
+                    <span className="text-sm font-semibold text-gray-900" style={{ fontFamily: "'Inter', sans-serif" }}>{product.category}</span>
+                  </div>
+                )}
+                {product.brand && (
+                  <div className="flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition-colors">
+                    <span className="text-sm text-gray-600" style={{ fontFamily: "'Inter', sans-serif" }}>Brand</span>
+                    <span className="text-sm font-semibold text-gray-900" style={{ fontFamily: "'Inter', sans-serif" }}>{product.brand}</span>
+                  </div>
+                )}
+                {product.colour && (
+                  <div className="flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition-colors">
+                    <span className="text-sm text-gray-600" style={{ fontFamily: "'Inter', sans-serif" }}>Color</span>
+                    <span className="text-sm font-semibold text-gray-900" style={{ fontFamily: "'Inter', sans-serif" }}>{product.colour}</span>
+                  </div>
+                )}
+                {product.finish && (
+                  <div className="flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition-colors">
+                    <span className="text-sm text-gray-600" style={{ fontFamily: "'Inter', sans-serif" }}>Finish</span>
+                    <span className="text-sm font-semibold text-gray-900" style={{ fontFamily: "'Inter', sans-serif" }}>{product.finish}</span>
+                  </div>
+                )}
+                {product.size && (
+                  <div className="flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition-colors">
+                    <span className="text-sm text-gray-600" style={{ fontFamily: "'Inter', sans-serif" }}>Size Options</span>
+                    <span className="text-sm font-semibold text-gray-900 text-right" style={{ fontFamily: "'Inter', sans-serif" }}>
+                      {product.size.split(',').map(s => s.trim()).filter(Boolean).join(', ')}
+                    </span>
+                  </div>
+                )}
+                {product.sku && (
+                  <div className="flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition-colors">
+                    <span className="text-sm text-gray-600" style={{ fontFamily: "'Inter', sans-serif" }}>SKU</span>
+                    <span className="text-sm font-semibold text-gray-900 font-mono" style={{ fontFamily: "'Inter', sans-serif" }}>{product.sku}</span>
+                  </div>
+                )}
+                {product.custom_id && (
+                  <div className="flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition-colors">
+                    <span className="text-sm text-gray-600" style={{ fontFamily: "'Inter', sans-serif" }}>Product ID</span>
+                    <span className="text-sm font-semibold text-gray-900 font-mono" style={{ fontFamily: "'Inter', sans-serif" }}>{product.custom_id}</span>
+                  </div>
+                )}
+                {product.barcode_type && (
+                  <div className="flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition-colors">
+                    <span className="text-sm text-gray-600" style={{ fontFamily: "'Inter', sans-serif" }}>Barcode Type</span>
+                    <span className="text-sm font-semibold text-gray-900" style={{ fontFamily: "'Inter', sans-serif" }}>{product.barcode_type}</span>
+                  </div>
+                )}
+                {product.status && (
+                  <div className="flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition-colors">
+                    <span className="text-sm text-gray-600" style={{ fontFamily: "'Inter', sans-serif" }}>Status</span>
+                    <span className={`text-sm font-semibold ${product.status === 'Active' ? 'text-green-600' : 'text-gray-600'}`} 
+                      style={{ fontFamily: "'Inter', sans-serif" }}>
+                      {product.status}
+                    </span>
+                  </div>
+                )}
+                <div className="flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition-colors">
+                  <span className="text-sm text-gray-600" style={{ fontFamily: "'Inter', sans-serif" }}>Availability</span>
+                  <span className={`text-sm font-semibold ${(product.stock ?? 1) > 0 ? 'text-green-600' : 'text-red-600'}`}
+                    style={{ fontFamily: "'Inter', sans-serif" }}>
+                    {(product.stock ?? 1) > 0 ? 'In Stock' : 'Out of Stock'}
+                  </span>
+                </div>
+              </div>
+            </div>
+
             {/* Variants */}
             {product.size && (
               <div className="rounded-xl p-4 mb-4" style={{ background: '#F8F8F8', border: '1px solid #E5E5E5' }}>
@@ -613,6 +695,9 @@ export default function ProductDetailPage() {
             )}
           </section>
         )}
+
+        {/* ── RELATED BUNDLES ── */}
+        <RelatedBundles productId={product.id} />
 
         {/* ── RELATED PRODUCTS ── */}
         {related.length > 0 && (

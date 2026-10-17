@@ -25,6 +25,11 @@ const AdminTestimonialsPage = lazy(() => import('./pages/admin/AdminTestimonials
 const AdminPageContentEditor = lazy(() => import('./pages/admin/AdminPageContentEditor'))
 const AdminFAQPage = lazy(() => import('./pages/admin/AdminFAQPage'))
 const AdminFooterLinksPage = lazy(() => import('./pages/admin/AdminFooterLinksPage'))
+const AdminERPPage = lazy(() => import('./pages/admin/AdminERPPage'))
+const AdminPOSPage = lazy(() => import('./pages/admin/AdminPOSPage'))
+const AdminTransactionsPage = lazy(() => import('./pages/admin/AdminTransactionsPage'))
+const AdminBundlesPage = lazy(() => import('./pages/admin/AdminBundlesPage'))
+const AdminEWayBillPage = lazy(() => import('./pages/admin/AdminEWayBillPage'))
 
 const PageLoader = () => (
   <div className="min-h-screen flex items-center justify-center" style={{ background: '#FFFFFF' }}>
@@ -195,6 +200,41 @@ export default function App() {
               <ErrorBoundary>
                 <Suspense fallback={<AdminLoader />}>
                   <AdminFooterLinksPage />
+                </Suspense>
+              </ErrorBoundary>
+            } />
+            <Route path="/admin/erp" element={
+              <ErrorBoundary>
+                <Suspense fallback={<AdminLoader />}>
+                  <AdminERPPage />
+                </Suspense>
+              </ErrorBoundary>
+            } />
+            <Route path="/admin/pos" element={
+              <ErrorBoundary>
+                <Suspense fallback={<AdminLoader />}>
+                  <AdminPOSPage />
+                </Suspense>
+              </ErrorBoundary>
+            } />
+            <Route path="/admin/transactions" element={
+              <ErrorBoundary>
+                <Suspense fallback={<AdminLoader />}>
+                  <AdminTransactionsPage />
+                </Suspense>
+              </ErrorBoundary>
+            } />
+            <Route path="/admin/bundles" element={
+              <ErrorBoundary>
+                <Suspense fallback={<AdminLoader />}>
+                  <AdminBundlesPage />
+                </Suspense>
+              </ErrorBoundary>
+            } />
+            <Route path="/admin/eway-bill" element={
+              <ErrorBoundary>
+                <Suspense fallback={<AdminLoader />}>
+                  <AdminEWayBillPage />
                 </Suspense>
               </ErrorBoundary>
             } />

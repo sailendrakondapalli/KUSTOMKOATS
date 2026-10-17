@@ -22,6 +22,9 @@ const emptyProduct = () => ({
   wholesale_price: '', dealer_price: '',
   category: 'Xtreme Kolorz', stock: 10, custom_id: '',
   images: [], tags: [], size: '',
+  sku: '', brand: '', colour: '', finish: '',
+  gtin_ean: '', internal_barcode: '', barcode_type: 'Code 128',
+  mrp: '', status: 'Active',
   techBars: [],
   techSpecs: [],
   techDetailsTitle: '',
@@ -397,8 +400,48 @@ function ProductFormModal({ initialData, categories, onClose, onSaved }) {
   const [saving, setSaving] = useState(false)
   const [uploadingIdx, setUploadingIdx] = useState(null)
   const [activeTab, setActiveTab] = useState('basic') // basic | technical
+  const [bundles, setBundles] = useState([])
+  const [selectedBundles, setSelectedBundles] = useState([])
+  const [loadingBundles, setLoadingBundles] = useState(true)
 
   const setField = (k, v) => setForm(f => ({ ...f, [k]: v }))
+
+  // Fetch bundles and currently tagged bundles when form opens
+  useEffect(() => {
+    const fetchBundlesAndTags = async () => {
+      setLoadingBundles(true)
+      try {
+        // Fetch all active bundles
+        const { data: bundlesData, error: bundlesError } = await supabase
+          .from('bundles')
+          .select('*')
+          .eq('is_active', true)
+          .order('name')
+        
+        if (bundlesError) throw bundlesError
+        setBundles(bundlesData || [])
+
+        // If editing, fetch currently tagged bundles
+        if (form.id) {
+          const { data: tagsData, error: tagsError } = await supabase
+            .from('product_bundles')
+            .select('bundle_id')
+            .eq('product_id', form.id)
+          
+          if (tagsError) throw tagsError
+          setSelectedBundles((tagsData || []).map(t => t.bundle_id))
+        }
+      } catch (err) {
+        console.error('Error fetching bundles:', err)
+        toast.error('Failed to load bundles')
+      } finally {
+        setLoadingBundles(false)
+      }
+    }
+
+    fetchBundlesAndTags()
+  }, [form.id])
+
 
   const handleImageUpload = async (e, idx) => {
     const file = e.target.files?.[0]
@@ -448,6 +491,15 @@ function ProductFormModal({ initialData, categories, onClose, onSaved }) {
           wholesale_price: form.wholesale_price ? parseFloat(form.wholesale_price) : null,
           dealer_price:    form.dealer_price    ? parseFloat(form.dealer_price)    : null,
           custom_id: form.custom_id || null,
+          sku: form.sku || null,
+          brand: form.brand || null,
+          colour: form.colour || null,
+          finish: form.finish || null,
+          gtin_ean: form.gtin_ean || null,
+          internal_barcode: form.internal_barcode || null,
+          barcode_type: form.barcode_type || 'Code 128',
+          mrp: form.mrp ? parseFloat(form.mrp) : null,
+          status: form.status || 'Active',
           tech_details_title: form.techDetailsTitle || null,
           tech_details_description: form.techDetailsDescription || null,
         }),
@@ -516,6 +568,17 @@ function ProductFormModal({ initialData, categories, onClose, onSaved }) {
         }
       }
 
+      // Save bundle tags (product_bundles)
+      await supabase.from('product_bundles').delete().eq('product_id', productId)
+      if (selectedBundles.length > 0) {
+        const bundleTags = selectedBundles.map(bundleId => ({
+          product_id: productId,
+          bundle_id: bundleId,
+        }))
+        const { error: bundlesErr } = await supabase.from('product_bundles').insert(bundleTags)
+        if (bundlesErr) console.error('product_bundles error:', bundlesErr.message)
+      }
+
       onSaved()
     } catch (err) {
       toast.error(err.message || 'Failed to save')
@@ -565,7 +628,19 @@ function ProductFormModal({ initialData, categories, onClose, onSaved }) {
             {activeTab === 'basic' && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-                  <div style={{ gridColumn: '1 / -1' }}>
+                  {/* Product ID - Display only for existing products */}
+                  {form.id && (
+                    <div>
+                      <label style={S.label}>Product ID (Auto-generated)</label>
+                      <input 
+                        style={{ ...S.input, background: '#F5F5F5', cursor: 'not-allowed' }} 
+                        value={form.id} 
+                        readOnly 
+                        disabled 
+                      />
+                    </div>
+                  )}
+                  <div style={{ gridColumn: form.id ? '2 / -1' : '1 / -1' }}>
                     <label style={S.label}>Product Name *</label>
                     <input style={S.input} value={form.name} onChange={e => setField('name', e.target.value)} placeholder="e.g. Pearl Blue Metallic" required />
                   </div>
@@ -603,6 +678,151 @@ function ProductFormModal({ initialData, categories, onClose, onSaved }) {
                     <label style={S.label}>Size/Variants (comma-separated)</label>
                     <input style={S.input} value={form.size} onChange={e => setField('size', e.target.value)} placeholder="50ml, 100ml, 250ml" />
                   </div>
+                  
+                  {/* NEW INVENTORY FIELDS */}
+                  <div style={{ gridColumn: '1 / -1', marginTop: 8, padding: '12px 16px', background: '#F8F8F8', borderRadius: 8 }}>
+                    <h4 style={{ fontSize: '0.875rem', fontWeight: 700, color: '#333', fontFamily: "'Inter', sans-serif", marginTop: 0, marginBottom: 12 }}>
+                      Inventory & Barcode Details
+                    </h4>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                      <div>
+                        <label style={S.label}>SKU</label>
+                        <input style={S.input} value={form.sku || ''} onChange={e => setField('sku', e.target.value)} placeholder="XK-CR-100" />
+                      </div>
+                      <div>
+                        <label style={S.label}>Brand</label>
+                        <input style={S.input} value={form.brand || ''} onChange={e => setField('brand', e.target.value)} placeholder="Xtreme Kolorz" />
+                      </div>
+                      <div>
+                        <label style={S.label}>Colour</label>
+                        <input style={S.input} value={form.colour || ''} onChange={e => setField('colour', e.target.value)} placeholder="Candy Red" />
+                      </div>
+                      <div>
+                        <label style={S.label}>Finish</label>
+                        <input style={S.input} value={form.finish || ''} onChange={e => setField('finish', e.target.value)} placeholder="Candy, Metallic, Matte" />
+                      </div>
+                      <div>
+                        <label style={S.label}>GTIN/EAN</label>
+                        <input style={S.input} value={form.gtin_ean || ''} onChange={e => setField('gtin_ean', e.target.value)} placeholder="Blank initially" />
+                      </div>
+                      <div>
+                        <label style={S.label}>Internal Barcode</label>
+                        <input style={S.input} value={form.internal_barcode || ''} onChange={e => setField('internal_barcode', e.target.value)} placeholder="100001" />
+                      </div>
+                      <div>
+                        <label style={S.label}>Barcode Type</label>
+                        <select style={S.input} value={form.barcode_type || 'Code 128'} onChange={e => setField('barcode_type', e.target.value)}>
+                          <option value="Code 128">Code 128</option>
+                          <option value="Code 39">Code 39</option>
+                          <option value="EAN-13">EAN-13</option>
+                          <option value="UPC-A">UPC-A</option>
+                          <option value="QR Code">QR Code</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label style={S.label}>MRP (₹)</label>
+                        <input style={S.input} type="number" min="0" step="0.01" value={form.mrp || ''} onChange={e => setField('mrp', e.target.value)} placeholder="Maximum Retail Price" />
+                      </div>
+                      <div>
+                        <label style={S.label}>Status</label>
+                        <select style={S.input} value={form.status || 'Active'} onChange={e => setField('status', e.target.value)}>
+                          <option value="Active">Active</option>
+                          <option value="Inactive">Inactive</option>
+                          <option value="Discontinued">Discontinued</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* RELATED BUNDLES SECTION */}
+                  <div style={{ gridColumn: '1 / -1', marginTop: 8, padding: '12px 16px', background: '#F8F8F8', borderRadius: 8 }}>
+                    <h4 style={{ fontSize: '0.875rem', fontWeight: 700, color: '#333', fontFamily: "'Inter', sans-serif", marginTop: 0, marginBottom: 12 }}>
+                      Related Bundles
+                    </h4>
+                    {loadingBundles ? (
+                      <div style={{ textAlign: 'center', padding: '20px', color: '#999' }}>
+                        <div style={{ width: 24, height: 24, border: '2px solid #CA2A31', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.8s linear infinite', margin: '0 auto 8px' }} />
+                        <span style={{ fontSize: '0.75rem', fontFamily: "'Inter', sans-serif" }}>Loading bundles...</span>
+                      </div>
+                    ) : bundles.length === 0 ? (
+                      <p style={{ fontSize: '0.8125rem', color: '#999', fontFamily: "'Inter', sans-serif", margin: 0 }}>
+                        No active bundles available. Create bundles first to tag products.
+                      </p>
+                    ) : (
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 12 }}>
+                        {bundles.map(bundle => {
+                          const isSelected = selectedBundles.includes(bundle.id)
+                          const totalPrice = bundle.bundle_price || 0
+                          const savings = bundle.description && bundle.description.includes('Save') 
+                            ? bundle.description 
+                            : null
+
+                          return (
+                            <label
+                              key={bundle.id}
+                              style={{
+                                display: 'flex',
+                                alignItems: 'flex-start',
+                                gap: 10,
+                                padding: '10px 12px',
+                                background: isSelected ? '#FFF0F0' : '#FFFFFF',
+                                border: isSelected ? '2px solid #CA2A31' : '1px solid #E0E0E0',
+                                borderRadius: 8,
+                                cursor: 'pointer',
+                                transition: 'all 0.15s',
+                              }}
+                              onMouseEnter={e => !isSelected && (e.currentTarget.style.borderColor = '#CA2A31')}
+                              onMouseLeave={e => !isSelected && (e.currentTarget.style.borderColor = '#E0E0E0')}
+                            >
+                              <input
+                                type="checkbox"
+                                checked={isSelected}
+                                onChange={e => {
+                                  if (e.target.checked) {
+                                    setSelectedBundles([...selectedBundles, bundle.id])
+                                  } else {
+                                    setSelectedBundles(selectedBundles.filter(id => id !== bundle.id))
+                                  }
+                                }}
+                                style={{
+                                  width: 16,
+                                  height: 16,
+                                  marginTop: 2,
+                                  cursor: 'pointer',
+                                  accentColor: '#CA2A31',
+                                  flexShrink: 0
+                                }}
+                              />
+                              <div style={{ flex: 1, minWidth: 0 }}>
+                                <p style={{ fontSize: '0.8125rem', fontWeight: 600, color: '#000', fontFamily: "'Inter', sans-serif", margin: 0, marginBottom: 4 }}>
+                                  {bundle.name}
+                                </p>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                                  <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#CA2A31', fontFamily: "'Inter', sans-serif" }}>
+                                    ₹{Number(totalPrice).toLocaleString('en-IN')}
+                                  </span>
+                                  {savings && (
+                                    <span style={{ fontSize: '0.6875rem', fontWeight: 600, color: '#16A34A', background: '#F0FDF4', padding: '2px 8px', borderRadius: 999, fontFamily: "'Inter', sans-serif" }}>
+                                      {savings}
+                                    </span>
+                                  )}
+                                </div>
+                                {bundle.description && !bundle.description.includes('Save') && (
+                                  <p style={{ fontSize: '0.6875rem', color: '#666', fontFamily: "'Inter', sans-serif", margin: '4px 0 0', lineHeight: 1.4 }}>
+                                    {bundle.description}
+                                  </p>
+                                )}
+                              </div>
+                            </label>
+                          )
+                        })}
+                      </div>
+                    )}
+                    <p style={{ fontSize: '0.6875rem', color: '#888', fontFamily: "'Inter', sans-serif", marginTop: 12, marginBottom: 0 }}>
+                      Selected bundles will be shown as recommendations on this product's page.
+                    </p>
+                  </div>
+                  
                   <div style={{ gridColumn: '1 / -1' }}>
                     <label style={S.label}>Tags (comma-separated)</label>
                     <input

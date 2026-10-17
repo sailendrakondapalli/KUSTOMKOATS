@@ -9,7 +9,7 @@ export async function createRazorpayOrder(amount, receipt = null) {
       body: {
         amount,
         currency: 'INR',
-        receipt: receipt || `receipt_${Date.now()}`
+        receipt: receipt || `receipt_${Date.now()}`,
       }
     })
 

@@ -2,10 +2,13 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Helmet } from 'react-helmet-async'
-import { Package, ChevronDown, ChevronUp, Search, Truck } from 'lucide-react'
+import { Package, ChevronDown, ChevronUp, Search, Truck, Download } from 'lucide-react'
 import { useAuthStore } from '../store/authStore'
 import { supabase } from '../lib/supabase'
 import { formatINR, formatDate } from '../utils/format'
+import jsPDF from 'jspdf'
+import 'jspdf-autotable'
+import toast from 'react-hot-toast'
 
 function getStatusBadge(order) {
   const s = order.order_status
@@ -16,6 +19,100 @@ function getStatusBadge(order) {
   if (s === 'shipping') return { label: 'Shipped', color: 'bg-orange-100 text-orange-700' }
   if (p === 'paid') return { label: 'Confirmed', color: 'bg-blue-100 text-blue-700' }
   return { label: 'Processing', color: 'bg-gray-100 text-gray-600' }
+}
+
+function generateInvoice(order, addr) {
+  try {
+    const doc = new jsPDF()
+    const orderId = order.display_order_id || '#' + String(order.id).slice(-6).toUpperCase()
+    
+    // Company Header
+    doc.setFillColor(202, 42, 49)
+    doc.rect(0, 0, 210, 35, 'F')
+    doc.setTextColor(255, 255, 255)
+    doc.setFontSize(24)
+    doc.setFont(undefined, 'bold')
+    doc.text('KUSTOM KOATS', 105, 15, { align: 'center' })
+    doc.setFontSize(10)
+    doc.setFont(undefined, 'normal')
+    doc.text('Premium Automotive Coatings', 105, 22, { align: 'center' })
+    doc.text('https://kustomkoats.in', 105, 28, { align: 'center' })
+
+    // Invoice Title
+    doc.setTextColor(0, 0, 0)
+    doc.setFontSize(18)
+    doc.setFont(undefined, 'bold')
+    doc.text('TAX INVOICE', 105, 48, { align: 'center' })
+
+    // Invoice Details
+    doc.setFontSize(10)
+    doc.setFont(undefined, 'normal')
+    doc.text(`Invoice No: ${orderId}`, 14, 60)
+    doc.text(`Date: ${new Date(order.created_at).toLocaleDateString('en-IN')}`, 14, 66)
+    doc.text(`Order Type: ${order.order_type === 'pos_sale' ? 'POS SALE' : 'ONLINE ORDER'}`, 14, 72)
+    doc.text(`Payment Method: ${(order.payment_method || 'N/A').toUpperCase()}`, 14, 78)
+    doc.text(`Payment Status: ${(order.payment_status || 'pending').toUpperCase()}`, 14, 84)
+
+    // Bill To
+    doc.setFont(undefined, 'bold')
+    doc.text('BILL TO:', 14, 98)
+    doc.setFont(undefined, 'normal')
+    const billToY = 104
+    doc.text(addr.full_name || order.guest_name || 'Customer', 14, billToY)
+    if (addr.phone || order.guest_phone) doc.text(`Phone: ${addr.phone || order.guest_phone}`, 14, billToY + 6)
+    if (addr.address1) {
+      doc.text(addr.address1, 14, billToY + 12)
+      if (addr.address2) doc.text(addr.address2, 14, billToY + 18)
+      doc.text(`${addr.city || ''}, ${addr.state || ''} - ${addr.pincode || ''}`, 14, billToY + (addr.address2 ? 24 : 18))
+    }
+
+    // Items Table
+    const tableStartY = addr.address1 ? (addr.address2 ? 136 : 130) : 116
+    const items = (order.order_items || []).map(item => [
+      item.products?.custom_id || item.products?.name || 'Product',
+      item.products?.name || 'N/A',
+      item.quantity.toString(),
+      formatINR(item.price),
+      formatINR(item.quantity * item.price)
+    ])
+
+    doc.autoTable({
+      startY: tableStartY,
+      head: [['Product ID', 'Description', 'Qty', 'Price', 'Amount']],
+      body: items,
+      theme: 'striped',
+      headStyles: { fillColor: [202, 42, 49], textColor: 255, fontStyle: 'bold' },
+      styles: { fontSize: 9, cellPadding: 3 },
+      columnStyles: {
+        0: { cellWidth: 30 },
+        1: { cellWidth: 70 },
+        2: { cellWidth: 20, halign: 'center' },
+        3: { cellWidth: 30, halign: 'right' },
+        4: { cellWidth: 35, halign: 'right' }
+      }
+    })
+
+    // Totals
+    const finalY = doc.lastAutoTable.finalY + 10
+    doc.setFont(undefined, 'bold')
+    doc.setFontSize(12)
+    doc.text('Total Amount:', 130, finalY)
+    doc.text(formatINR(order.total_amount), 185, finalY, { align: 'right' })
+
+    // Footer
+    doc.setFontSize(8)
+    doc.setFont(undefined, 'normal')
+    doc.setTextColor(100, 100, 100)
+    doc.text('Thank you for your business!', 105, 280, { align: 'center' })
+    doc.text('For any queries, contact us at support@kustomkoats.in', 105, 285, { align: 'center' })
+
+    // Save
+    doc.save(`Invoice-${orderId}.pdf`)
+    toast.success('Invoice downloaded!')
+  } catch (error) {
+    console.error('Invoice generation error:', error)
+    toast.error('Failed to generate invoice')
+  }
 }
 
 function OrderCard({ order }) {
@@ -140,6 +237,15 @@ function OrderCard({ order }) {
                   </div>
                 )}
               </div>
+
+              {/* Download Invoice Button */}
+              <button
+                onClick={() => generateInvoice(order, addr)}
+                className="w-full flex items-center justify-center gap-2 bg-[#5D3A1A] text-white rounded-xl py-3 text-sm font-semibold hover:bg-[#7A4E28] transition-all"
+              >
+                <Download size={16} />
+                Download Invoice
+              </button>
 
             </div>
           </motion.div>

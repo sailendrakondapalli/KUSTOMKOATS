@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
-import { ArrowLeft, Package, MapPin, CreditCard, Calendar, Truck, CheckCircle, XCircle, Clock } from 'lucide-react'
+import { ArrowLeft, Package, MapPin, CreditCard, Calendar, Truck, CheckCircle, XCircle, Clock, Download } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useAuthStore } from '../store/authStore'
 import toast from 'react-hot-toast'
+import jsPDF from 'jspdf'
+import 'jspdf-autotable'
 
 export default function OrderDetailPage() {
   const { id } = useParams()
@@ -111,6 +113,101 @@ export default function OrderDetailPage() {
       }
     }
     return statusMap[status] || statusMap.pending
+  }
+
+  const generateInvoice = () => {
+    try {
+      const doc = new jsPDF()
+      const orderId = order.display_order_id || '#' + String(order.id).slice(-6).toUpperCase()
+      const addr = order.parsedAddress || {}
+      
+      // Company Header
+      doc.setFillColor(202, 42, 49)
+      doc.rect(0, 0, 210, 35, 'F')
+      doc.setTextColor(255, 255, 255)
+      doc.setFontSize(24)
+      doc.setFont(undefined, 'bold')
+      doc.text('KUSTOM KOATS', 105, 15, { align: 'center' })
+      doc.setFontSize(10)
+      doc.setFont(undefined, 'normal')
+      doc.text('Premium Automotive Coatings', 105, 22, { align: 'center' })
+      doc.text('https://kustomkoats.in', 105, 28, { align: 'center' })
+
+      // Invoice Title
+      doc.setTextColor(0, 0, 0)
+      doc.setFontSize(18)
+      doc.setFont(undefined, 'bold')
+      doc.text('TAX INVOICE', 105, 48, { align: 'center' })
+
+      // Invoice Details
+      doc.setFontSize(10)
+      doc.setFont(undefined, 'normal')
+      doc.text(`Invoice No: ${orderId}`, 14, 60)
+      doc.text(`Date: ${new Date(order.created_at).toLocaleDateString('en-IN')}`, 14, 66)
+      doc.text(`Order Type: ${order.order_type === 'pos_sale' ? 'POS SALE' : 'ONLINE ORDER'}`, 14, 72)
+      doc.text(`Payment Method: ${(order.payment_method || 'N/A').toUpperCase()}`, 14, 78)
+      doc.text(`Payment Status: ${(order.payment_status || 'pending').toUpperCase()}`, 14, 84)
+
+      // Bill To
+      doc.setFont(undefined, 'bold')
+      doc.text('BILL TO:', 14, 98)
+      doc.setFont(undefined, 'normal')
+      const billToY = 104
+      doc.text(addr.full_name || addr.fullName || order.guest_name || 'Customer', 14, billToY)
+      if (addr.phone || order.guest_phone) doc.text(`Phone: ${addr.phone || order.guest_phone}`, 14, billToY + 6)
+      if (addr.address1 || addr.addressLine1) {
+        doc.text(addr.address1 || addr.addressLine1, 14, billToY + 12)
+        if (addr.address2 || addr.addressLine2) doc.text(addr.address2 || addr.addressLine2, 14, billToY + 18)
+        doc.text(`${addr.city || ''}, ${addr.state || ''} - ${addr.pincode || addr.zipCode || ''}`, 14, billToY + (addr.address2 || addr.addressLine2 ? 24 : 18))
+      }
+
+      // Items Table
+      const tableStartY = (addr.address1 || addr.addressLine1) ? ((addr.address2 || addr.addressLine2) ? 136 : 130) : 116
+      const items = (order.order_items || []).map(item => [
+        item.products?.custom_id || item.products?.name || 'Product',
+        item.products?.name || 'N/A',
+        item.quantity.toString(),
+        `₹${item.price?.toLocaleString('en-IN')}`,
+        `₹${(item.quantity * item.price)?.toLocaleString('en-IN')}`
+      ])
+
+      doc.autoTable({
+        startY: tableStartY,
+        head: [['Product ID', 'Description', 'Qty', 'Price', 'Amount']],
+        body: items,
+        theme: 'striped',
+        headStyles: { fillColor: [202, 42, 49], textColor: 255, fontStyle: 'bold' },
+        styles: { fontSize: 9, cellPadding: 3 },
+        columnStyles: {
+          0: { cellWidth: 30 },
+          1: { cellWidth: 70 },
+          2: { cellWidth: 20, halign: 'center' },
+          3: { cellWidth: 30, halign: 'right' },
+          4: { cellWidth: 35, halign: 'right' }
+        }
+      })
+
+      // Totals
+      const finalY = doc.lastAutoTable.finalY + 10
+      doc.setFont(undefined, 'bold')
+      doc.setFontSize(12)
+      doc.text('Total Amount:', 130, finalY)
+      doc.text(`₹${order.total_amount?.toLocaleString('en-IN')}`, 185, finalY, { align: 'right' })
+
+      // Footer
+      doc.setFontSize(8)
+      doc.setFont(undefined, 'normal')
+      doc.setTextColor(100, 100, 100)
+      doc.text('Thank you for your business!', 105, 280, { align: 'center' })
+      doc.text('For any queries, contact us at support@kustomkoats.in', 105, 285, { align: 'center' })
+
+      // Save
+      doc.save(`Invoice-${orderId}.pdf`)
+      toast.success('Invoice downloaded!')
+    } catch (error) {
+      console.error('Invoice generation error:', error)
+      toast.error('Failed to generate invoice')
+    }
   }
 
   if (loading) {
@@ -275,7 +372,7 @@ export default function OrderDetailPage() {
         )}
 
         {/* Payment Details */}
-        <div className="bg-white border border-[#E5D8C8] rounded-2xl p-6 shadow-sm">
+        <div className="bg-white border border-[#E5D8C8] rounded-2xl p-6 shadow-sm mb-6">
           <h2 className="text-[#5D3A1A] font-semibold flex items-center gap-2 mb-4">
             <CreditCard size={16} /> Payment Details
           </h2>
@@ -311,6 +408,15 @@ export default function OrderDetailPage() {
             )}
           </div>
         </div>
+
+        {/* Download Invoice Button */}
+        <button
+          onClick={generateInvoice}
+          className="w-full flex items-center justify-center gap-2 bg-[#5D3A1A] text-white rounded-xl py-3 text-sm font-semibold hover:bg-[#7A4E28] transition-all shadow-sm"
+        >
+          <Download size={18} />
+          Download Invoice
+        </button>
       </div>
     </>
   )

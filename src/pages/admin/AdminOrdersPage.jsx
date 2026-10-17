@@ -5,6 +5,7 @@ import { Helmet } from 'react-helmet-async'
 import { supabase } from '../../lib/supabase'
 import { formatINR } from '../../utils/format'
 import KKAdminLayout from '../../components/admin/KKAdminLayout'
+import ewayBillService from '../../services/ewayBillService'
 import toast from 'react-hot-toast'
 
 const ORDER_STATUSES = [
@@ -128,6 +129,94 @@ export default function AdminOrdersPage() {
       toast.error('Failed to update status')
     } finally {
       setUpdatingStatus(false)
+    }
+  }
+
+  // Generate E-Way Bill
+  const handleGenerateEWayBill = async (order) => {
+    try {
+      // Check if e-way bill already exists
+      if (order.eway_bill_no) {
+        return toast.error('E-Way Bill already generated: ' + order.eway_bill_no)
+      }
+
+      // Check order value (typically required for > ₹50,000)
+      if (order.total_amount < 50000) {
+        const confirm = window.confirm(
+          `Order value is ₹${order.total_amount.toLocaleString('en-IN')}. E-Way Bill is typically required for orders above ₹50,000. Continue anyway?`
+        )
+        if (!confirm) return
+      }
+
+      toast.loading('Generating E-Way Bill...')
+
+      // Load config
+      const { data: config, error: configError } = await supabase
+        .from('eway_bill_config')
+        .select('*')
+        .eq('is_active', true)
+        .single()
+
+      if (configError || !config) {
+        toast.dismiss()
+        return toast.error('E-Way Bill not configured. Please configure in E-Way Bill settings.')
+      }
+
+      // Authenticate with E-Way Bill API
+      await ewayBillService.authenticate(
+        config.api_username,
+        config.api_password
+      )
+
+      // Format order data for E-Way Bill
+      const ewayBillData = ewayBillService.formatOrderForEWayBill(order, config)
+
+      // Generate e-way bill
+      const result = await ewayBillService.generateEWayBill(ewayBillData)
+
+      // Save to database
+      const { error: insertError } = await supabase
+        .from('eway_bills')
+        .insert({
+          order_id: order.id,
+          ewb_no: result.ewayBillNo,
+          ewb_date: new Date(result.ewayBillDate),
+          valid_upto: result.validUpto ? new Date(result.validUpto) : null,
+          doc_type: 'INV',
+          doc_no: order.order_number || order.id,
+          doc_date: new Date(),
+          from_gstin: config.seller_gstin,
+          from_trade_name: config.seller_trade_name,
+          to_gstin: order.shipping_gstin || 'URP',
+          to_trade_name: order.shipping_name || order.guest_name,
+          total_value: order.total_amount,
+          total_inv_value: order.total_amount,
+          api_response: result,
+          status: 'active',
+        })
+
+      if (insertError) throw insertError
+
+      // Update order with e-way bill number
+      const { error: updateError } = await supabase
+        .from('orders')
+        .update({
+          eway_bill_no: result.ewayBillNo,
+          eway_bill_date: new Date(result.ewayBillDate),
+        })
+        .eq('id', order.id)
+
+      if (updateError) throw updateError
+
+      // Refresh orders
+      await loadOrders()
+
+      toast.dismiss()
+      toast.success(`E-Way Bill generated successfully: ${result.ewayBillNo}`)
+    } catch (error) {
+      console.error('E-Way Bill generation error:', error)
+      toast.dismiss()
+      toast.error(error.message || 'Failed to generate E-Way Bill')
     }
   }
 
@@ -473,6 +562,42 @@ export default function AdminOrdersPage() {
                       </button>
                     ))}
                   </div>
+                </div>
+
+                {/* E-Way Bill */}
+                <div>
+                  <h3 className="text-lg font-semibold mb-3">E-Way Bill</h3>
+                  {selectedOrder.eway_bill_no ? (
+                    <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                      <div className="flex items-center gap-2 mb-2">
+                        <CheckCircle size={20} className="text-green-600" />
+                        <span className="font-semibold text-green-800">E-Way Bill Generated</span>
+                      </div>
+                      <div className="space-y-1 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">E-Way Bill No:</span>
+                          <span className="font-mono font-semibold text-green-800">{selectedOrder.eway_bill_no}</span>
+                        </div>
+                        {selectedOrder.eway_bill_date && (
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">Generated On:</span>
+                            <span className="font-medium">{new Date(selectedOrder.eway_bill_date).toLocaleString('en-IN')}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => handleGenerateEWayBill(selectedOrder)}
+                      className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
+                    >
+                      <FileText size={18} />
+                      Generate E-Way Bill
+                    </button>
+                  )}
+                  <p className="text-xs text-gray-500 mt-2">
+                    * E-Way Bill is required for interstate movement and orders above ₹50,000
+                  </p>
                 </div>
               </div>
             </motion.div>

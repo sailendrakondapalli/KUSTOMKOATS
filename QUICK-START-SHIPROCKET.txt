@@ -1,0 +1,98 @@
+╔══════════════════════════════════════════════════════════════════╗
+║           🚀 SHIPROCKET QUICK START GUIDE                        ║
+╚══════════════════════════════════════════════════════════════════╝
+
+✅ RAZORPAY: Already working (Live Mode)
+⚙️ SHIPROCKET: Ready to test (needs your credentials)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📝 STEP 1: Get Shiprocket Credentials
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Login: https://app.shiprocket.in/seller/setting
+2. Copy your email and password
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📝 STEP 2: Update Environment Files
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+File 1: .env (root folder)
+────────────────────────────────────────────────────────────────────
+VITE_SHIPROCKET_EMAIL=your_email@example.com
+VITE_SHIPROCKET_PASSWORD=your_password
+
+File 2: supabase/.env (supabase folder)
+────────────────────────────────────────────────────────────────────
+SHIPROCKET_EMAIL=your_email@example.com
+SHIPROCKET_PASSWORD=your_password
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📝 STEP 3: Deploy to Supabase
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Open terminal and run:
+
+supabase login
+supabase link --project-ref gozoxlueuwnyujvvafdl
+supabase functions deploy create-shiprocket-order
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📝 STEP 4: Add Secrets in Supabase Dashboard
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Go to: https://supabase.com/dashboard/project/gozoxlueuwnyujvvafdl/settings/functions
+2. Click "Edge Functions Secrets"
+3. Add:
+   - SHIPROCKET_EMAIL → your_email@example.com
+   - SHIPROCKET_PASSWORD → your_password
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📝 STEP 5: Test Integration
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Start your dev server: npm run dev
+2. Open browser console (F12)
+3. Run: testShiprocketIntegration()
+4. Check for success message
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎯 HOW IT WORKS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Customer places order
+       ↓
+Razorpay payment completes
+       ↓
+Order saved to database
+       ↓
+Shiprocket shipment auto-created ← NEW!
+       ↓
+Customer sees success page
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📚 DOCUMENTATION FILES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📄 SHIPROCKET-SETUP.md → Full setup guide
+📄 PAYMENT-SHIPPING-COMPLETE.md → Complete integration summary
+📄 QUICK-START-SHIPROCKET.txt → This file
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+❓ NEED HELP?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Shiprocket Dashboard: https://app.shiprocket.in/orders
+Supabase Logs: Check Edge Functions tab in dashboard
+Browser Console: Check for error messages
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Done! 🎉 Just add your credentials and deploy!

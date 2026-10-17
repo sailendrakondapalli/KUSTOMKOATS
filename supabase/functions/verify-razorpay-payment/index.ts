@@ -1,6 +1,9 @@
 // Supabase Edge Function: verify-razorpay-payment
 // Deploy: supabase functions deploy verify-razorpay-payment
 
+// Supabase Edge Function: verify-razorpay-payment
+// Deploy: supabase functions deploy verify-razorpay-payment
+
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { createHmac } from 'https://deno.land/std@0.168.0/node/crypto.ts'

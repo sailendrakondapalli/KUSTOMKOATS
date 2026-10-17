@@ -3,14 +3,17 @@ import { Link, useLocation } from 'react-router-dom'
 import {
   Package, Tag, ShoppingBag, Users,
   Store, Menu, X, ChevronRight, Handshake,
-  BarChart2, FileText, Ticket, MessageSquare, BookOpen, HelpCircle, Link2
+  BarChart2, FileText, Ticket, MessageSquare, BookOpen, HelpCircle, Link2, Receipt, CreditCard, ArrowLeftRight, Box, FileText as EWayBillIcon
 } from 'lucide-react'
 
 const NAV_ITEMS = [
   { path: '/admin',            label: 'Dashboard',   icon: BarChart2,    exact: true },
   { path: '/admin/products',   label: 'Products',    icon: Package },
+  { path: '/admin/bundles',    label: 'Bundles',     icon: Box },
   { path: '/admin/categories', label: 'Categories',  icon: Tag },
   { path: '/admin/orders',     label: 'Orders',      icon: ShoppingBag },
+  { path: '/admin/transactions', label: 'All Transactions', icon: ArrowLeftRight },
+  { path: '/admin/eway-bill',  label: 'E-Way Bill',  icon: EWayBillIcon },
   { path: '/admin/customers',  label: 'Customers',   icon: Users },
   { path: '/admin/promo-codes', label: 'Promo Codes', icon: Ticket },
   { path: '/admin/testimonials', label: 'Testimonials', icon: MessageSquare },
@@ -19,6 +22,8 @@ const NAV_ITEMS = [
   { path: '/admin/page-content', label: 'Page Content', icon: BookOpen },
   { path: '/admin/faqs',       label: 'FAQs',        icon: HelpCircle },
   { path: '/admin/footer-links', label: 'Footer Links', icon: Link2 },
+  { path: '/admin/pos',        label: 'Point of Sale', icon: CreditCard },
+  { path: '/admin/erp',        label: 'ERP System',  icon: Receipt },
 ]
 
 export default function KKAdminLayout({ children }) {
