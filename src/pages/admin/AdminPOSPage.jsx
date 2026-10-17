@@ -15,6 +15,45 @@ import {
   checkOnlineStatus 
 } from '../../services/posService'
 import { getPendingSales } from '../../services/offlineDB'
+import { printBrandedInvoice } from '../../utils/brandedInvoiceGenerator'
+
+// Helper function to convert POS cart to order format for branded invoice
+const convertPOSCartToOrder = (cart, customerName, customerPhone, orderId) => {
+  // Convert cart items to order_items format
+  const order_items = cart.map(item => ({
+    product_id: item.product_id,
+    quantity: item.quantity,
+    price: item.price,
+    products: {
+      id: item.product_id,
+      name: item.name,
+      hsn_code: '32089090' // Default HSN code for paints
+    }
+  }))
+
+  // Create parsedAddress from customer info
+  const parsedAddress = {
+    address1: 'Walk-in Customer Address',
+    addressLine1: 'Walk-in Customer Address',
+    city: 'Pune',
+    state: 'Maharashtra',
+    pincode: '411048',
+    zipCode: '411048',
+    phone: customerPhone || 'N/A',
+    email: null,
+    gst: null
+  }
+
+  return {
+    id: orderId || Date.now(),
+    display_order_id: orderId ? `#POS-${orderId}` : `#POS-${Date.now().toString().slice(-6)}`,
+    created_at: new Date().toISOString(),
+    order_items,
+    parsedAddress,
+    guest_phone: customerPhone || 'N/A',
+    guest_name: customerName || 'Walk-in Customer'
+  }
+}
 
 export default function AdminPOSPage() {
   const [products, setProducts] = useState([])
@@ -32,6 +71,7 @@ export default function AdminPOSPage() {
   const [cashReceived, setCashReceived] = useState('')
   const searchInputRef = useRef(null)
   const receiptRef = useRef(null)
+  const [lastSaleId, setLastSaleId] = useState(null)
 
   // Load products on mount
   useEffect(() => {
@@ -272,14 +312,17 @@ export default function AdminPOSPage() {
           await loadPendingCount()
         }
         
-        // Print receipt first, then clear cart after printing
+        // Store sale ID for invoice generation
+        setLastSaleId(result.saleId)
+        
+        // Generate and print branded invoice
+        const orderData = convertPOSCartToOrder(cart, customerName, customerPhone, result.saleId)
+        await printBrandedInvoice(orderData, window.location.origin)
+        
+        // Clear cart after invoice generation
         setTimeout(() => {
-          window.print()
-          // Clear cart after print dialog opens
-          setTimeout(() => {
-            clearCart()
-          }, 1000)
-        }, 300)
+          clearCart()
+        }, 500)
         
         await loadProducts() // Refresh stock
       }
@@ -308,13 +351,17 @@ export default function AdminPOSPage() {
         toast.success(`${paymentMethod.toUpperCase()} payment recorded offline - Pending verification`)
         await loadPendingCount()
         
-        // Print receipt
+        // Store sale ID for invoice generation
+        setLastSaleId(result.saleId)
+        
+        // Generate and print branded invoice
+        const orderData = convertPOSCartToOrder(cart, customerName, customerPhone, result.saleId)
+        await printBrandedInvoice(orderData, window.location.origin)
+        
+        // Clear cart after invoice generation
         setTimeout(() => {
-          window.print()
-          setTimeout(() => {
-            clearCart()
-          }, 1000)
-        }, 300)
+          clearCart()
+        }, 500)
         
         await loadProducts()
       }
@@ -389,13 +436,17 @@ export default function AdminPOSPage() {
               if (result.success) {
                 toast.success('Payment successful!')
                 
-                // Print receipt
+                // Store sale ID for invoice generation
+                setLastSaleId(result.saleId)
+                
+                // Generate and print branded invoice
+                const orderData = convertPOSCartToOrder(cart, customerName, customerPhone, result.saleId)
+                await printBrandedInvoice(orderData, window.location.origin)
+                
+                // Clear cart after invoice generation
                 setTimeout(() => {
-                  window.print()
-                  setTimeout(() => {
-                    clearCart()
-                  }, 1000)
-                }, 300)
+                  clearCart()
+                }, 500)
                 
                 await loadProducts()
               }
@@ -681,106 +732,10 @@ export default function AdminPOSPage() {
         </div>
       </div>
 
-      {/* Print Receipt (Hidden) */}
-      <div className="hidden print:block">
-        <div ref={receiptRef} className="p-8 max-w-md mx-auto">
-          <div className="text-center mb-6 border-b-2 border-black pb-4">
-            <h1 className="text-3xl font-bold">KUSTOM KOATS</h1>
-            <p className="text-sm text-gray-600 mt-1">Point of Sale Receipt</p>
-            <p className="text-xs text-gray-500 mt-2">{new Date().toLocaleString('en-IN', { 
-              dateStyle: 'medium', 
-              timeStyle: 'short',
-              timeZone: 'Asia/Kolkata'
-            })}</p>
-          </div>
-          
-          {customerName && (
-            <div className="mb-4 text-sm border-b pb-3">
-              <p className="font-semibold">Customer: {customerName}</p>
-              {customerPhone && <p className="text-gray-600">Phone: {customerPhone}</p>}
-            </div>
-          )}
-
-          <table className="w-full mb-4 text-sm">
-            <thead>
-              <tr className="border-b-2 border-black">
-                <th className="text-left py-2">Item</th>
-                <th className="text-center py-2">Qty</th>
-                <th className="text-right py-2">Rate</th>
-                <th className="text-right py-2">Amount</th>
-              </tr>
-            </thead>
-            <tbody>
-              {cart.map(item => (
-                <tr key={item.product_id} className="border-b">
-                  <td className="py-2 text-left">{item.name}</td>
-                  <td className="text-center py-2">{item.quantity}</td>
-                  <td className="text-right py-2">{formatINR(item.price)}</td>
-                  <td className="text-right py-2 font-semibold">{formatINR(item.price * item.quantity)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-
-          <div className="border-t-2 border-black pt-3 mb-4">
-            <div className="flex justify-between font-bold text-xl mb-2">
-              <span>TOTAL:</span>
-              <span>{formatINR(calculateTotal())}</span>
-            </div>
-            <div className="text-sm text-gray-600 mb-2">
-              <div className="flex justify-between">
-                <span>Payment Method:</span>
-                <span className="uppercase font-medium">{paymentMethod}</span>
-              </div>
-              {!isOnline && (paymentMethod === 'upi' || paymentMethod === 'card') && (
-                <div className="flex justify-between mt-1 text-orange-600">
-                  <span>Status:</span>
-                  <span className="font-semibold">PENDING VERIFICATION</span>
-                </div>
-              )}
-            </div>
-            {paymentMethod === 'cash' && cashReceived && (
-              <div className="text-sm border-t pt-2 mt-2">
-                <div className="flex justify-between mb-1">
-                  <span>Cash Received:</span>
-                  <span className="font-semibold">{formatINR(parseFloat(cashReceived))}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Change Returned:</span>
-                  <span className="font-semibold">{formatINR(calculateChange())}</span>
-                </div>
-              </div>
-            )}
-            {!isOnline && (paymentMethod === 'upi' || paymentMethod === 'card') && (
-              <div className="text-xs text-orange-600 mt-3 p-2 border border-orange-300 bg-orange-50">
-                <p className="font-semibold">⚠ Offline Payment Notice</p>
-                <p className="mt-1">This payment will be verified when internet connection is restored.</p>
-              </div>
-            )}
-          </div>
-
-          <div className="text-center text-xs text-gray-600 mt-6 pt-4 border-t">
-            <p className="font-semibold mb-2">Thank you for your purchase!</p>
-            <p className="mb-1">Visit us online at:</p>
-            <p className="font-mono">kustomkoats.in</p>
-            <p className="mt-3 text-[10px]">This is a computer-generated receipt</p>
-          </div>
-        </div>
-      </div>
-
       <style>{`
         @media print {
           body * {
             visibility: hidden;
-          }
-          .print\\:block, .print\\:block * {
-            visibility: visible;
-          }
-          .print\\:block {
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 100%;
           }
         }
       `}</style>

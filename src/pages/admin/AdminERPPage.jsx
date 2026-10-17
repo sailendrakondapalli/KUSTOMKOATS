@@ -8,6 +8,7 @@ import BarcodeComponent from 'react-barcode'
 import jsPDF from 'jspdf'
 import html2canvas from 'html2canvas'
 import { formatINR } from '../../utils/format'
+import { generateBrandedInvoice, printBrandedInvoice } from '../../utils/brandedInvoiceGenerator'
 
 export default function AdminERPPage() {
   const [activeTab, setActiveTab] = useState('invoices') // invoices | labels
@@ -60,16 +61,16 @@ export default function AdminERPPage() {
   const generateInvoicePDF = async (order) => {
     setLoading(true)
     try {
-      const element = invoiceRef.current
-      const canvas = await html2canvas(element, { scale: 2 })
-      const imgData = canvas.toDataURL('image/png')
+      // Parse address if it exists
+      const addr = order.address ? (typeof order.address === 'string' ? JSON.parse(order.address) : order.address) : {}
       
-      const pdf = new jsPDF('p', 'mm', 'a4')
-      const pdfWidth = pdf.internal.pageSize.getWidth()
-      const pdfHeight = (canvas.height * pdfWidth) / canvas.width
+      const preparedOrder = {
+        ...order,
+        parsedAddress: addr
+      }
       
-      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight)
-      pdf.save(`Invoice-${order.display_order_id || order.id}.pdf`)
+      const siteUrl = window.location.origin
+      await generateBrandedInvoice(preparedOrder, siteUrl)
       
       toast.success('Invoice downloaded!')
     } catch (error) {
@@ -80,8 +81,29 @@ export default function AdminERPPage() {
     }
   }
 
-  const printInvoice = () => {
-    window.print()
+  const printInvoice = async () => {
+    if (!selectedOrder) return
+    
+    setLoading(true)
+    try {
+      // Parse address if it exists
+      const addr = selectedOrder.address ? (typeof selectedOrder.address === 'string' ? JSON.parse(selectedOrder.address) : selectedOrder.address) : {}
+      
+      const preparedOrder = {
+        ...selectedOrder,
+        parsedAddress: addr
+      }
+      
+      const siteUrl = window.location.origin
+      await printBrandedInvoice(preparedOrder, siteUrl)
+      
+      toast.success('Opening print dialog...')
+    } catch (error) {
+      console.error('Print error:', error)
+      toast.error('Failed to print invoice')
+    } finally {
+      setLoading(false)
+    }
   }
 
   const downloadQRCode = async (product) => {
@@ -153,33 +175,36 @@ export default function AdminERPPage() {
 
   return (
     <KKAdminLayout>
-      <div className="p-6">
+      <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold text-white">ERP System</h1>
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">ERP System</h1>
+            <p className="text-gray-600 mt-1">Invoice & Label Management</p>
+          </div>
         </div>
 
         {/* Tab Navigation */}
         <div className="flex gap-2 mb-6">
           <button
             onClick={() => setActiveTab('invoices')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
+            className={`flex items-center gap-2 px-6 py-3 rounded-lg font-semibold transition-all ${
               activeTab === 'invoices'
-                ? 'bg-[#CA2A31] text-white'
-                : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+                ? 'bg-[#CA2A31] text-white shadow-lg'
+                : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200'
             }`}
           >
-            <FileText size={18} />
+            <FileText size={20} />
             Invoices
           </button>
           <button
             onClick={() => setActiveTab('labels')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
+            className={`flex items-center gap-2 px-6 py-3 rounded-lg font-semibold transition-all ${
               activeTab === 'labels'
-                ? 'bg-[#CA2A31] text-white'
-                : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+                ? 'bg-[#CA2A31] text-white shadow-lg'
+                : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200'
             }`}
           >
-            <Package size={18} />
+            <Package size={20} />
             Product Labels
           </button>
         </div>
@@ -188,125 +213,115 @@ export default function AdminERPPage() {
         {activeTab === 'invoices' && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Order List */}
-            <div className="bg-gray-900 rounded-xl p-6">
-              <h2 className="text-lg font-semibold text-white mb-4">Recent Orders</h2>
+            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+              <h2 className="text-xl font-bold text-gray-900 mb-4">Recent Orders</h2>
               <div className="space-y-2 max-h-[600px] overflow-y-auto">
-                {orders.map(order => (
-                  <button
-                    key={order.id}
-                    onClick={() => setSelectedOrder(order)}
-                    className={`w-full text-left p-4 rounded-lg transition-all ${
-                      selectedOrder?.id === order.id
-                        ? 'bg-[#CA2A31] text-white'
-                        : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
-                    }`}
-                  >
-                    <div className="flex justify-between items-start mb-2">
-                      <span className="font-semibold">
-                        {order.display_order_id || `#${order.id}`}
-                      </span>
-                      <span className="text-sm">{formatINR(order.total_amount)}</span>
-                    </div>
-                    <div className="text-sm opacity-80">
-                      {order.guest_name || 'Guest'} • {new Date(order.created_at).toLocaleDateString()}
-                    </div>
-                  </button>
-                ))}
+                {orders.length === 0 ? (
+                  <div className="text-center text-gray-500 py-10">
+                    <FileText size={48} className="mx-auto mb-4 opacity-30" />
+                    <p className="text-lg font-medium">No orders found</p>
+                  </div>
+                ) : (
+                  orders.map(order => (
+                    <button
+                      key={order.id}
+                      onClick={() => setSelectedOrder(order)}
+                      className={`w-full text-left p-4 rounded-lg transition-all border-2 ${
+                        selectedOrder?.id === order.id
+                          ? 'bg-red-50 border-[#CA2A31] shadow-sm'
+                          : 'bg-gray-50 border-transparent hover:bg-gray-100 hover:border-gray-200'
+                      }`}
+                    >
+                      <div className="flex justify-between items-start mb-2">
+                        <span className="font-bold text-base text-gray-900">
+                          {order.display_order_id || `#${order.id}`}
+                        </span>
+                        <span className="text-sm font-semibold text-gray-900">{formatINR(order.total_amount)}</span>
+                      </div>
+                      <div className="text-sm text-gray-600">
+                        {order.guest_name || 'Guest'} • {new Date(order.created_at).toLocaleDateString()}
+                      </div>
+                    </button>
+                  ))
+                )}
               </div>
             </div>
 
             {/* Invoice Preview */}
-            <div className="bg-gray-900 rounded-xl p-6">
+            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
               {selectedOrder ? (
                 <>
-                  <div className="flex gap-2 mb-4">
+                  <h2 className="text-xl font-bold text-gray-900 mb-4">Invoice Actions</h2>
+                  <p className="text-gray-600 mb-4">Generate professional branded invoice with watermark and QR codes</p>
+                  <div className="flex gap-2 mb-6">
                     <button
                       onClick={() => generateInvoicePDF(selectedOrder)}
                       disabled={loading}
-                      className="flex-1 flex items-center justify-center gap-2 bg-[#CA2A31] text-white px-4 py-2 rounded-lg hover:bg-[#a82228] transition-all disabled:opacity-50"
+                      className="flex-1 flex items-center justify-center gap-2 bg-[#CA2A31] text-white px-4 py-3 rounded-lg hover:bg-[#a82228] transition-all disabled:opacity-50 font-semibold shadow-lg"
                     >
-                      <Download size={16} />
-                      Download PDF
+                      <Download size={18} />
+                      {loading ? 'Generating...' : 'Download PDF'}
                     </button>
                     <button
                       onClick={printInvoice}
-                      className="flex-1 flex items-center justify-center gap-2 bg-gray-700 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-all"
+                      disabled={loading}
+                      className="flex-1 flex items-center justify-center gap-2 bg-gray-700 text-white px-4 py-3 rounded-lg hover:bg-gray-600 transition-all disabled:opacity-50 font-semibold"
                     >
-                      <Printer size={16} />
-                      Print
+                      <Printer size={18} />
+                      {loading ? 'Generating...' : 'Print'}
                     </button>
                   </div>
 
-                  {/* Invoice Template */}
-                  <div
-                    ref={invoiceRef}
-                    className="bg-white text-black p-8 rounded-lg"
-                    style={{ minHeight: '800px' }}
-                  >
-                    <div className="border-b-2 border-gray-300 pb-4 mb-6">
-                      <h1 className="text-3xl font-bold text-[#CA2A31]">KUSTOM KOATS</h1>
-                      <p className="text-sm text-gray-600">Premium Automotive Coatings</p>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-6 mb-8">
+                  {/* Order Summary Card */}
+                  <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
+                    <h3 className="font-bold text-lg text-gray-900 mb-4">Order Summary</h3>
+                    
+                    <div className="grid grid-cols-2 gap-4 mb-6">
                       <div>
-                        <h3 className="font-semibold mb-2">Bill To:</h3>
-                        <p className="text-sm">{selectedOrder.guest_name || 'N/A'}</p>
-                        <p className="text-sm">{selectedOrder.guest_email || 'N/A'}</p>
-                        <p className="text-sm">{selectedOrder.guest_phone || 'N/A'}</p>
-                        {selectedOrder.address && (
-                          <p className="text-sm mt-2">{JSON.parse(selectedOrder.address).address1}</p>
-                        )}
+                        <p className="text-sm text-gray-600 mb-1">Order Number</p>
+                        <p className="font-semibold text-gray-900">{selectedOrder.display_order_id || `#${selectedOrder.id}`}</p>
                       </div>
-                      <div className="text-right">
-                        <h3 className="font-semibold mb-2">Invoice Details:</h3>
-                        <p className="text-sm">Invoice #: {selectedOrder.display_order_id || selectedOrder.id}</p>
-                        <p className="text-sm">Date: {new Date(selectedOrder.created_at).toLocaleDateString()}</p>
-                        <p className="text-sm">Payment: {selectedOrder.payment_method || 'N/A'}</p>
-                        <p className="text-sm">Status: <span className="font-semibold">{selectedOrder.payment_status}</span></p>
+                      <div>
+                        <p className="text-sm text-gray-600 mb-1">Date</p>
+                        <p className="font-semibold text-gray-900">{new Date(selectedOrder.created_at).toLocaleDateString()}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-600 mb-1">Customer</p>
+                        <p className="font-semibold text-gray-900">{selectedOrder.guest_name || 'Walk-in Customer'}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-600 mb-1">Payment Status</p>
+                        <p className="font-semibold text-gray-900 capitalize">{selectedOrder.payment_status}</p>
                       </div>
                     </div>
 
-                    <table className="w-full mb-6">
-                      <thead className="bg-gray-200">
-                        <tr>
-                          <th className="text-left p-2 text-sm">Item</th>
-                          <th className="text-center p-2 text-sm">Qty</th>
-                          <th className="text-right p-2 text-sm">Price</th>
-                          <th className="text-right p-2 text-sm">Total</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {selectedOrder.order_items?.map((item, idx) => (
-                          <tr key={idx} className="border-b">
-                            <td className="p-2 text-sm">{item.products?.name || 'Product'}</td>
-                            <td className="text-center p-2 text-sm">{item.quantity}</td>
-                            <td className="text-right p-2 text-sm">{formatINR(item.price)}</td>
-                            <td className="text-right p-2 text-sm">{formatINR(item.price * item.quantity)}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                    <div className="border-t border-gray-300 pt-4">
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="text-gray-600">Items</span>
+                        <span className="font-medium text-gray-900">{selectedOrder.order_items?.length || 0} products</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-lg font-bold text-gray-900">Total Amount</span>
+                        <span className="text-2xl font-bold text-[#CA2A31]">{formatINR(selectedOrder.total_amount)}</span>
+                      </div>
+                    </div>
 
-                    <div className="flex justify-end mb-8">
-                      <div className="w-64">
-                        <div className="flex justify-between py-2 border-t">
-                          <span className="font-semibold">Total Amount:</span>
-                          <span className="font-bold text-lg">{formatINR(selectedOrder.total_amount)}</span>
+                    <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                      <div className="flex gap-3">
+                        <FileText className="text-blue-600 flex-shrink-0" size={20} />
+                        <div className="text-sm text-blue-900">
+                          <p className="font-semibold mb-1">Branded Invoice Format</p>
+                          <p className="text-blue-700">The generated PDF will include KUSTOMKOATS watermark, product QR codes, GST details, and professional formatting.</p>
                         </div>
                       </div>
-                    </div>
-
-                    <div className="text-center text-sm text-gray-600 mt-12 pt-6 border-t">
-                      <p>Thank you for your business!</p>
-                      <p>For support, contact: support@kustomkoats.com</p>
                     </div>
                   </div>
                 </>
               ) : (
-                <div className="text-center text-gray-400 py-20">
-                  <FileText size={48} className="mx-auto mb-4 opacity-50" />
-                  <p>Select an order to view invoice</p>
+                <div className="text-center text-gray-500 py-20">
+                  <FileText size={64} className="mx-auto mb-4 opacity-20" />
+                  <p className="text-xl font-semibold text-gray-700">Select an order to view invoice</p>
+                  <p className="text-sm text-gray-500 mt-2">Choose an order from the list to generate PDF</p>
                 </div>
               )}
             </div>
@@ -317,56 +332,63 @@ export default function AdminERPPage() {
         {activeTab === 'labels' && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Product List */}
-            <div className="bg-gray-900 rounded-xl p-6">
+            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
               <div className="flex justify-between items-center mb-4">
-                <h2 className="text-lg font-semibold text-white">Products</h2>
+                <h2 className="text-xl font-bold text-gray-900">Products</h2>
                 <button
                   onClick={selectAllProducts}
-                  className="text-sm text-[#CA2A31] hover:underline"
+                  className="text-sm text-[#CA2A31] hover:text-[#a82228] hover:underline font-semibold"
                 >
                   {selectedProducts.length === products.length ? 'Deselect All' : 'Select All'}
                 </button>
               </div>
               <div className="space-y-2 max-h-[600px] overflow-y-auto">
-                {products.map(product => (
-                  <label
-                    key={product.id}
-                    className="flex items-center gap-3 p-4 bg-gray-800 rounded-lg hover:bg-gray-700 cursor-pointer transition-all"
-                  >
-                    <input
-                      type="checkbox"
-                      checked={selectedProducts.includes(product.id)}
-                      onChange={() => toggleProductSelection(product.id)}
-                      className="w-4 h-4 accent-[#CA2A31]"
-                    />
-                    <div className="flex-1">
-                      <p className="text-white font-medium">{product.name}</p>
-                      <p className="text-sm text-gray-400">
-                        SKU: {product.custom_id || product.id} • {formatINR(product.price)}
-                      </p>
-                    </div>
-                  </label>
-                ))}
+                {products.length === 0 ? (
+                  <div className="text-center text-gray-500 py-10">
+                    <Package size={48} className="mx-auto mb-4 opacity-30" />
+                    <p className="text-lg font-medium">No products found</p>
+                  </div>
+                ) : (
+                  products.map(product => (
+                    <label
+                      key={product.id}
+                      className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer transition-all border-2 border-transparent hover:border-gray-200"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selectedProducts.includes(product.id)}
+                        onChange={() => toggleProductSelection(product.id)}
+                        className="w-5 h-5 accent-[#CA2A31]"
+                      />
+                      <div className="flex-1">
+                        <p className="text-gray-900 font-semibold text-base">{product.name}</p>
+                        <p className="text-sm text-gray-600">
+                          SKU: {product.custom_id || product.id} • {formatINR(product.price)}
+                        </p>
+                      </div>
+                    </label>
+                  ))
+                )}
               </div>
               {selectedProducts.length > 0 && (
                 <button
                   onClick={downloadBulkLabels}
                   disabled={loading}
-                  className="w-full mt-4 flex items-center justify-center gap-2 bg-[#CA2A31] text-white px-4 py-3 rounded-lg hover:bg-[#a82228] transition-all disabled:opacity-50"
+                  className="w-full mt-4 flex items-center justify-center gap-2 bg-[#CA2A31] text-white px-4 py-3 rounded-lg hover:bg-[#a82228] transition-all disabled:opacity-50 font-semibold shadow-lg"
                 >
-                  <Download size={16} />
+                  <Download size={20} />
                   Download {selectedProducts.length} Label{selectedProducts.length > 1 ? 's' : ''}
                 </button>
               )}
             </div>
 
             {/* Label Preview */}
-            <div className="bg-gray-900 rounded-xl p-6">
-              <h2 className="text-lg font-semibold text-white mb-4">Label Preview</h2>
+            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+              <h2 className="text-xl font-bold text-gray-900 mb-4">Label Preview</h2>
               {selectedProducts.length > 0 ? (
                 <div
                   ref={labelRef}
-                  className="bg-white p-6 rounded-lg space-y-6 max-h-[600px] overflow-y-auto"
+                  className="bg-white p-6 rounded-lg space-y-6 max-h-[600px] overflow-y-auto border border-gray-200"
                 >
                   {products
                     .filter(p => selectedProducts.includes(p.id))
@@ -375,9 +397,10 @@ export default function AdminERPPage() {
                     ))}
                 </div>
               ) : (
-                <div className="text-center text-gray-400 py-20">
-                  <QrCode size={48} className="mx-auto mb-4 opacity-50" />
-                  <p>Select products to generate labels</p>
+                <div className="text-center text-gray-500 py-20">
+                  <QrCode size={64} className="mx-auto mb-4 opacity-20" />
+                  <p className="text-xl font-semibold text-gray-700">Select products to generate labels</p>
+                  <p className="text-sm text-gray-500 mt-2">Choose products from the list to preview labels</p>
                 </div>
               )}
             </div>
@@ -386,21 +409,6 @@ export default function AdminERPPage() {
       </div>
 
       {/* Print Styles */}
-      <style>{`
-        @media print {
-          body * {
-            visibility: hidden;
-          }
-          #invoice-print, #invoice-print * {
-            visibility: visible;
-          }
-          #invoice-print {
-            position: absolute;
-            left: 0;
-            top: 0;
-          }
-        }
-      `}</style>
     </KKAdminLayout>
   )
 }
