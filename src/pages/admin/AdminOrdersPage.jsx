@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react'
-import { Search, Filter, Eye, Edit, Package, CheckCircle, XCircle, Clock, Truck, FileText, X } from 'lucide-react'
+import { Search, Filter, Eye, Edit, Package, CheckCircle, XCircle, Clock, Truck, FileText, X, Download } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Helmet } from 'react-helmet-async'
 import { supabase } from '../../lib/supabase'
 import { formatINR } from '../../utils/format'
 import KKAdminLayout from '../../components/admin/KKAdminLayout'
 import ewayBillService from '../../services/ewayBillService'
+import { generateBrandedInvoice } from '../../utils/brandedInvoiceGenerator'
 import toast from 'react-hot-toast'
 
 const ORDER_STATUSES = [
@@ -217,6 +218,24 @@ export default function AdminOrdersPage() {
       console.error('E-Way Bill generation error:', error)
       toast.dismiss()
       toast.error(error.message || 'Failed to generate E-Way Bill')
+    }
+  }
+
+  // Generate Invoice
+  const handleDownloadInvoice = async (order) => {
+    try {
+      const addr = parseAddress(order.address)
+      const preparedOrder = {
+        ...order,
+        parsedAddress: addr
+      }
+      
+      const siteUrl = window.location.origin
+      await generateBrandedInvoice(preparedOrder, siteUrl)
+      toast.success('Invoice downloaded!')
+    } catch (error) {
+      console.error('Invoice generation error:', error)
+      toast.error('Failed to generate invoice')
     }
   }
 
@@ -566,35 +585,47 @@ export default function AdminOrdersPage() {
 
                 {/* E-Way Bill */}
                 <div>
-                  <h3 className="text-lg font-semibold mb-3">E-Way Bill</h3>
-                  {selectedOrder.eway_bill_no ? (
-                    <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                      <div className="flex items-center gap-2 mb-2">
-                        <CheckCircle size={20} className="text-green-600" />
-                        <span className="font-semibold text-green-800">E-Way Bill Generated</span>
-                      </div>
-                      <div className="space-y-1 text-sm">
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">E-Way Bill No:</span>
-                          <span className="font-mono font-semibold text-green-800">{selectedOrder.eway_bill_no}</span>
-                        </div>
-                        {selectedOrder.eway_bill_date && (
-                          <div className="flex justify-between">
-                            <span className="text-gray-600">Generated On:</span>
-                            <span className="font-medium">{new Date(selectedOrder.eway_bill_date).toLocaleString('en-IN')}</span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  ) : (
+                  <h3 className="text-lg font-semibold mb-3">Actions</h3>
+                  <div className="flex gap-3">
+                    {/* Download Invoice Button */}
                     <button
-                      onClick={() => handleGenerateEWayBill(selectedOrder)}
-                      className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
+                      onClick={() => handleDownloadInvoice(selectedOrder)}
+                      className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors"
                     >
-                      <FileText size={18} />
-                      Generate E-Way Bill
+                      <Download size={18} />
+                      Download Invoice
                     </button>
-                  )}
+
+                    {/* E-Way Bill Button */}
+                    {selectedOrder.eway_bill_no ? (
+                      <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          <CheckCircle size={20} className="text-green-600" />
+                          <span className="font-semibold text-green-800">E-Way Bill Generated</span>
+                        </div>
+                        <div className="space-y-1 text-sm">
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">E-Way Bill No:</span>
+                            <span className="font-mono font-semibold text-green-800">{selectedOrder.eway_bill_no}</span>
+                          </div>
+                          {selectedOrder.eway_bill_date && (
+                            <div className="flex justify-between">
+                              <span className="text-gray-600">Generated On:</span>
+                              <span className="font-medium">{new Date(selectedOrder.eway_bill_date).toLocaleString('en-IN')}</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => handleGenerateEWayBill(selectedOrder)}
+                        className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
+                      >
+                        <FileText size={18} />
+                        Generate E-Way Bill
+                      </button>
+                    )}
+                  </div>
                   <p className="text-xs text-gray-500 mt-2">
                     * E-Way Bill is required for interstate movement and orders above ₹50,000
                   </p>
