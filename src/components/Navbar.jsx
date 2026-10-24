@@ -125,8 +125,7 @@ export default function Navbar() {
         { to: "/shop/accessories", label: "Accessories" },
       ]
     },
-    { to: "/kulture/journal", label: "KULTURE" },
-    { to: "/kustom-kultor", label: "BLOG" },
+    { to: "/kustom-kultor", label: "KULTURE" },
     { 
       label: "WHOLESALE",
       submenu: [
@@ -380,7 +379,7 @@ export default function Navbar() {
               <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: "rgba(255,255,255,0.6)" }} />
               <input
                 type="text" value={searchQuery} onChange={handleSearchChange}
-                placeholder="Search colors..."
+                placeholder="Search..."
                 className="w-full rounded-sm pl-11 pr-4 py-2.5 text-sm focus:outline-none transition-all duration-400"
                 style={{
                   background: scrolled ? "rgba(255,255,255,0.1)" : "rgba(255,255,255,0.15)",

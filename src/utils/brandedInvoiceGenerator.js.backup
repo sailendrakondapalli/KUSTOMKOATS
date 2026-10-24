@@ -1,0 +1,1017 @@
+import jsPDF from 'jspdf'
+import 'jspdf-autotable'
+import QRCode from 'qrcode'
+
+// Convert number to Indian Rupees words
+function numberToWordsINR(num) {
+  const a = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen']
+  const b = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety']
+  
+  if (num === 0) return 'Zero'
+  
+  const numStr = num.toString()
+  if (numStr.length > 9) return 'Overflow'
+  
+  const n = ('000000000' + numStr).substr(-9).match(/^(\d{2})(\d{2})(\d{2})(\d{1})(\d{2})$/)
+  if (!n) return ''
+  
+  let str = ''
+  str += (n[1] != 0) ? (a[Number(n[1])] || b[n[1][0]] + ' ' + a[n[1][1]]) + 'Crore ' : ''
+  str += (n[2] != 0) ? (a[Number(n[2])] || b[n[2][0]] + ' ' + a[n[2][1]]) + 'Lakh ' : ''
+  str += (n[3] != 0) ? (a[Number(n[3])] || b[n[3][0]] + ' ' + a[n[3][1]]) + 'Thousand ' : ''
+  str += (n[4] != 0) ? (a[Number(n[4])] || b[n[4][0]] + ' ' + a[n[4][1]]) + 'Hundred ' : ''
+  str += (n[5] != 0) ? ((str != '') ? 'and ' : '') + (a[Number(n[5])] || b[n[5][0]] + ' ' + a[n[5][1]]) : ''
+  
+  return str.trim()
+}
+
+/**
+ * Generate JSW Dulux-style Tax Invoice for Kustom Koats
+ */
+export async function generateBrandedInvoice(order, siteUrl = 'https://kustomkoats.in') {
+  const doc = new jsPDF('p', 'mm', 'a4')
+  const pageWidth = 210
+  const pageHeight = 297
+  const margin = 8
+  
+  const addr = order.parsedAddress || {}
+  const orderId = order.display_order_id || order.id?.toString().slice(-8).toUpperCase()
+  const items = order.order_items || []
+  
+  // Calculations
+  const subtotal = items.reduce((sum, item) => sum + (item.quantity * item.price), 0)
+  const gstRate = 0.18
+  const cgstRate = 0.09
+  const sgstRate = 0.09
+  const gstAmount = subtotal * gstRate
+  const cgstAmount = subtotal * cgstRate
+  const sgstAmount = subtotal * sgstRate
+  const totalBeforeRounding = subtotal + gstAmount
+  const roundingOff = Math.round(totalBeforeRounding) - totalBeforeRounding
+  const finalTotal = Math.round(totalBeforeRounding)
+  
+  // Generate QR Code
+  const qrData = `Invoice: ${orderId}\nDate: ${new Date(order.created_at).toLocaleDateString('en-IN')}\nAmount: ₹${finalTotal}\nGSTIN: 27BZAPK4893D1ZZT`
+  const qrCodeDataUrl = await QRCode.toDataURL(qrData, { width: 120, margin: 0 })
+  
+  // ===== PAGE 1 =====
+  let yPos = margin
+  
+  // Company Header
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(9)
+  doc.text('KUSTOM KOATS ENTERPRISES (formerly Kumar Paints)', margin, yPos)
+  yPos += 3
+  
+  doc.setFont('helvetica', 'normal')
+  doc.setFontSize(7)
+  doc.text('S1/803, NEAR TOAD FARMS', margin, yPos)
+  yPos += 3
+  doc.text('KONDHWA BK - HAVELI', margin, yPos)
+  yPos += 3
+  doc.text('WAGHOLI, Pune', margin, yPos)
+  yPos += 3
+  doc.text('WAGHOLI, MAHARASHTRA 411048,27', margin, yPos)
+  yPos += 3
+  doc.text('Maharashtra', margin, yPos)
+  yPos += 3
+  doc.text('GSTIN No: 27BZAPK4893D1ZZT', margin, yPos)
+  yPos += 4
+  
+  doc.setFontSize(6)
+  doc.text('CIN: L24292WB1954PLC021516', margin, yPos)
+  yPos += 2.5
+  doc.text('PAN: AAACI4297A', margin, yPos)
+  yPos += 2.5
+  doc.text('IRN: fd8d79222f23dabe366ccb9971a0d12a379d49af7a89e75426eb3dbc801aac6', margin, yPos)
+  
+  // TAX INVOICE Title (top right)
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(14)
+  doc.text('TAX INVOICE', pageWidth - margin - 50, margin + 5)
+  
+  doc.setFont('helvetica', 'normal')
+  doc.setFontSize(7)
+  doc.text('DUPLICATE FOR TRANSPORTER', pageWidth - margin - 50, margin + 10)
+  
+  // QR Code (top right)
+  doc.addImage(qrCodeDataUrl, 'PNG', pageWidth - margin - 35, margin + 12, 30, 30)
+  
+  // Bill To & Invoice Details Section
+  yPos = margin + 45
+  const boxHeight = 32
+  const leftBoxWidth = (pageWidth - 2 * margin) / 2 - 1
+  const rightBoxX = margin + leftBoxWidth + 2
+  
+  // Left Box - Bill To
+  doc.setDrawColor(0)
+  doc.setLineWidth(0.2)
+  doc.rect(margin, yPos, leftBoxWidth, boxHeight)
+  
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(7)
+  doc.text('Bill To: 3307620    PAN No:', margin + 2, yPos + 3)
+  
+  doc.setFont('helvetica', 'normal')
+  let billY = yPos + 6
+  doc.text(addr.full_name || order.guest_name || 'Kustom Koats Enterprises', margin + 2, billY)
+  billY += 3
+  doc.text(`B1-803, SN-14/2A/2B`, margin + 2, billY)
+  billY += 3
+  doc.text('Kumar Palms, Kondhwa BK, Pune', margin + 2, billY)
+  billY += 3
+  doc.text('Pune', margin + 2, billY)
+  billY += 3
+  doc.text('Pune 411048', margin + 2, billY)
+  billY += 3
+  doc.text('State Name/Code: 27 Maharashtra', margin + 2, billY)
+  billY += 3
+  doc.text('GSTIN No: 27BZAPK4893D1ZZT', margin + 2, billY)
+  
+  // Right Box - Invoice Details
+  doc.rect(rightBoxX, yPos, leftBoxWidth, boxHeight)
+  
+  let rightY = yPos + 3
+  doc.setFont('helvetica', 'normal')
+  doc.setFontSize(6.5)
+  doc.text(`Invoice No: I486211986 / ${new Date(order.created_at).toLocaleDateString('en-IN')} / 03.06.2026`, rightBoxX + 2, rightY)
+  rightY += 3
+  doc.text(`Delivery No: 9107138919 / ${new Date(order.created_at).toLocaleDateString('en-IN')}`, rightBoxX + 2, rightY)
+  rightY += 3
+  doc.text(`PO Number: ORDER BY MAIL ${new Date(order.created_at).toLocaleDateString('en-IN')}`, rightBoxX + 2, rightY)
+  rightY += 4
+  
+  doc.setFont('helvetica', 'bold')
+  doc.text('Place of Supply/Delivery', rightBoxX + 2, rightY)
+  rightY += 3
+  
+  doc.setFont('helvetica', 'normal')
+  doc.text('Consignee: 3307620', rightBoxX + 2, rightY)
+  rightY += 3
+  doc.text('Kustom Koats Enterprises', rightBoxX + 2, rightY)
+  rightY += 3
+  doc.text('B1-803, SN-14/2A/2B', rightBoxX + 2, rightY)
+  rightY += 3
+  doc.text('Kumar Palms, Kondhwa BK, Pune', rightBoxX + 2, rightY)
+  rightY += 3
+  doc.text('Pune 411048,27 Maharashtra', rightBoxX + 2, rightY)
+  rightY += 3
+  doc.text('GSTIN No:27BZAPK4893D1ZZT', rightBoxX + 2, rightY)
+  
+  // Product Details Table
+  yPos += boxHeight + 3
+  
+  const tableData = items.map((item, idx) => {
+    const itemPrice = item.price || 0
+    const itemQty = item.quantity || 1
+    const grossValue = itemPrice * itemQty
+    const cgst = grossValue * cgstRate
+    const sgst = grossValue * sgstRate
+    const totalValue = grossValue + cgst + sgst
+    
+    return [
+      `${item.products?.custom_id || 'N' + (idx + 1).toString().padStart(6, '0')}\n${(item.products?.name || 'Product').substring(0, 50)}`,
+      item.products?.hsn_code || '32089090',
+      '1.000',
+      itemQty.toString(),
+      itemQty.toFixed(3),
+      itemPrice.toFixed(2),
+      grossValue.toFixed(2),
+      '0.00',
+      '0.00',
+      grossValue.toFixed(2),
+      '9.00%',
+      cgst.toFixed(2),
+      '9.00%',
+      sgst.toFixed(2),
+      '0.00',
+      totalValue.toFixed(2)
+    ]
+  })
+  
+  doc.autoTable({
+    startY: yPos,
+    head: [[
+      'Product Code\nDescription of Goods',
+      'HSN\nCode',
+      'Pack\nL/KG',
+      'QTY\nPC/P\n/KG',
+      'Total QTY\nL/KG',
+      'Rate per\nunit INR',
+      'Gross Value\nINR',
+      'Other Disc.\nINR',
+      'Cash Disc.\nINR',
+      'Value before\nTax INR',
+      'CGST/IGST\nRate %',
+      'CGST/IGST\nAmt INR',
+      'SGST/\nUTGST\nRate %',
+      'SGST/\nUTGST Amt\nINR',
+      'K. P. CESS\nAmount INR',
+      'Total Value\nINR'
+    ]],
+    body: tableData,
+    theme: 'grid',
+    styles: {
+      fontSize: 5.5,
+      cellPadding: 0.5,
+      lineColor: [0, 0, 0],
+      lineWidth: 0.1,
+      textColor: [0, 0, 0],
+      overflow: 'linebreak'
+    },
+    headStyles: {
+      fillColor: [255, 255, 255],
+      textColor: [0, 0, 0],
+      fontStyle: 'bold',
+      halign: 'center',
+      valign: 'middle',
+      lineWidth: 0.1,
+      minCellHeight: 8
+    },
+    columnStyles: {
+      0: { cellWidth: 28, fontSize: 5 },
+      1: { cellWidth: 11, halign: 'center' },
+      2: { cellWidth: 9, halign: 'right' },
+      3: { cellWidth: 8, halign: 'right' },
+      4: { cellWidth: 10, halign: 'right' },
+      5: { cellWidth: 11, halign: 'right' },
+      6: { cellWidth: 12, halign: 'right' },
+      7: { cellWidth: 10, halign: 'right' },
+      8: { cellWidth: 10, halign: 'right' },
+      9: { cellWidth: 14, halign: 'right' },
+      10: { cellWidth: 10, halign: 'center' },
+      11: { cellWidth: 11, halign: 'right' },
+      12: { cellWidth: 9, halign: 'center' },
+      13: { cellWidth: 11, halign: 'right' },
+      14: { cellWidth: 11, halign: 'right' },
+      15: { cellWidth: 12, halign: 'right', fontStyle: 'bold' }
+    },
+    margin: { left: margin, right: margin },
+    didDrawPage: () => {
+      doc.setFontSize(6)
+      doc.setFont('helvetica', 'normal')
+      doc.text('Page 1 of 2', pageWidth / 2, pageHeight - 5, { align: 'center' })
+    }
+  })
+  
+  // ===== PAGE 2 =====
+  doc.addPage()
+  
+  // Header on Page 2
+  yPos = margin
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(9)
+  doc.text('KUSTOM KOATS ENTERPRISES', margin, yPos)
+  
+  doc.setFont('helvetica', 'normal')
+  doc.setFontSize(7)
+  doc.text('TAX INVOICE', pageWidth - margin - 30, yPos)
+  yPos += 3
+  
+  doc.setFontSize(6.5)
+  doc.text(`Invoice No: I486211986 / ${new Date(order.created_at).toLocaleDateString('en-IN')} / 03.06.2026`, margin, yPos)
+  doc.text(`DUPLICATE FOR TRANSPORTER`, pageWidth - margin - 45, yPos)
+  yPos += 7
+  
+  // HSN Summary
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(7)
+  doc.text('HSN-wise Summary', margin, yPos)
+  yPos += 2
+  
+  // Group by HSN
+  const hsnGroups = {}
+  items.forEach(item => {
+    const hsn = item.products?.hsn_code || '32089090'
+    if (!hsnGroups[hsn]) {
+      hsnGroups[hsn] = { hsn, qty: 0, taxable: 0, cgst: 0, sgst: 0, total: 0 }
+    }
+    const itemGross = (item.price || 0) * (item.quantity || 1)
+    hsnGroups[hsn].qty += item.quantity || 1
+    hsnGroups[hsn].taxable += itemGross
+    hsnGroups[hsn].cgst += itemGross * cgstRate
+    hsnGroups[hsn].sgst += itemGross * sgstRate
+    hsnGroups[hsn].total += itemGross + (itemGross * gstRate)
+  })
+  
+  const hsnSummaryData = Object.values(hsnGroups).map(g => [
+    g.hsn,
+    g.qty.toFixed(3),
+    g.taxable.toFixed(2),
+    '9.00%',
+    g.cgst.toFixed(2),
+    '9.00%',
+    g.sgst.toFixed(2),
+    '0.00',
+    '0.00',
+    g.total.toFixed(2)
+  ])
+  
+  // Total row
+  hsnSummaryData.push([
+    'Total',
+    items.reduce((sum, item) => sum + (item.quantity || 1), 0).toFixed(3),
+    subtotal.toFixed(2),
+    '',
+    cgstAmount.toFixed(2),
+    '',
+    sgstAmount.toFixed(2),
+    '0.00',
+    '0.00',
+    (subtotal + gstAmount).toFixed(2)
+  ])
+  
+  doc.autoTable({
+    startY: yPos,
+    head: [['HSN\nCode', 'Quantity', 'Taxable\nAmount\nINR', 'CGST\nRate %', 'CGST Amt\nINR', 'SGST\nRate %', 'SGST Amt\nINR', 'TCS Base\nAmount', 'TCS Amount\nINR', 'Total\nAmount\nINR']],
+    body: hsnSummaryData,
+    theme: 'grid',
+    styles: {
+      fontSize: 6,
+      cellPadding: 0.8,
+      lineColor: [0, 0, 0],
+      lineWidth: 0.1
+    },
+    headStyles: {
+      fillColor: [255, 255, 255],
+      textColor: [0, 0, 0],
+      fontStyle: 'bold',
+      halign: 'center',
+      fontSize: 6
+    },
+    columnStyles: {
+      0: { cellWidth: 18, halign: 'center' },
+      1: { cellWidth: 16, halign: 'right' },
+      2: { cellWidth: 18, halign: 'right' },
+      3: { cellWidth: 14, halign: 'center' },
+      4: { cellWidth: 16, halign: 'right' },
+      5: { cellWidth: 14, halign: 'center' },
+      6: { cellWidth: 16, halign: 'right' },
+      7: { cellWidth: 16, halign: 'right' },
+      8: { cellWidth: 16, halign: 'right' },
+      9: { cellWidth: 18, halign: 'right', fontStyle: 'bold' }
+    },
+    margin: { left: margin, right: margin }
+  })
+  
+  yPos = doc.lastAutoTable.finalY + 5
+  
+  // Transport Details
+  doc.setFont('helvetica', 'normal')
+  doc.setFontSize(6)
+  doc.text('Transporter: 260736   Lorry No:', margin, yPos)
+  doc.text(`Cartons: 1`, margin + 70, yPos)
+  yPos += 3
+  doc.text('Eway Receipt No:', margin, yPos)
+  doc.text(`Total Weight(KG): 8.288`, margin + 70, yPos)
+  yPos += 3
+  doc.text('Package Summary', margin, yPos)
+  doc.text(`Total Quantity: 8.000 LT / 0.000 KG / 0 PC`, margin + 70, yPos)
+  
+  yPos += 8
+  
+  // Invoice Summary (Right side)
+  const summaryX = pageWidth - margin - 55
+  let summaryY = doc.lastAutoTable.finalY + 5
+  
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(7)
+  doc.text('Invoice Summary', summaryX, summaryY)
+  summaryY += 3
+  
+  doc.setFont('helvetica', 'normal')
+  doc.setFontSize(6)
+  const summaryLines = [
+    ['Total Material Value:', subtotal.toFixed(2)],
+    ['Other Discounts:', '0.00'],
+    ['Cash Discount @ 0.00 %:', '0.00'],
+    ['Taxable Value / Value before TAX:', subtotal.toFixed(2)],
+    ['Central GST @ 9.00 %:', cgstAmount.toFixed(2)],
+    ['State GST @ 9.00 %:', sgstAmount.toFixed(2)],
+    ['Rounding Off:', roundingOff.toFixed(2)]
+  ]
+  
+  summaryLines.forEach(([label, value]) => {
+    doc.text(label, summaryX, summaryY)
+    doc.text(value, summaryX + 50, summaryY, { align: 'right' })
+    summaryY += 3
+  })
+  
+  summaryY += 1
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(7)
+  doc.text('Total:', summaryX, summaryY)
+  doc.text(finalTotal.toFixed(2), summaryX + 50, summaryY, { align: 'right' })
+  
+  // Amount in Words
+  yPos += 8
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(7)
+  doc.text(`As per agreed terms please pay INR ${finalTotal}:`, margin, yPos)
+  yPos += 3
+  
+  const amountWords = numberToWordsINR(finalTotal)
+  doc.setFont('helvetica', 'italic')
+  doc.setFontSize(6.5)
+  doc.text(`RUPEES : ${amountWords.toUpperCase()} ONLY`, margin, yPos)
+  
+  yPos += 7
+  
+  // If Reverse Charge applicable
+  doc.setFont('helvetica', 'normal')
+  doc.setFontSize(6)
+  doc.text('If Reverse Charge applicable, then specify amount of tax', margin, yPos)
+  
+  yPos += 5
+  
+  // Declaration boxes
+  const boxWidth = 85
+  const boxHeight2 = 18
+  
+  // Left box - Received statement
+  doc.rect(margin, yPos, boxWidth, boxHeight2)
+  doc.setFontSize(6)
+  doc.text('The total quantity as detailed in this invoice', margin + 2, yPos + 3)
+  doc.text('has been received in sound condition', margin + 2, yPos + 6)
+  
+  doc.text('Signature', margin + 2, yPos + 13)
+  doc.text('Name of the Signatory    For Kustom Koats Enterprises', margin + 15, yPos + 13)
+  doc.text('Designation / Status', margin + 2, yPos + 16)
+  doc.text('Place', margin + 50, yPos + 16)
+  doc.text('Date         E & O E', margin + 70, yPos + 16)
+  
+  // Right box - Dealer signature
+  doc.rect(margin + boxWidth + 2, yPos, boxWidth, boxHeight2)
+  doc.text("Dealer's Name, Signature and Date of Receipt", margin + boxWidth + 4, yPos + 3)
+  
+  yPos += boxHeight2 + 3
+  
+  // Company Registration
+  doc.setFontSize(5.5)
+  doc.text('REGISTERED OFFICE: KUSTOM KOATS ENTERPRISES, 801A, South City Business Park, 770, Anandpur,', margin, yPos)
+  yPos += 2.5
+  doc.text('Kolkata, West Bengal - 700107', margin, yPos)
+  yPos += 2.5
+  doc.text('CIN No: +91 9222777925, Fax: +91 33 22217925; Website: www.kustomkoats.in', margin, yPos)
+  
+  yPos += 5
+  
+  // Order details table
+  doc.setFontSize(6)
+  doc.text('Declaration: Certified that the particulars given above are true and correct', margin, yPos)
+  yPos += 2.5
+  doc.text('This transaction between the Parties is governed by the JSW Dulux Limited\'s Terms & Conditions of Sale', margin, yPos)
+  yPos += 2.5
+  doc.text('(Refer URL for T&C)', margin, yPos)
+  
+  yPos += 5
+  
+  // Order timing details
+  doc.autoTable({
+    startY: yPos,
+    head: [['Order No.', 'Order Date', 'Order_Time', 'Dispatch Date', 'Dispatch Time', 'POD Date', 'POD Time']],
+    body: [[
+      orderId,
+      new Date(order.created_at).toLocaleDateString('en-IN'),
+      '18:01',
+      new Date(order.created_at).toLocaleDateString('en-IN'),
+      '19:15',
+      '',
+      ''
+    ]],
+    theme: 'grid',
+    styles: {
+      fontSize: 6,
+      cellPadding: 1,
+      lineColor: [0, 0, 0],
+      lineWidth: 0.1
+    },
+    headStyles: {
+      fillColor: [255, 255, 255],
+      textColor: [0, 0, 0],
+      fontStyle: 'bold',
+      halign: 'center'
+    },
+    columnStyles: {
+      0: { cellWidth: 25 },
+      1: { cellWidth: 25 },
+      2: { cellWidth: 25 },
+      3: { cellWidth: 25 },
+      4: { cellWidth: 25 },
+      5: { cellWidth: 25 },
+      6: { cellWidth: 25 }
+    },
+    margin: { left: margin, right: margin }
+  })
+  
+  // Page 2 of 2
+  doc.setFontSize(6)
+  doc.text('Page 2 of 2', pageWidth / 2, pageHeight - 5, { align: 'center' })
+  
+  // Save
+  const fileName = `TaxInvoice-${orderId}.pdf`
+  doc.save(fileName)
+  
+  return fileName
+}
+
+/**
+ * Print JSW-style Invoice
+ */
+export async function printBrandedInvoice(order, siteUrl = 'https://kustomkoats.in') {
+  const doc = new jsPDF('p', 'mm', 'a4')
+  const pageWidth = 210
+  const pageHeight = 297
+  const margin = 8
+  
+  const addr = order.parsedAddress || {}
+  const orderId = order.display_order_id || order.id?.toString().slice(-8).toUpperCase()
+  const items = order.order_items || []
+  
+  // Calculations
+  const subtotal = items.reduce((sum, item) => sum + (item.quantity * item.price), 0)
+  const gstRate = 0.18
+  const cgstRate = 0.09
+  const sgstRate = 0.09
+  const gstAmount = subtotal * gstRate
+  const cgstAmount = subtotal * cgstRate
+  const sgstAmount = subtotal * sgstRate
+  const totalBeforeRounding = subtotal + gstAmount
+  const roundingOff = Math.round(totalBeforeRounding) - totalBeforeRounding
+  const finalTotal = Math.round(totalBeforeRounding)
+  
+  // Generate QR Code
+  const qrData = `Invoice: ${orderId}\nDate: ${new Date(order.created_at).toLocaleDateString('en-IN')}\nAmount: ₹${finalTotal}\nGSTIN: 27BZAPK4893D1ZZT`
+  const qrCodeDataUrl = await QRCode.toDataURL(qrData, { width: 120, margin: 0 })
+  
+  // ===== PAGE 1 =====
+  let yPos = margin
+  
+  // Company Header
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(9)
+  doc.text('KUSTOM KOATS ENTERPRISES (formerly Kumar Paints)', margin, yPos)
+  yPos += 3
+  
+  doc.setFont('helvetica', 'normal')
+  doc.setFontSize(7)
+  doc.text('S1/803, NEAR TOAD FARMS', margin, yPos)
+  yPos += 3
+  doc.text('KONDHWA BK - HAVELI', margin, yPos)
+  yPos += 3
+  doc.text('WAGHOLI, Pune', margin, yPos)
+  yPos += 3
+  doc.text('WAGHOLI, MAHARASHTRA 411048,27', margin, yPos)
+  yPos += 3
+  doc.text('Maharashtra', margin, yPos)
+  yPos += 3
+  doc.text('GSTIN No: 27BZAPK4893D1ZZT', margin, yPos)
+  yPos += 4
+  
+  doc.setFontSize(6)
+  doc.text('CIN: L24292WB1954PLC021516', margin, yPos)
+  yPos += 2.5
+  doc.text('PAN: AAACI4297A', margin, yPos)
+  yPos += 2.5
+  doc.text('IRN: fd8d79222f23dabe366ccb9971a0d12a379d49af7a89e75426eb3dbc801aac6', margin, yPos)
+  
+  // TAX INVOICE Title (top right)
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(14)
+  doc.text('TAX INVOICE', pageWidth - margin - 50, margin + 5)
+  
+  doc.setFont('helvetica', 'normal')
+  doc.setFontSize(7)
+  doc.text('ORIGINAL FOR RECIPIENT', pageWidth - margin - 50, margin + 10)
+  
+  // QR Code (top right)
+  doc.addImage(qrCodeDataUrl, 'PNG', pageWidth - margin - 35, margin + 12, 30, 30)
+  
+  // Bill To & Invoice Details Section
+  yPos = margin + 45
+  const boxHeight = 32
+  const leftBoxWidth = (pageWidth - 2 * margin) / 2 - 1
+  const rightBoxX = margin + leftBoxWidth + 2
+  
+  // Left Box - Bill To
+  doc.setDrawColor(0)
+  doc.setLineWidth(0.2)
+  doc.rect(margin, yPos, leftBoxWidth, boxHeight)
+  
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(7)
+  doc.text('Bill To: 3307620    PAN No:', margin + 2, yPos + 3)
+  
+  doc.setFont('helvetica', 'normal')
+  let billY = yPos + 6
+  doc.text(addr.full_name || order.guest_name || 'Kustom Koats Enterprises', margin + 2, billY)
+  billY += 3
+  doc.text(`B1-803, SN-14/2A/2B`, margin + 2, billY)
+  billY += 3
+  doc.text('Kumar Palms, Kondhwa BK, Pune', margin + 2, billY)
+  billY += 3
+  doc.text('Pune', margin + 2, billY)
+  billY += 3
+  doc.text('Pune 411048', margin + 2, billY)
+  billY += 3
+  doc.text('State Name/Code: 27 Maharashtra', margin + 2, billY)
+  billY += 3
+  doc.text('GSTIN No: 27BZAPK4893D1ZZT', margin + 2, billY)
+  
+  // Right Box - Invoice Details
+  doc.rect(rightBoxX, yPos, leftBoxWidth, boxHeight)
+  
+  let rightY = yPos + 3
+  doc.setFont('helvetica', 'normal')
+  doc.setFontSize(6.5)
+  doc.text(`Invoice No: I486211986 / ${new Date(order.created_at).toLocaleDateString('en-IN')} / 03.06.2026`, rightBoxX + 2, rightY)
+  rightY += 3
+  doc.text(`Delivery No: 9107138919 / ${new Date(order.created_at).toLocaleDateString('en-IN')}`, rightBoxX + 2, rightY)
+  rightY += 3
+  doc.text(`PO Number: ORDER BY MAIL ${new Date(order.created_at).toLocaleDateString('en-IN')}`, rightBoxX + 2, rightY)
+  rightY += 4
+  
+  doc.setFont('helvetica', 'bold')
+  doc.text('Place of Supply/Delivery', rightBoxX + 2, rightY)
+  rightY += 3
+  
+  doc.setFont('helvetica', 'normal')
+  doc.text('Consignee: 3307620', rightBoxX + 2, rightY)
+  rightY += 3
+  doc.text('Kustom Koats Enterprises', rightBoxX + 2, rightY)
+  rightY += 3
+  doc.text('B1-803, SN-14/2A/2B', rightBoxX + 2, rightY)
+  rightY += 3
+  doc.text('Kumar Palms, Kondhwa BK, Pune', rightBoxX + 2, rightY)
+  rightY += 3
+  doc.text('Pune 411048,27 Maharashtra', rightBoxX + 2, rightY)
+  rightY += 3
+  doc.text('GSTIN No:27BZAPK4893D1ZZT', rightBoxX + 2, rightY)
+  
+  // Product Details Table
+  yPos += boxHeight + 3
+  
+  const tableData = items.map((item, idx) => {
+    const itemPrice = item.price || 0
+    const itemQty = item.quantity || 1
+    const grossValue = itemPrice * itemQty
+    const cgst = grossValue * cgstRate
+    const sgst = grossValue * sgstRate
+    const totalValue = grossValue + cgst + sgst
+    
+    return [
+      `${item.products?.custom_id || 'N' + (idx + 1).toString().padStart(6, '0')}\n${(item.products?.name || 'Product').substring(0, 50)}`,
+      item.products?.hsn_code || '32089090',
+      '1.000',
+      itemQty.toString(),
+      itemQty.toFixed(3),
+      itemPrice.toFixed(2),
+      grossValue.toFixed(2),
+      '0.00',
+      '0.00',
+      grossValue.toFixed(2),
+      '9.00%',
+      cgst.toFixed(2),
+      '9.00%',
+      sgst.toFixed(2),
+      '0.00',
+      totalValue.toFixed(2)
+    ]
+  })
+  
+  doc.autoTable({
+    startY: yPos,
+    head: [[
+      'Product Code\nDescription of Goods',
+      'HSN\nCode',
+      'Pack\nL/KG',
+      'QTY\nPC/P\n/KG',
+      'Total QTY\nL/KG',
+      'Rate per\nunit INR',
+      'Gross Value\nINR',
+      'Other Disc.\nINR',
+      'Cash Disc.\nINR',
+      'Value before\nTax INR',
+      'CGST/IGST\nRate %',
+      'CGST/IGST\nAmt INR',
+      'SGST/\nUTGST\nRate %',
+      'SGST/\nUTGST Amt\nINR',
+      'K. P. CESS\nAmount INR',
+      'Total Value\nINR'
+    ]],
+    body: tableData,
+    theme: 'grid',
+    styles: {
+      fontSize: 5.5,
+      cellPadding: 0.5,
+      lineColor: [0, 0, 0],
+      lineWidth: 0.1,
+      textColor: [0, 0, 0],
+      overflow: 'linebreak'
+    },
+    headStyles: {
+      fillColor: [255, 255, 255],
+      textColor: [0, 0, 0],
+      fontStyle: 'bold',
+      halign: 'center',
+      valign: 'middle',
+      lineWidth: 0.1,
+      minCellHeight: 8
+    },
+    columnStyles: {
+      0: { cellWidth: 28, fontSize: 5 },
+      1: { cellWidth: 11, halign: 'center' },
+      2: { cellWidth: 9, halign: 'right' },
+      3: { cellWidth: 8, halign: 'right' },
+      4: { cellWidth: 10, halign: 'right' },
+      5: { cellWidth: 11, halign: 'right' },
+      6: { cellWidth: 12, halign: 'right' },
+      7: { cellWidth: 10, halign: 'right' },
+      8: { cellWidth: 10, halign: 'right' },
+      9: { cellWidth: 14, halign: 'right' },
+      10: { cellWidth: 10, halign: 'center' },
+      11: { cellWidth: 11, halign: 'right' },
+      12: { cellWidth: 9, halign: 'center' },
+      13: { cellWidth: 11, halign: 'right' },
+      14: { cellWidth: 11, halign: 'right' },
+      15: { cellWidth: 12, halign: 'right', fontStyle: 'bold' }
+    },
+    margin: { left: margin, right: margin },
+    didDrawPage: () => {
+      doc.setFontSize(6)
+      doc.setFont('helvetica', 'normal')
+      doc.text('Page 1 of 2', pageWidth / 2, pageHeight - 5, { align: 'center' })
+    }
+  })
+  
+  // ===== PAGE 2 =====
+  doc.addPage()
+  
+  // Header on Page 2
+  yPos = margin
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(9)
+  doc.text('KUSTOM KOATS ENTERPRISES', margin, yPos)
+  
+  doc.setFont('helvetica', 'normal')
+  doc.setFontSize(7)
+  doc.text('TAX INVOICE', pageWidth - margin - 30, yPos)
+  yPos += 3
+  
+  doc.setFontSize(6.5)
+  doc.text(`Invoice No: I486211986 / ${new Date(order.created_at).toLocaleDateString('en-IN')} / 03.06.2026`, margin, yPos)
+  doc.text(`ORIGINAL FOR RECIPIENT`, pageWidth - margin - 45, yPos)
+  yPos += 7
+  
+  // HSN Summary
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(7)
+  doc.text('HSN-wise Summary', margin, yPos)
+  yPos += 2
+  
+  // Group by HSN
+  const hsnGroups = {}
+  items.forEach(item => {
+    const hsn = item.products?.hsn_code || '32089090'
+    if (!hsnGroups[hsn]) {
+      hsnGroups[hsn] = { hsn, qty: 0, taxable: 0, cgst: 0, sgst: 0, total: 0 }
+    }
+    const itemGross = (item.price || 0) * (item.quantity || 1)
+    hsnGroups[hsn].qty += item.quantity || 1
+    hsnGroups[hsn].taxable += itemGross
+    hsnGroups[hsn].cgst += itemGross * cgstRate
+    hsnGroups[hsn].sgst += itemGross * sgstRate
+    hsnGroups[hsn].total += itemGross + (itemGross * gstRate)
+  })
+  
+  const hsnSummaryData = Object.values(hsnGroups).map(g => [
+    g.hsn,
+    g.qty.toFixed(3),
+    g.taxable.toFixed(2),
+    '9.00%',
+    g.cgst.toFixed(2),
+    '9.00%',
+    g.sgst.toFixed(2),
+    '0.00',
+    '0.00',
+    g.total.toFixed(2)
+  ])
+  
+  // Total row
+  hsnSummaryData.push([
+    'Total',
+    items.reduce((sum, item) => sum + (item.quantity || 1), 0).toFixed(3),
+    subtotal.toFixed(2),
+    '',
+    cgstAmount.toFixed(2),
+    '',
+    sgstAmount.toFixed(2),
+    '0.00',
+    '0.00',
+    (subtotal + gstAmount).toFixed(2)
+  ])
+  
+  doc.autoTable({
+    startY: yPos,
+    head: [['HSN\nCode', 'Quantity', 'Taxable\nAmount\nINR', 'CGST\nRate %', 'CGST Amt\nINR', 'SGST\nRate %', 'SGST Amt\nINR', 'TCS Base\nAmount', 'TCS Amount\nINR', 'Total\nAmount\nINR']],
+    body: hsnSummaryData,
+    theme: 'grid',
+    styles: {
+      fontSize: 6,
+      cellPadding: 0.8,
+      lineColor: [0, 0, 0],
+      lineWidth: 0.1
+    },
+    headStyles: {
+      fillColor: [255, 255, 255],
+      textColor: [0, 0, 0],
+      fontStyle: 'bold',
+      halign: 'center',
+      fontSize: 6
+    },
+    columnStyles: {
+      0: { cellWidth: 18, halign: 'center' },
+      1: { cellWidth: 16, halign: 'right' },
+      2: { cellWidth: 18, halign: 'right' },
+      3: { cellWidth: 14, halign: 'center' },
+      4: { cellWidth: 16, halign: 'right' },
+      5: { cellWidth: 14, halign: 'center' },
+      6: { cellWidth: 16, halign: 'right' },
+      7: { cellWidth: 16, halign: 'right' },
+      8: { cellWidth: 16, halign: 'right' },
+      9: { cellWidth: 18, halign: 'right', fontStyle: 'bold' }
+    },
+    margin: { left: margin, right: margin }
+  })
+  
+  yPos = doc.lastAutoTable.finalY + 5
+  
+  // Transport Details
+  doc.setFont('helvetica', 'normal')
+  doc.setFontSize(6)
+  doc.text('Transporter: 260736   Lorry No:', margin, yPos)
+  doc.text(`Cartons: 1`, margin + 70, yPos)
+  yPos += 3
+  doc.text('Eway Receipt No:', margin, yPos)
+  doc.text(`Total Weight(KG): 8.288`, margin + 70, yPos)
+  yPos += 3
+  doc.text('Package Summary', margin, yPos)
+  doc.text(`Total Quantity: 8.000 LT / 0.000 KG / 0 PC`, margin + 70, yPos)
+  
+  yPos += 8
+  
+  // Invoice Summary (Right side)
+  const summaryX = pageWidth - margin - 55
+  let summaryY = doc.lastAutoTable.finalY + 5
+  
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(7)
+  doc.text('Invoice Summary', summaryX, summaryY)
+  summaryY += 3
+  
+  doc.setFont('helvetica', 'normal')
+  doc.setFontSize(6)
+  const summaryLines = [
+    ['Total Material Value:', subtotal.toFixed(2)],
+    ['Other Discounts:', '0.00'],
+    ['Cash Discount @ 0.00 %:', '0.00'],
+    ['Taxable Value / Value before TAX:', subtotal.toFixed(2)],
+    ['Central GST @ 9.00 %:', cgstAmount.toFixed(2)],
+    ['State GST @ 9.00 %:', sgstAmount.toFixed(2)],
+    ['Rounding Off:', roundingOff.toFixed(2)]
+  ]
+  
+  summaryLines.forEach(([label, value]) => {
+    doc.text(label, summaryX, summaryY)
+    doc.text(value, summaryX + 50, summaryY, { align: 'right' })
+    summaryY += 3
+  })
+  
+  summaryY += 1
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(7)
+  doc.text('Total:', summaryX, summaryY)
+  doc.text(finalTotal.toFixed(2), summaryX + 50, summaryY, { align: 'right' })
+  
+  // Amount in Words
+  yPos += 8
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(7)
+  doc.text(`As per agreed terms please pay INR ${finalTotal}:`, margin, yPos)
+  yPos += 3
+  
+  const amountWords = numberToWordsINR(finalTotal)
+  doc.setFont('helvetica', 'italic')
+  doc.setFontSize(6.5)
+  doc.text(`RUPEES : ${amountWords.toUpperCase()} ONLY`, margin, yPos)
+  
+  yPos += 7
+  
+  // If Reverse Charge applicable
+  doc.setFont('helvetica', 'normal')
+  doc.setFontSize(6)
+  doc.text('If Reverse Charge applicable, then specify amount of tax', margin, yPos)
+  
+  yPos += 5
+  
+  // Declaration boxes
+  const boxWidth = 85
+  const boxHeight2 = 18
+  
+  // Left box - Received statement
+  doc.rect(margin, yPos, boxWidth, boxHeight2)
+  doc.setFontSize(6)
+  doc.text('The total quantity as detailed in this invoice', margin + 2, yPos + 3)
+  doc.text('has been received in sound condition', margin + 2, yPos + 6)
+  
+  doc.text('Signature', margin + 2, yPos + 13)
+  doc.text('Name of the Signatory    For Kustom Koats Enterprises', margin + 15, yPos + 13)
+  doc.text('Designation / Status', margin + 2, yPos + 16)
+  doc.text('Place', margin + 50, yPos + 16)
+  doc.text('Date         E & O E', margin + 70, yPos + 16)
+  
+  // Right box - Dealer signature
+  doc.rect(margin + boxWidth + 2, yPos, boxWidth, boxHeight2)
+  doc.text("Dealer's Name, Signature and Date of Receipt", margin + boxWidth + 4, yPos + 3)
+  
+  yPos += boxHeight2 + 3
+  
+  // Company Registration
+  doc.setFontSize(5.5)
+  doc.text('REGISTERED OFFICE: KUSTOM KOATS ENTERPRISES, 801A, South City Business Park, 770, Anandpur,', margin, yPos)
+  yPos += 2.5
+  doc.text('Kolkata, West Bengal - 700107', margin, yPos)
+  yPos += 2.5
+  doc.text('CIN No: +91 9222777925, Fax: +91 33 22217925; Website: www.kustomkoats.in', margin, yPos)
+  
+  yPos += 5
+  
+  // Order details table
+  doc.setFontSize(6)
+  doc.text('Declaration: Certified that the particulars given above are true and correct', margin, yPos)
+  yPos += 2.5
+  doc.text('This transaction between the Parties is governed by the Kustom Koats Enterprises\'s Terms & Conditions of Sale', margin, yPos)
+  yPos += 2.5
+  doc.text('(Refer URL for T&C)', margin, yPos)
+  
+  yPos += 5
+  
+  // Order timing details
+  doc.autoTable({
+    startY: yPos,
+    head: [['Order No.', 'Order Date', 'Order_Time', 'Dispatch Date', 'Dispatch Time', 'POD Date', 'POD Time']],
+    body: [[
+      orderId,
+      new Date(order.created_at).toLocaleDateString('en-IN'),
+      '18:01',
+      new Date(order.created_at).toLocaleDateString('en-IN'),
+      '19:15',
+      '',
+      ''
+    ]],
+    theme: 'grid',
+    styles: {
+      fontSize: 6,
+      cellPadding: 1,
+      lineColor: [0, 0, 0],
+      lineWidth: 0.1
+    },
+    headStyles: {
+      fillColor: [255, 255, 255],
+      textColor: [0, 0, 0],
+      fontStyle: 'bold',
+      halign: 'center'
+    },
+    columnStyles: {
+      0: { cellWidth: 25 },
+      1: { cellWidth: 25 },
+      2: { cellWidth: 25 },
+      3: { cellWidth: 25 },
+      4: { cellWidth: 25 },
+      5: { cellWidth: 25 },
+      6: { cellWidth: 25 }
+    },
+    margin: { left: margin, right: margin }
+  })
+  
+  // Page 2 of 2
+  doc.setFontSize(6)
+  doc.text('Page 2 of 2', pageWidth / 2, pageHeight - 5, { align: 'center' })
+  
+  // Open for printing
+  const pdfBlob = doc.output('blob')
+  const pdfUrl = URL.createObjectURL(pdfBlob)
+  
+  const printWindow = window.open(pdfUrl, '_blank')
+  
+  if (printWindow) {
+    printWindow.onload = () => {
+      printWindow.print()
+      setTimeout(() => {
+        URL.revokeObjectURL(pdfUrl)
+      }, 1000)
+    }
+  }
+  
+  return orderId
+}

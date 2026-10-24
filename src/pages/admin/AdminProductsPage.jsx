@@ -8,6 +8,7 @@ import {
   DollarSign, AlertCircle, CheckCircle, BarChart2
 } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
+import { getSetting } from '../../services/settingsService'
 import KKAdminLayout from '../../components/admin/KKAdminLayout'
 import TechnicalBarEditor from '../../components/admin/TechnicalBarEditor'
 import toast from 'react-hot-toast'
@@ -25,6 +26,8 @@ const emptyProduct = () => ({
   sku: '', brand: '', colour: '', finish: '',
   gtin_ean: '', internal_barcode: '', barcode_type: 'Code 128',
   mrp: '', status: 'Active',
+  hsn_code: '32089090',
+  display_product_id: '', // Will be auto-generated
   techBars: [],
   techSpecs: [],
   techDetailsTitle: '',
@@ -403,8 +406,18 @@ function ProductFormModal({ initialData, categories, onClose, onSaved }) {
   const [bundles, setBundles] = useState([])
   const [selectedBundles, setSelectedBundles] = useState([])
   const [loadingBundles, setLoadingBundles] = useState(true)
+  const [gstin, setGstin] = useState('')
 
   const setField = (k, v) => setForm(f => ({ ...f, [k]: v }))
+
+  // Fetch GSTIN from settings
+  useEffect(() => {
+    const loadGstin = async () => {
+      const gstinValue = await getSetting('gstin')
+      setGstin(gstinValue || '27BZAPK4893D1ZZT')
+    }
+    loadGstin()
+  }, [])
 
   // Fetch bundles and currently tagged bundles when form opens
   useEffect(() => {
@@ -486,11 +499,13 @@ function ProductFormModal({ initialData, categories, onClose, onSaved }) {
         images: form.images.filter(Boolean),
         tags: form.tags || [],
         size: form.size || null,
+        hsn_code: form.hsn_code || '32089090',
         ...(includeOptional && {
           original_price:  form.original_price  ? parseFloat(form.original_price)  : null,
           wholesale_price: form.wholesale_price ? parseFloat(form.wholesale_price) : null,
           dealer_price:    form.dealer_price    ? parseFloat(form.dealer_price)    : null,
           custom_id: form.custom_id || null,
+          display_product_id: form.display_product_id || null,
           sku: form.sku || null,
           brand: form.brand || null,
           colour: form.colour || null,
@@ -628,19 +643,17 @@ function ProductFormModal({ initialData, categories, onClose, onSaved }) {
             {activeTab === 'basic' && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-                  {/* Product ID - Display only for existing products */}
-                  {form.id && (
-                    <div>
-                      <label style={S.label}>Product ID (Auto-generated)</label>
-                      <input 
-                        style={{ ...S.input, background: '#F5F5F5', cursor: 'not-allowed' }} 
-                        value={form.id} 
-                        readOnly 
-                        disabled 
-                      />
-                    </div>
-                  )}
-                  <div style={{ gridColumn: form.id ? '2 / -1' : '1 / -1' }}>
+                  {/* Product ID - Display for existing products, show "Auto-generated" for new */}
+                  <div>
+                    <label style={S.label}>Product ID {!form.id && <span style={{ color: '#888', fontWeight: 400 }}>(Auto-generated on save)</span>}</label>
+                    <input 
+                      style={{ ...S.input, background: '#F5F5F5', cursor: 'not-allowed' }} 
+                      value={form.display_product_id || (form.id ? form.id : 'Will be auto-generated')} 
+                      readOnly 
+                      disabled 
+                    />
+                  </div>
+                  <div>
                     <label style={S.label}>Product Name *</label>
                     <input style={S.input} value={form.name} onChange={e => setField('name', e.target.value)} placeholder="e.g. Pearl Blue Metallic" required />
                   </div>
@@ -690,6 +703,10 @@ function ProductFormModal({ initialData, categories, onClose, onSaved }) {
                         <input style={S.input} value={form.sku || ''} onChange={e => setField('sku', e.target.value)} placeholder="XK-CR-100" />
                       </div>
                       <div>
+                        <label style={S.label}>HSN/SAC Code <span style={{ color: '#888', fontWeight: 400 }}>(for tax)</span></label>
+                        <input style={S.input} value={form.hsn_code || '32089090'} onChange={e => setField('hsn_code', e.target.value)} placeholder="32089090" />
+                      </div>
+                      <div>
                         <label style={S.label}>Brand</label>
                         <input style={S.input} value={form.brand || ''} onChange={e => setField('brand', e.target.value)} placeholder="Xtreme Kolorz" />
                       </div>
@@ -730,6 +747,18 @@ function ProductFormModal({ initialData, categories, onClose, onSaved }) {
                           <option value="Inactive">Inactive</option>
                           <option value="Discontinued">Discontinued</option>
                         </select>
+                      </div>
+                      <div style={{ gridColumn: '1 / -1', padding: '10px 12px', background: '#E8F5E9', borderRadius: 6, border: '1px solid #A5D6A7' }}>
+                        <label style={{ ...S.label, marginBottom: 2 }}>Company GSTIN <span style={{ color: '#888', fontWeight: 400 }}>(from global settings)</span></label>
+                        <input 
+                          style={{ ...S.input, background: '#F5F5F5', cursor: 'not-allowed', fontSize: '0.8125rem' }} 
+                          value={gstin} 
+                          readOnly 
+                          disabled 
+                        />
+                        <p style={{ fontSize: '0.6875rem', color: '#558B2F', margin: '4px 0 0 0', fontFamily: "'Inter', sans-serif" }}>
+                          ℹ️ This GSTIN is used on invoices. Change it in Global Settings if needed.
+                        </p>
                       </div>
                     </div>
                   </div>

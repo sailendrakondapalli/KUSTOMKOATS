@@ -63,7 +63,7 @@ export default function KustomKultorPage() {
   return (
     <>
       <Helmet>
-        <title>Blog - Kustom Kultor | Kustom Koats</title>
+        <title>KULTURE - Kustom Kultor | Kustom Koats</title>
         <meta name="description" content="Explore automotive inspiration, how-to guides, and industry insights from Kustom Koats." />
       </Helmet>
 
@@ -79,12 +79,12 @@ export default function KustomKultorPage() {
                 letterSpacing: "0.05em"
               }}
             >
-              Blog
+              KULTURE
             </h1>
             <div className="flex items-center justify-center gap-2 text-sm" style={{ color: "#CCCCCC" }}>
               <Link to="/" className="hover:text-white transition-colors">Home</Link>
               <span>/</span>
-              <span>Blog</span>
+              <span>KULTURE</span>
             </div>
           </div>
         </section>

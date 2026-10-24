@@ -276,16 +276,16 @@ function FeaturedCategoriesSection() {
 
   const categories = [
     {
-      title: "Xtreme Wrap",
-      image: "/categories/image.png",
-      link: "/shop/xtreme-wrap",
-      product: categoryProducts['Xtreme Wrap']
-    },
-    {
       title: "Xtreme Kolorz",
       image: "/categories/image.png",
       link: "/shop/xtreme-kolorz",
       product: categoryProducts['Xtreme Kolorz']
+    },
+    {
+      title: "Xtreme Wrap",
+      image: "/categories/image.png",
+      link: "/shop/xtreme-wrap",
+      product: categoryProducts['Xtreme Wrap']
     },
     {
       title: "Accessories",
@@ -295,7 +295,7 @@ function FeaturedCategoriesSection() {
     }
   ]
 
-  // Auto-scroll the mobile carousel to the next card every 2 seconds
+  // Auto-scroll the mobile carousel to the next card every 1 second
   useEffect(() => {
     if (categories.length === 0) return
 
@@ -315,7 +315,7 @@ function FeaturedCategoriesSection() {
       if (target) {
         container.scrollTo({ left: target.offsetLeft, behavior: 'smooth' })
       }
-    }, 2000)
+    }, 1000)
 
     return () => clearInterval(interval)
   }, [categories.length])
@@ -380,11 +380,6 @@ function FeaturedCategoriesSection() {
                     >
                       {product?.name || category.title}
                     </h3>
-                    {product && (
-                      <p className="text-lg font-bold" style={{ color: "#000000", fontFamily: "'Inter', sans-serif" }}>
-                        ₹{product.price}
-                      </p>
-                    )}
                     <div
                       className="inline-block text-sm font-bold tracking-wider uppercase transition-colors group-hover:text-[#CA2A31]"
                       style={{ 
@@ -441,11 +436,6 @@ function FeaturedCategoriesSection() {
                     >
                       {product?.name || category.title}
                     </h3>
-                    {product && (
-                      <p className="text-lg font-bold" style={{ color: "#000000", fontFamily: "'Inter', sans-serif" }}>
-                        ₹{product.price}
-                      </p>
-                    )}
                     <div
                       className="inline-block text-sm font-bold tracking-wider uppercase transition-colors group-hover:text-[#CA2A31]"
                       style={{ 
@@ -676,6 +666,19 @@ function SignatureSeriesSection() {
                     >
                       {product.category}
                     </p>
+                    
+                    {/* Price */}
+                    {product.price && (
+                      <p 
+                        className="text-base md:text-lg font-bold mb-3"
+                        style={{ 
+                          fontFamily: "'Inter', sans-serif", 
+                          color: "#000000"
+                        }}
+                      >
+                        ₹{product.price.toLocaleString('en-IN')}
+                      </p>
+                    )}
                     
                     {/* Read More Link */}
                     <div

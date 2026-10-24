@@ -131,7 +131,7 @@ export default function WhyKustomKoatsNeon() {
                 marginBottom: 28,
               }}>
                 <div style={{
-                  width: 80, height: 80,
+                  width: 100, height: 100,
                   borderRadius: '50%',
                   background: 'rgba(202,42,49,0.08)',
                   border: '1px solid rgba(202,42,49,0.25)',
@@ -145,7 +145,7 @@ export default function WhyKustomKoatsNeon() {
                     src={f.image}
                     alt={f.title}
                     style={{
-                      width: 44, height: 44,
+                      width: 56, height: 56,
                       objectFit: 'contain',
                       filter: 'drop-shadow(0 0 6px rgba(202,42,49,0.7)) brightness(0) saturate(100%) invert(22%) sepia(96%) saturate(2476%) hue-rotate(337deg) brightness(87%) contrast(105%)',
                     }}
@@ -153,17 +153,8 @@ export default function WhyKustomKoatsNeon() {
                 </div>
               </div>
 
-              {/* Row 2 — Number + Title (auto height) */}
+              {/* Row 2 — Title (auto height) */}
               <div style={{ marginBottom: 16 }}>
-                <p style={{
-                  fontFamily: "'Bebas Neue', sans-serif",
-                  fontSize: '0.875rem',
-                  letterSpacing: '0.2em',
-                  color: '#CA2A31',
-                  marginBottom: 8,
-                }}>
-                  {f.number}
-                </p>
                 <h3 style={{
                   fontFamily: "'Inter', sans-serif",
                   fontSize: '0.8125rem',

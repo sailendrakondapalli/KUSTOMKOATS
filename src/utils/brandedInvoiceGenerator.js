@@ -2,6 +2,33 @@ import jsPDF from 'jspdf'
 import 'jspdf-autotable'
 import QRCode from 'qrcode'
 
+// Add watermark to PDF page
+async function addWatermark(doc, pageWidth, pageHeight) {
+  try {
+    const response = await fetch('/logo.png')
+    const blob = await response.blob()
+    const reader = new FileReader()
+    
+    return new Promise((resolve) => {
+      reader.onloadend = () => {
+        const base64data = reader.result
+        // Add semi-transparent watermark in center
+        doc.saveGraphicsState()
+        doc.setGState(new doc.GState({ opacity: 0.1 }))
+        const watermarkSize = 80
+        const x = (pageWidth - watermarkSize) / 2
+        const y = (pageHeight - watermarkSize) / 2
+        doc.addImage(base64data, 'PNG', x, y, watermarkSize, watermarkSize)
+        doc.restoreGraphicsState()
+        resolve()
+      }
+      reader.readAsDataURL(blob)
+    })
+  } catch (error) {
+    console.error('Failed to add watermark:', error)
+  }
+}
+
 // Convert number to Indian Rupees words
 function numberToWordsINR(num) {
   const a = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen']
@@ -50,9 +77,16 @@ export async function generateBrandedInvoice(order, siteUrl = 'https://kustomkoa
   const roundingOff = Math.round(totalBeforeRounding) - totalBeforeRounding
   const finalTotal = Math.round(totalBeforeRounding)
   
-  // Generate QR Code
+  // Generate QR Code with better scanning parameters
   const qrData = `Invoice: ${orderId}\nDate: ${new Date(order.created_at).toLocaleDateString('en-IN')}\nAmount: ₹${finalTotal}\nGSTIN: 27BZAPK4893D1ZZT`
-  const qrCodeDataUrl = await QRCode.toDataURL(qrData, { width: 120, margin: 0 })
+  const qrCodeDataUrl = await QRCode.toDataURL(qrData, { 
+    width: 150, 
+    margin: 2,
+    errorCorrectionLevel: 'M'
+  })
+  
+  // Add watermark to page 1
+  await addWatermark(doc, pageWidth, pageHeight)
   
   // ===== PAGE 1 =====
   let yPos = margin
@@ -256,6 +290,7 @@ export async function generateBrandedInvoice(order, siteUrl = 'https://kustomkoa
   
   // ===== PAGE 2 =====
   doc.addPage()
+  await addWatermark(doc, pageWidth, pageHeight)
   
   // Header on Page 2
   yPos = margin
@@ -536,9 +571,16 @@ export async function printBrandedInvoice(order, siteUrl = 'https://kustomkoats.
   const roundingOff = Math.round(totalBeforeRounding) - totalBeforeRounding
   const finalTotal = Math.round(totalBeforeRounding)
   
-  // Generate QR Code
+  // Generate QR Code with better scanning parameters
   const qrData = `Invoice: ${orderId}\nDate: ${new Date(order.created_at).toLocaleDateString('en-IN')}\nAmount: ₹${finalTotal}\nGSTIN: 27BZAPK4893D1ZZT`
-  const qrCodeDataUrl = await QRCode.toDataURL(qrData, { width: 120, margin: 0 })
+  const qrCodeDataUrl = await QRCode.toDataURL(qrData, { 
+    width: 150, 
+    margin: 2,
+    errorCorrectionLevel: 'M'
+  })
+  
+  // Add watermark to page 1
+  await addWatermark(doc, pageWidth, pageHeight)
   
   // ===== PAGE 1 =====
   let yPos = margin
@@ -742,6 +784,7 @@ export async function printBrandedInvoice(order, siteUrl = 'https://kustomkoats.
   
   // ===== PAGE 2 =====
   doc.addPage()
+  await addWatermark(doc, pageWidth, pageHeight)
   
   // Header on Page 2
   yPos = margin

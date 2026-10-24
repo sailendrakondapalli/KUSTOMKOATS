@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router-dom'
 import {
   Package, Tag, ShoppingBag, Users,
   Store, Menu, X, ChevronRight, Handshake,
-  BarChart2, FileText, Ticket, MessageSquare, BookOpen, HelpCircle, Link2, Receipt, CreditCard, ArrowLeftRight, Box, FileText as EWayBillIcon
+  BarChart2, FileText, Ticket, MessageSquare, BookOpen, HelpCircle, Link2, Receipt, CreditCard, ArrowLeftRight, Box, FileText as EWayBillIcon, Settings
 } from 'lucide-react'
 
 const NAV_ITEMS = [
@@ -24,6 +24,7 @@ const NAV_ITEMS = [
   { path: '/admin/footer-links', label: 'Footer Links', icon: Link2 },
   { path: '/admin/pos',        label: 'Point of Sale', icon: CreditCard },
   { path: '/admin/erp',        label: 'ERP System',  icon: Receipt },
+  { path: '/admin/settings',   label: 'Settings',    icon: Settings },
 ]
 
 export default function KKAdminLayout({ children }) {

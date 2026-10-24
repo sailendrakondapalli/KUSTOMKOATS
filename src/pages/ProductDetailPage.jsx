@@ -38,6 +38,8 @@ export default function ProductDetailPage() {
   const [techSpecs, setTechSpecs] = useState([])
   const [techLoading, setTechLoading] = useState(false)
   const [showStickyBar, setShowStickyBar] = useState(false)
+  const [selectedSize, setSelectedSize] = useState(null)
+  const [quantity, setQuantity] = useState(1)
 
   const mediaRef = useRef(null)
 
@@ -151,10 +153,27 @@ export default function ProductDetailPage() {
   const handleAddToCart = async () => {
     if (inCart) { navigate('/cart'); return }
     if (!user) { toast.error('Please login to add to cart'); navigate('/login'); return }
+    
+    // Check if product has variants and none is selected
+    if (product.size && !selectedSize) {
+      toast.error('Please select a variant')
+      return
+    }
+    
+    // Enforce minimum quantity for 50ML
+    const is50ML = selectedSize && (parseFloat(selectedSize) === 50 || parseFloat(selectedSize) === 0.05)
+    if (is50ML && quantity < 3) {
+      toast.error('Minimum 3 units required for 50ML variant')
+      return
+    }
+    
     setAddingCart(true)
     try {
-      await addToCart(product, user.id)
-      toast.success('Added to cart!')
+      // Add to cart with selected quantity
+      for (let i = 0; i < quantity; i++) {
+        await addToCart(product, user.id)
+      }
+      toast.success(`Added ${quantity} item(s) to cart!`)
     } catch (e) {
       toast.error(e.message || 'Failed to add to cart')
     } finally {
@@ -173,7 +192,20 @@ export default function ProductDetailPage() {
   }
 
   const handleBuyNow = () => {
-    navigate('/checkout', { state: { buyNow: { product, quantity: 1 } } })
+    // Check if product has variants and none is selected
+    if (product.size && !selectedSize) {
+      toast.error('Please select a variant')
+      return
+    }
+    
+    // Enforce minimum quantity for 50ML
+    const is50ML = selectedSize && (parseFloat(selectedSize) === 50 || parseFloat(selectedSize) === 0.05)
+    if (is50ML && quantity < 3) {
+      toast.error('Minimum 3 units required for 50ML variant')
+      return
+    }
+    
+    navigate('/checkout', { state: { buyNow: { product, quantity: quantity } } })
   }
 
   if (loading) {
@@ -531,15 +563,79 @@ export default function ProductDetailPage() {
                       }
                     }
                     
+                    const isSelected = selectedSize === s
+                    const is50ML = parseFloat(s) === 50 || parseFloat(s) === 0.05
+                    
                     return (
-                      <span key={s}
-                        className="px-4 py-2 bg-white border-2 border-gray-300 text-sm font-medium rounded-lg hover:border-[#CA2A31] transition-colors cursor-pointer"
-                        style={{ color: '#000000', fontFamily: "'Inter', sans-serif" }}>
+                      <button
+                        key={s}
+                        onClick={() => {
+                          setSelectedSize(s)
+                          // Set minimum quantity to 3 for 50ML variants
+                          if (is50ML) {
+                            setQuantity(3)
+                          } else {
+                            setQuantity(1)
+                          }
+                        }}
+                        className={`px-4 py-2 bg-white border-2 text-sm font-medium rounded-lg transition-all ${
+                          isSelected 
+                            ? 'border-[#CA2A31] bg-red-50 text-[#CA2A31]' 
+                            : 'border-gray-300 hover:border-[#CA2A31]'
+                        }`}
+                        style={{ color: isSelected ? '#CA2A31' : '#000000', fontFamily: "'Inter', sans-serif" }}>
                         {formatSize(s)}
-                      </span>
+                        {is50ML && <span className="ml-1 text-xs">(Min: 3)</span>}
+                      </button>
                     )
                   })}
                 </div>
+                
+                {/* Quantity Selector - shown when a variant is selected */}
+                {selectedSize && (
+                  <div className="mt-4 pt-4" style={{ borderTop: '1px solid #E0E0E0' }}>
+                    <p className="text-xs font-bold uppercase tracking-wider mb-2"
+                      style={{ color: '#000000', fontFamily: "'Inter', sans-serif" }}>
+                      Quantity
+                    </p>
+                    <div className="flex items-center gap-3">
+                      <button
+                        onClick={() => {
+                          const is50ML = parseFloat(selectedSize) === 50 || parseFloat(selectedSize) === 0.05
+                          const minQty = is50ML ? 3 : 1
+                          setQuantity(Math.max(minQty, quantity - 1))
+                        }}
+                        className="w-10 h-10 rounded-lg border-2 border-gray-300 flex items-center justify-center hover:border-[#CA2A31] transition-colors"
+                        style={{ color: '#000000', fontFamily: "'Inter', sans-serif", fontWeight: 'bold', fontSize: '18px' }}>
+                        −
+                      </button>
+                      <input
+                        type="number"
+                        value={quantity}
+                        onChange={(e) => {
+                          const val = parseInt(e.target.value) || 1
+                          const is50ML = parseFloat(selectedSize) === 50 || parseFloat(selectedSize) === 0.05
+                          const minQty = is50ML ? 3 : 1
+                          setQuantity(Math.max(minQty, val))
+                        }}
+                        min={parseFloat(selectedSize) === 50 || parseFloat(selectedSize) === 0.05 ? 3 : 1}
+                        className="w-20 h-10 text-center border-2 border-gray-300 rounded-lg font-bold"
+                        style={{ fontFamily: "'Inter', sans-serif", fontSize: '16px' }}
+                      />
+                      <button
+                        onClick={() => setQuantity(quantity + 1)}
+                        className="w-10 h-10 rounded-lg border-2 border-gray-300 flex items-center justify-center hover:border-[#CA2A31] transition-colors"
+                        style={{ color: '#000000', fontFamily: "'Inter', sans-serif", fontWeight: 'bold', fontSize: '18px' }}>
+                        +
+                      </button>
+                      <span className="text-sm text-gray-600 ml-2" style={{ fontFamily: "'Inter', sans-serif" }}>
+                        {parseFloat(selectedSize) === 50 || parseFloat(selectedSize) === 0.05 
+                          ? '(Minimum: 3 units)' 
+                          : ''}
+                      </span>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 

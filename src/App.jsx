@@ -30,6 +30,7 @@ const AdminPOSPage = lazy(() => import('./pages/admin/AdminPOSPage'))
 const AdminTransactionsPage = lazy(() => import('./pages/admin/AdminTransactionsPage'))
 const AdminBundlesPage = lazy(() => import('./pages/admin/AdminBundlesPage'))
 const AdminEWayBillPage = lazy(() => import('./pages/admin/AdminEWayBillPage'))
+const AdminSettingsPage = lazy(() => import('./pages/admin/AdminSettingsPage'))
 
 const PageLoader = () => (
   <div className="min-h-screen flex items-center justify-center" style={{ background: '#FFFFFF' }}>
@@ -235,6 +236,13 @@ export default function App() {
               <ErrorBoundary>
                 <Suspense fallback={<AdminLoader />}>
                   <AdminEWayBillPage />
+                </Suspense>
+              </ErrorBoundary>
+            } />
+            <Route path="/admin/settings" element={
+              <ErrorBoundary>
+                <Suspense fallback={<AdminLoader />}>
+                  <AdminSettingsPage />
                 </Suspense>
               </ErrorBoundary>
             } />

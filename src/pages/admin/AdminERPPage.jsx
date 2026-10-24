@@ -108,15 +108,14 @@ export default function AdminERPPage() {
 
   const downloadQRCode = async (product) => {
     try {
-      const qrData = JSON.stringify({
-        id: product.id,
-        custom_id: product.custom_id,
-        name: product.name,
-        price: product.price,
-        url: `https://kustomkoats.in/products/${product.id}`
-      })
+      // Use direct URL for QR code so it navigates when scanned
+      const productUrl = `https://kustomkoats.in/products/${product.id}`
       
-      const qrCodeURL = await QRCode.toDataURL(qrData, { width: 300 })
+      const qrCodeURL = await QRCode.toDataURL(productUrl, { 
+        width: 300,
+        margin: 2,
+        errorCorrectionLevel: 'M'
+      })
       
       const link = document.createElement('a')
       link.href = qrCodeURL
@@ -420,14 +419,13 @@ function ProductLabel({ product }) {
   useEffect(() => {
     const generateQR = async () => {
       try {
-        const qrData = JSON.stringify({
-          id: product.id,
-          custom_id: product.custom_id,
-          name: product.name,
-          price: product.price,
-          url: `https://kustomkoats.in/products/${product.id}`
+        // Use the direct URL for QR code so it navigates when scanned
+        const productUrl = `https://kustomkoats.in/products/${product.id}`
+        const url = await QRCode.toDataURL(productUrl, { 
+          width: 200,
+          margin: 2,
+          errorCorrectionLevel: 'M'
         })
-        const url = await QRCode.toDataURL(qrData, { width: 200 })
         setQRCodeURL(url)
       } catch (error) {
         console.error('QR generation error:', error)
