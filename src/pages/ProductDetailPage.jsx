@@ -514,12 +514,6 @@ export default function ProductDetailPage() {
                     <span className="text-sm font-semibold text-gray-900 font-mono" style={{ fontFamily: "'Inter', sans-serif" }}>{product.custom_id}</span>
                   </div>
                 )}
-                {product.barcode_type && (
-                  <div className="flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition-colors">
-                    <span className="text-sm text-gray-600" style={{ fontFamily: "'Inter', sans-serif" }}>Barcode Type</span>
-                    <span className="text-sm font-semibold text-gray-900" style={{ fontFamily: "'Inter', sans-serif" }}>{product.barcode_type}</span>
-                  </div>
-                )}
                 {product.status && (
                   <div className="flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition-colors">
                     <span className="text-sm text-gray-600" style={{ fontFamily: "'Inter', sans-serif" }}>Status</span>
