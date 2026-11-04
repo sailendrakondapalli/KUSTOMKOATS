@@ -64,29 +64,16 @@ app.use(sanitizeBody);
 
 // Request logging middleware
 app.use((req, res, next) => {
-  console.log(`\n🔵 [REQUEST] ${new Date().toISOString()} - ${req.method} ${req.path}`);
-  if (Object.keys(req.body).length > 0) {
-    console.log('📦 Request Body:', JSON.stringify(req.body, null, 2));
-  }
+  console.log(`🔵 [REQUEST] ${new Date().toISOString()} - ${req.method} ${req.path}`);
   next();
 });
 
 // Response logging middleware
 app.use((req, res, next) => {
-  const originalSend = res.send;
   const originalJson = res.json;
 
-  res.send = function(data) {
-    console.log(`\n🟢 [RESPONSE] ${req.method} ${req.path} - Status: ${res.statusCode}`);
-    console.log('📤 Response Data:', typeof data === 'string' ? data : JSON.stringify(data, null, 2));
-    console.log('─'.repeat(80));
-    return originalSend.call(this, data);
-  };
-
   res.json = function(data) {
-    console.log(`\n🟢 [RESPONSE] ${req.method} ${req.path} - Status: ${res.statusCode}`);
-    console.log('📤 Response Data:', JSON.stringify(data, null, 2));
-    console.log('─'.repeat(80));
+    console.log(`🟢 [RESPONSE] ${req.method} ${req.path} - Status: ${res.statusCode}`);
     return originalJson.call(this, data);
   };
 
