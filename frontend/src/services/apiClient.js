@@ -68,6 +68,15 @@ export const productsAPI = {
   delete: (id) => apiCall(`/products/${id}`, {
     method: 'DELETE',
   }),
+
+  // Get product bundles
+  getBundles: (productId) => apiCall(`/products/${productId}/bundles`),
+  
+  // Update product bundles (admin)
+  updateBundles: (productId, bundle_ids) => apiCall(`/products/${productId}/bundles`, {
+    method: 'PUT',
+    body: JSON.stringify({ bundle_ids }),
+  }),
 };
 
 // Cart API

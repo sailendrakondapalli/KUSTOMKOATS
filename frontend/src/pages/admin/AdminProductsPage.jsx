@@ -8,6 +8,7 @@ import {
   DollarSign, AlertCircle, CheckCircle, BarChart2
 } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
+import { productsAPI } from '../../services/apiClient'
 import { getSetting } from '../../services/settingsService'
 import KKAdminLayout from '../../components/admin/KKAdminLayout'
 import TechnicalBarEditor from '../../components/admin/TechnicalBarEditor'
@@ -434,14 +435,9 @@ function ProductFormModal({ initialData, categories, onClose, onSaved }) {
         if (bundlesError) throw bundlesError
         setBundles(bundlesData || [])
 
-        // If editing, fetch currently tagged bundles
+        // If editing, fetch currently tagged bundles via API
         if (form.id) {
-          const { data: tagsData, error: tagsError } = await supabase
-            .from('product_bundles')
-            .select('bundle_id')
-            .eq('product_id', form.id)
-          
-          if (tagsError) throw tagsError
+          const { data: tagsData } = await productsAPI.getBundles(form.id)
           setSelectedBundles((tagsData || []).map(t => t.bundle_id))
         }
       } catch (err) {
@@ -583,15 +579,13 @@ function ProductFormModal({ initialData, categories, onClose, onSaved }) {
         }
       }
 
-      // Save bundle tags (product_bundles)
-      await supabase.from('product_bundles').delete().eq('product_id', productId)
-      if (selectedBundles.length > 0) {
-        const bundleTags = selectedBundles.map(bundleId => ({
-          product_id: productId,
-          bundle_id: bundleId,
-        }))
-        const { error: bundlesErr } = await supabase.from('product_bundles').insert(bundleTags)
-        if (bundlesErr) console.error('product_bundles error:', bundlesErr.message)
+      // Save bundle tags (product_bundles) via API
+      if (selectedBundles.length > 0 || form.id) {
+        try {
+          await productsAPI.updateBundles(productId, selectedBundles)
+        } catch (bundlesErr) {
+          console.error('product_bundles error:', bundlesErr.message)
+        }
       }
 
       onSaved()

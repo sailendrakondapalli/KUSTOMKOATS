@@ -223,4 +223,77 @@ router.delete('/:id',
   }
 );
 
+// Get product bundles (public)
+router.get('/:id/bundles',
+  optionalAuth,
+  param('id').isUUID(),
+  handleValidationErrors,
+  async (req, res) => {
+    try {
+      const { id } = req.params;
+
+      const { data, error } = await supabase
+        .from('product_bundles')
+        .select('bundle_id')
+        .eq('product_id', id);
+
+      if (error) throw error;
+
+      res.json({ data });
+    } catch (error) {
+      console.error('Error fetching product bundles:', error);
+      res.status(500).json({ 
+        error: 'Failed to fetch product bundles', 
+        message: error.message 
+      });
+    }
+  }
+);
+
+// Update product bundles (admin only)
+router.put('/:id/bundles',
+  authenticateToken,
+  requireAdmin,
+  param('id').isUUID(),
+  body('bundle_ids').isArray(),
+  handleValidationErrors,
+  async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { bundle_ids } = req.body;
+
+      // Delete existing bundles
+      await supabase
+        .from('product_bundles')
+        .delete()
+        .eq('product_id', id);
+
+      // Insert new bundles
+      if (bundle_ids.length > 0) {
+        const bundleTags = bundle_ids.map(bundleId => ({
+          product_id: id,
+          bundle_id: bundleId,
+        }));
+
+        const { error } = await supabase
+          .from('product_bundles')
+          .insert(bundleTags);
+
+        if (error) throw error;
+      }
+
+      res.json({ 
+        success: true,
+        message: 'Product bundles updated successfully'
+      });
+    } catch (error) {
+      console.error('Error updating product bundles:', error);
+      res.status(500).json({ 
+        error: 'Failed to update product bundles', 
+        message: error.message 
+      });
+    }
+  }
+);
+
 export default router;

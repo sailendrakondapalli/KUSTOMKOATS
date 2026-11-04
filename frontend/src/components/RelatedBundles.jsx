@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Package, ShoppingCart } from 'lucide-react'
+import { productsAPI } from '../services/apiClient'
 import { supabase } from '../lib/supabase'
 import { useCartStore } from '../store/cartStore'
 import { useAuthStore } from '../store/authStore'
@@ -21,13 +22,9 @@ export default function RelatedBundles({ productId }) {
   const loadRelatedBundles = async () => {
     setLoading(true)
     try {
-      // Fetch bundles related to this product
-      const { data: productBundles, error: pbError } = await supabase
-        .from('product_bundles')
-        .select('bundle_id')
-        .eq('product_id', productId)
+      // Fetch bundles related to this product via API
+      const { data: productBundles } = await productsAPI.getBundles(productId)
 
-      if (pbError) throw pbError
       if (!productBundles || productBundles.length === 0) {
         setBundles([])
         setLoading(false)
@@ -36,7 +33,7 @@ export default function RelatedBundles({ productId }) {
 
       const bundleIds = productBundles.map(pb => pb.bundle_id)
 
-      // Fetch full bundle details with items
+      // Fetch full bundle details with items (still uses Supabase for complex join)
       const { data: bundlesData, error: bundlesError } = await supabase
         .from('bundles')
         .select(`
