@@ -111,11 +111,22 @@ serve(async (req) => {
     if (event === 'payment.failed') {
       const razorpayOrderId = paymentEntity.order_id
       const razorpayPaymentId = paymentEntity.id
+      const errorCode = paymentEntity.error_code || 'UNKNOWN'
+      const errorDescription = paymentEntity.error_description || 'Payment failed'
+      const errorSource = paymentEntity.error_source || 'unknown'
+      const errorStep = paymentEntity.error_step || 'unknown'
+      const errorReason = paymentEntity.error_reason || 'unknown'
+      const amount = paymentEntity.amount || 0
+      const paymentMethod = paymentEntity.method || 'unknown'
+      const customerEmail = paymentEntity.email || null
+      const customerPhone = paymentEntity.contact || null
 
       console.log(`Payment failed: ${razorpayPaymentId} for order ${razorpayOrderId}`)
+      console.log(`Error: ${errorCode} - ${errorDescription}`)
 
       const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
 
+      // Update order status
       await supabase
         .from('orders')
         .update({
@@ -124,6 +135,42 @@ serve(async (req) => {
           updated_at: new Date().toISOString(),
         })
         .eq('razorpay_order_id', razorpayOrderId)
+
+      // Get order details for user_id
+      const { data: order } = await supabase
+        .from('orders')
+        .select('id, user_id')
+        .eq('razorpay_order_id', razorpayOrderId)
+        .single()
+
+      // Record payment failure in payment_failures table
+      const { error: failureError } = await supabase
+        .from('payment_failures')
+        .insert({
+          order_id: order?.id || null,
+          razorpay_order_id: razorpayOrderId,
+          razorpay_payment_id: razorpayPaymentId,
+          user_id: order?.user_id || null,
+          customer_email: customerEmail,
+          customer_phone: customerPhone,
+          customer_name: paymentEntity.card?.name || null,
+          error_code: errorCode,
+          error_description: errorDescription,
+          error_source: errorSource,
+          error_step: errorStep,
+          error_reason: errorReason,
+          payment_method: paymentMethod,
+          amount: amount / 100, // Convert paise to rupees
+          currency: paymentEntity.currency || 'INR',
+          metadata: paymentEntity, // Store full error object
+          failed_at: new Date().toISOString(),
+        })
+
+      if (failureError) {
+        console.error('Error recording payment failure:', failureError)
+      } else {
+        console.log('Payment failure recorded successfully')
+      }
 
       return new Response(JSON.stringify({ 
         success: true, 
