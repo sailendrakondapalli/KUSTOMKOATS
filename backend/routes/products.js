@@ -21,7 +21,7 @@ router.get('/',
       let query = supabase
         .from('products')
         .select('id, name, description, price, category, stock, images, custom_id', { count: 'exact' })
-        .eq('status', 'active')
+        .ilike('status', 'active')
         .range(offset, offset + limit - 1)
         .order('created_at', { ascending: false });
 
@@ -66,7 +66,7 @@ router.get('/:id',
         .from('products')
         .select('id, name, description, price, category, stock, images, custom_id, technical_details')
         .eq('id', id)
-        .eq('status', 'active')
+        .ilike('status', 'active')
         .single();
 
       if (error) {
