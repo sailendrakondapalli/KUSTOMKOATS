@@ -1,10 +1,23 @@
 import express from 'express';
 import { body, param, query } from 'express-validator';
+import rateLimit from 'express-rate-limit';
 import { supabase } from '../config/supabase.js';
 import { optionalAuth, authenticateToken, requireAdmin } from '../middleware/auth.js';
-import { handleValidationErrors } from '../middleware/validation.js';
+import { handleValidationErrors, sanitizeBody } from '../middleware/validation.js';
 
 const router = express.Router();
+
+// Rate limiting for form submissions - 5 submissions per hour per IP
+const formSubmissionLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 5, // Limit each IP to 5 requests per windowMs
+  message: {
+    error: 'Too many submissions',
+    message: 'You have exceeded the submission limit. Please try again later.'
+  },
+  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+});
 
 // ============= TESTIMONIALS =============
 
@@ -748,6 +761,285 @@ router.put('/settings/:key',
       console.error('Error updating setting:', error);
       res.status(500).json({ 
         error: 'Failed to update setting', 
+        message: error.message 
+      });
+    }
+  }
+);
+
+// ============= CONTACT FORM =============
+
+// Submit contact form (public with rate limiting)
+router.post('/contact',
+  formSubmissionLimiter,
+  sanitizeBody,
+  body('name').isString().notEmpty().trim().withMessage('Name is required'),
+  body('email').isEmail().normalizeEmail().withMessage('Valid email is required'),
+  body('phone').optional().isString().trim().matches(/^[\d\s\-\+\(\)]+$/).withMessage('Invalid phone number format'),
+  body('subject').isString().notEmpty().trim().withMessage('Subject is required'),
+  body('message').isString().notEmpty().trim().isLength({ min: 10, max: 5000 }).withMessage('Message must be between 10 and 5000 characters'),
+  handleValidationErrors,
+  async (req, res) => {
+    try {
+      const { name, email, phone, subject, message } = req.body;
+
+      // Insert contact submission
+      const { data, error } = await supabase
+        .from('contact_submissions')
+        .insert([{
+          name,
+          email,
+          phone: phone || null,
+          subject,
+          message,
+          status: 'new'
+        }])
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      res.status(201).json({ 
+        success: true, 
+        message: 'Your message has been sent successfully. We will get back to you soon.',
+        data: {
+          id: data.id,
+          created_at: data.created_at
+        }
+      });
+    } catch (error) {
+      console.error('Error submitting contact form:', error);
+      res.status(500).json({ 
+        error: 'Failed to submit contact form', 
+        message: 'An error occurred while processing your submission. Please try again later.' 
+      });
+    }
+  }
+);
+
+// ============= ENQUIRY FORM =============
+
+// Submit enquiry form (public with rate limiting)
+router.post('/enquiry',
+  formSubmissionLimiter,
+  sanitizeBody,
+  body('name').isString().notEmpty().trim().withMessage('Name is required'),
+  body('email').isEmail().normalizeEmail().withMessage('Valid email is required'),
+  body('phone').isString().notEmpty().trim().matches(/^[\d\s\-\+\(\)]+$/).withMessage('Valid phone number is required'),
+  body('product_id').optional().isUUID().withMessage('Invalid product ID'),
+  body('message').isString().notEmpty().trim().isLength({ min: 10, max: 5000 }).withMessage('Message must be between 10 and 5000 characters'),
+  handleValidationErrors,
+  async (req, res) => {
+    try {
+      const { name, email, phone, product_id, message } = req.body;
+
+      // Validate product exists if product_id provided
+      if (product_id) {
+        const { data: product, error: productError } = await supabase
+          .from('products')
+          .select('id')
+          .eq('id', product_id)
+          .single();
+
+        if (productError && productError.code === 'PGRST116') {
+          return res.status(400).json({ 
+            error: 'Validation failed',
+            message: 'The specified product does not exist' 
+          });
+        }
+      }
+
+      // Insert enquiry submission
+      const { data, error } = await supabase
+        .from('enquiry_submissions')
+        .insert([{
+          name,
+          email,
+          phone,
+          product_id: product_id || null,
+          message,
+          status: 'new'
+        }])
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      res.status(201).json({ 
+        success: true, 
+        message: 'Your enquiry has been submitted successfully. We will contact you shortly.',
+        data: {
+          id: data.id,
+          created_at: data.created_at
+        }
+      });
+    } catch (error) {
+      console.error('Error submitting enquiry form:', error);
+      res.status(500).json({ 
+        error: 'Failed to submit enquiry form', 
+        message: 'An error occurred while processing your submission. Please try again later.' 
+      });
+    }
+  }
+);
+
+// ============= ADMIN: MANAGE SUBMISSIONS =============
+
+// Get all contact submissions (admin)
+router.get('/contact-submissions',
+  authenticateToken,
+  requireAdmin,
+  query('status').optional().isString().isIn(['new', 'in_progress', 'resolved', 'archived']),
+  query('limit').optional().isInt({ min: 1, max: 100 }),
+  query('offset').optional().isInt({ min: 0 }),
+  handleValidationErrors,
+  async (req, res) => {
+    try {
+      const { status, limit = 50, offset = 0 } = req.query;
+      
+      let query = supabase
+        .from('contact_submissions')
+        .select('*', { count: 'exact' })
+        .order('created_at', { ascending: false })
+        .range(parseInt(offset), parseInt(offset) + parseInt(limit) - 1);
+      
+      if (status) {
+        query = query.eq('status', status);
+      }
+
+      const { data, error, count } = await query;
+      if (error) throw error;
+
+      res.json({ 
+        success: true, 
+        data: data || [],
+        total: count,
+        limit: parseInt(limit),
+        offset: parseInt(offset)
+      });
+    } catch (error) {
+      console.error('Error fetching contact submissions:', error);
+      res.status(500).json({ 
+        error: 'Failed to fetch contact submissions', 
+        message: error.message 
+      });
+    }
+  }
+);
+
+// Get all enquiry submissions (admin)
+router.get('/enquiry-submissions',
+  authenticateToken,
+  requireAdmin,
+  query('status').optional().isString().isIn(['new', 'in_progress', 'resolved', 'archived']),
+  query('product_id').optional().isUUID(),
+  query('limit').optional().isInt({ min: 1, max: 100 }),
+  query('offset').optional().isInt({ min: 0 }),
+  handleValidationErrors,
+  async (req, res) => {
+    try {
+      const { status, product_id, limit = 50, offset = 0 } = req.query;
+      
+      let query = supabase
+        .from('enquiry_submissions')
+        .select('*', { count: 'exact' })
+        .order('created_at', { ascending: false })
+        .range(parseInt(offset), parseInt(offset) + parseInt(limit) - 1);
+      
+      if (status) {
+        query = query.eq('status', status);
+      }
+      
+      if (product_id) {
+        query = query.eq('product_id', product_id);
+      }
+
+      const { data, error, count } = await query;
+      if (error) throw error;
+
+      res.json({ 
+        success: true, 
+        data: data || [],
+        total: count,
+        limit: parseInt(limit),
+        offset: parseInt(offset)
+      });
+    } catch (error) {
+      console.error('Error fetching enquiry submissions:', error);
+      res.status(500).json({ 
+        error: 'Failed to fetch enquiry submissions', 
+        message: error.message 
+      });
+    }
+  }
+);
+
+// Update contact submission status (admin)
+router.patch('/contact-submissions/:id',
+  authenticateToken,
+  requireAdmin,
+  param('id').isUUID(),
+  body('status').isString().isIn(['new', 'in_progress', 'resolved', 'archived']),
+  handleValidationErrors,
+  async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { status } = req.body;
+
+      const { data, error } = await supabase
+        .from('contact_submissions')
+        .update({ status })
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      res.json({ 
+        success: true, 
+        data,
+        message: 'Contact submission status updated successfully' 
+      });
+    } catch (error) {
+      console.error('Error updating contact submission:', error);
+      res.status(500).json({ 
+        error: 'Failed to update contact submission', 
+        message: error.message 
+      });
+    }
+  }
+);
+
+// Update enquiry submission status (admin)
+router.patch('/enquiry-submissions/:id',
+  authenticateToken,
+  requireAdmin,
+  param('id').isUUID(),
+  body('status').isString().isIn(['new', 'in_progress', 'resolved', 'archived']),
+  handleValidationErrors,
+  async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { status } = req.body;
+
+      const { data, error } = await supabase
+        .from('enquiry_submissions')
+        .update({ status })
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      res.json({ 
+        success: true, 
+        data,
+        message: 'Enquiry submission status updated successfully' 
+      });
+    } catch (error) {
+      console.error('Error updating enquiry submission:', error);
+      res.status(500).json({ 
+        error: 'Failed to update enquiry submission', 
         message: error.message 
       });
     }

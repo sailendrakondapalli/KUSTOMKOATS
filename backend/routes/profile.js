@@ -14,7 +14,7 @@ router.get('/',
       const userId = req.user.id;
 
       const { data, error } = await supabase
-        .from('profiles')
+        .from('users')
         .select('*')
         .eq('id', userId)
         .single();
@@ -38,9 +38,9 @@ router.get('/',
 // Update user profile
 router.put('/',
   authenticateToken,
-  body('full_name').optional().isString().trim(),
-  body('phone').optional().isString().trim(),
-  body('avatar_url').optional().isString(),
+  body('name').optional().isString().trim(),
+  body('mobile_number').optional().isString().trim(),
+  body('avatar').optional().isString(),
   handleValidationErrors,
   async (req, res) => {
     try {
@@ -48,7 +48,7 @@ router.put('/',
       const updates = req.body;
 
       const { data, error } = await supabase
-        .from('profiles')
+        .from('users')
         .upsert({ 
           id: userId,
           ...updates,
@@ -85,7 +85,7 @@ router.get('/addresses',
         .from('addresses')
         .select('*')
         .eq('user_id', userId)
-        .order('is_default', { ascending: false });
+        .order('created_at', { ascending: false });
 
       if (error) throw error;
 
@@ -106,33 +106,20 @@ router.get('/addresses',
 // Add address
 router.post('/addresses',
   authenticateToken,
-  body('line1').isString().notEmpty().trim(),
-  body('line2').optional().isString().trim(),
-  body('city').isString().notEmpty().trim(),
-  body('state').isString().notEmpty().trim(),
-  body('postal_code').isString().notEmpty().trim(),
-  body('country').isString().notEmpty().trim(),
-  body('phone').optional().isString().trim(),
-  body('is_default').optional().isBoolean(),
+  body('address').isString().notEmpty().trim(),
+  body('is_active').optional().isBoolean(),
   handleValidationErrors,
   async (req, res) => {
     try {
       const userId = req.user.id;
-      const addressData = req.body;
-
-      // If setting as default, unset other defaults
-      if (addressData.is_default) {
-        await supabase
-          .from('addresses')
-          .update({ is_default: false })
-          .eq('user_id', userId);
-      }
+      const { address, is_active = true } = req.body;
 
       const { data, error } = await supabase
         .from('addresses')
         .insert({ 
           user_id: userId,
-          ...addressData
+          address,
+          is_active
         })
         .select()
         .single();
@@ -157,28 +144,14 @@ router.post('/addresses',
 // Update address
 router.put('/addresses/:id',
   authenticateToken,
-  body('line1').optional().isString().notEmpty().trim(),
-  body('line2').optional().isString().trim(),
-  body('city').optional().isString().notEmpty().trim(),
-  body('state').optional().isString().notEmpty().trim(),
-  body('postal_code').optional().isString().notEmpty().trim(),
-  body('country').optional().isString().notEmpty().trim(),
-  body('phone').optional().isString().trim(),
-  body('is_default').optional().isBoolean(),
+  body('address').optional().isString().notEmpty().trim(),
+  body('is_active').optional().isBoolean(),
   handleValidationErrors,
   async (req, res) => {
     try {
       const userId = req.user.id;
       const { id } = req.params;
       const updates = req.body;
-
-      // If setting as default, unset other defaults
-      if (updates.is_default) {
-        await supabase
-          .from('addresses')
-          .update({ is_default: false })
-          .eq('user_id', userId);
-      }
 
       const { data, error } = await supabase
         .from('addresses')

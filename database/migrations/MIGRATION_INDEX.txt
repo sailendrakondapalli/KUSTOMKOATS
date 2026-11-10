@@ -31,3 +31,6 @@ migration030.sql
 migration031.sql
 migration032.sql
 migration033.sql
+migration034.sql
+migration035.sql
+migration036.sql
