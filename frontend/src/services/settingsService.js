@@ -1,23 +1,20 @@
-import { supabase } from '../lib/supabase'
+import api from './apiClient'
 
 export async function getSetting(key) {
-  const { data } = await supabase
-    .from('site_settings')
-    .select('value')
-    .eq('key', key)
-    .single()
-  return data?.value || null
+  try {
+    const response = await api.content.getSetting(key)
+    return response.data?.value || null
+  } catch (error) {
+    console.error('Error getting setting:', error)
+    return null
+  }
 }
 
 export async function setSetting(key, value) {
-  const { error } = await supabase
-    .from('site_settings')
-    .upsert(
-      { key, value, updated_at: new Date().toISOString() },
-      { onConflict: 'key' }
-    )
-  if (error) {
-    console.error('[setSetting] Supabase error:', error)
+  try {
+    await api.content.updateSetting(key, value)
+  } catch (error) {
+    console.error('[setSetting] Error:', error)
     throw error
   }
 }

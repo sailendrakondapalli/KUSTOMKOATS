@@ -1,5 +1,5 @@
 import { create } from "zustand"
-import { supabase } from "../lib/supabase"
+import api from "../services/apiClient"
 
 export const useAdminStore = create((set, get) => ({
   products: [],
@@ -14,55 +14,25 @@ export const useAdminStore = create((set, get) => ({
   loadProducts: async (force = false) => {
     if (!force && get().productsLoaded) return
     set({ loading: true })
-    const { data, error } = await supabase.from("products").select("*").order("created_at", { ascending: false })
-    if (error) console.error("Load products error:", error.message)
-    set({ products: data || [], loading: false, productsLoaded: true })
+    try {
+      const response = await api.products.getAll({ sort: 'created_at', order: 'desc' })
+      set({ products: response.data || [], loading: false, productsLoaded: true })
+    } catch (error) {
+      console.error("Load products error:", error.message)
+      set({ products: [], loading: false, productsLoaded: true })
+    }
   },
 
   loadOrders: async (force = false) => {
     if (!force && get().ordersLoaded) return
     set({ loading: true })
-    const { data, error } = await supabase.rpc("get_all_orders")
-    if (error) {
+    try {
+      const response = await api.orders.getAll({ include: 'items,products' })
+      set({ orders: response.data || [], loading: false, ordersLoaded: true })
+    } catch (error) {
       console.error("Load orders error:", error.message)
-      // Fallback to direct query (for own orders at minimum)
-      const { data: fallback } = await supabase
-        .from("orders")
-        .select("*, order_items(*, products(name, images, price, category, custom_id)), payment_screenshot_url, upi_ref, payment_verified, payment_method")
-        .order("created_at", { ascending: false })
-      set({ orders: fallback || [], loading: false, ordersLoaded: true })
-      return
+      set({ orders: [], loading: false, ordersLoaded: true })
     }
-    // Fetch order items separately via RPC and merge
-    const { data: items } = await supabase.rpc("get_all_order_items")
-    const itemsMap = {}
-    if (items) {
-      items.forEach(item => {
-        if (!itemsMap[item.order_id]) itemsMap[item.order_id] = []
-        itemsMap[item.order_id].push(item)
-      })
-    }
-
-    // Fetch product details for all product_ids found in order items
-    const productIds = [...new Set((items || []).map(i => i.product_id).filter(Boolean))]
-    let productsMap = {}
-    if (productIds.length > 0) {
-      const { data: prods } = await supabase
-        .from("products")
-        .select("id, name, images, price, category, custom_id")
-        .in("id", productIds)
-      if (prods) prods.forEach(p => { productsMap[p.id] = p })
-    }
-
-    // Merge product details into each order item
-    const ordersWithItems = (data || []).map(o => ({
-      ...o,
-      order_items: (itemsMap[o.id] || []).map(item => ({
-        ...item,
-        products: productsMap[item.product_id] || item.products || null
-      }))
-    }))
-    set({ orders: ordersWithItems, loading: false, ordersLoaded: true })
   },
 
   computeStats: () => {
@@ -151,8 +121,8 @@ export const useAdminStore = create((set, get) => ({
   },
 
   addProduct: async (productData) => {
-    const { data, error } = await supabase.from("products").insert(productData).select().single()
-    if (error) throw new Error(error.message)
+    const response = await api.products.create(productData)
+    const data = response.data
     set(s => ({ products: [data, ...s.products] }))
     // Fire low stock notification if stock < 10
     if ((data.stock || 0) < 10) {
@@ -162,8 +132,8 @@ export const useAdminStore = create((set, get) => ({
   },
 
   updateProduct: async (id, updates) => {
-    const { data, error } = await supabase.from("products").update(updates).eq("id", id).select().single()
-    if (error) throw new Error(error.message)
+    const response = await api.products.update(id, updates)
+    const data = response.data
     set(s => ({ products: s.products.map(p => p.id === id ? data : p) }))
     // Fire low stock notification if stock dropped below 10
     if ((data.stock || 0) < 10) {
@@ -172,14 +142,12 @@ export const useAdminStore = create((set, get) => ({
   },
 
   deleteProduct: async (id) => {
-    const { error } = await supabase.from("products").delete().eq("id", id)
-    if (error) throw new Error(error.message)
+    await api.products.delete(id)
     set(s => ({ products: s.products.filter(p => p.id !== id) }))
   },
 
   updateOrderStatus: async (id, status) => {
-    const { error } = await supabase.rpc("update_order_status", { p_order_id: id, p_status: status })
-    if (error) throw new Error(error.message)
+    await api.orders.update(id, { order_status: status })
     set(s => ({ orders: s.orders.map(o => o.id === id ? { ...o, order_status: status } : o) }))
   },
 

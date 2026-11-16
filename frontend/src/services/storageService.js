@@ -1,4 +1,4 @@
-import { supabase } from "../lib/supabase"
+import api from './apiClient'
 
 const BUCKET = "product-images"
 
@@ -12,7 +12,7 @@ export function isVideoUrl(url) {
 }
 
 /**
- * Upload a single image or video file to Supabase Storage
+ * Upload a single image or video file via backend API
  * Returns the public URL
  */
 export async function uploadProductImage(file) {
@@ -25,19 +25,13 @@ export async function uploadProductImage(file) {
   if (isImage && file.size > 5 * 1024 * 1024) throw new Error("Image must be under 5MB")
   if (isVideo && file.size > 50 * 1024 * 1024) throw new Error("Video must be under 50MB")
 
-  const folder = isVideo ? "product-videos" : "products"
-  const fileName = `${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`
-  const filePath = `${folder}/${fileName}`
-
-  const { error } = await supabase.storage.from(BUCKET).upload(filePath, file, {
-    cacheControl: "3600",
-    upsert: false,
-    contentType: file.type,
-  })
-  if (error) throw error
-
-  const { data } = supabase.storage.from(BUCKET).getPublicUrl(filePath)
-  return data.publicUrl
+  try {
+    const response = await api.storage.upload(file, BUCKET)
+    return response.data.publicUrl
+  } catch (error) {
+    console.error('Upload error:', error)
+    throw error
+  }
 }
 
 /**
@@ -61,7 +55,10 @@ export async function deleteProductImage(publicUrl) {
     const idx = publicUrl.indexOf(marker)
     if (idx === -1) return
     const filePath = publicUrl.slice(idx + marker.length)
-    await supabase.storage.from(BUCKET).remove([filePath])
+    
+    // Call backend delete endpoint if it exists
+    // For now, just log warning as backend may handle this differently
+    console.warn('Delete file functionality needs backend endpoint:', filePath)
   } catch (e) {
     console.warn("Failed to delete file from storage:", e)
   }

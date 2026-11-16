@@ -1,4 +1,4 @@
-import { supabase } from '../lib/supabase'
+import api from './apiClient'
 import { 
   savePendingSale, 
   getPendingSales, 
@@ -37,39 +37,30 @@ export async function createPOSSale({
 
   // Try online first
   try {
-    const { data, error } = await supabase
-      .from('orders')
-      .insert({
-        total_amount: total,
-        payment_method: paymentMethod,
-        payment_status: 'paid',
-        order_status: 'completed',
-        guest_name: customerName || 'Walk-in Customer',
-        guest_phone: customerPhone || null,
-        guest_email: null,
-        address: null,
-        order_type: 'pos_sale',
-        razorpay_payment_id: razorpayPaymentId || null,
-        razorpay_order_id: razorpayOrderId || null
-      })
-      .select()
-      .single()
+    const orderData = {
+      total_amount: total,
+      payment_method: paymentMethod,
+      payment_status: 'paid',
+      order_status: 'completed',
+      guest_name: customerName || 'Walk-in Customer',
+      guest_phone: customerPhone || null,
+      guest_email: null,
+      address: null,
+      order_type: 'pos_sale',
+      razorpay_payment_id: razorpayPaymentId || null,
+      razorpay_order_id: razorpayOrderId || null,
+      items: items
+    }
 
-    if (error) throw error
+    const response = await api.orders.create(orderData)
+    const data = response.data
 
-    // Insert order items
-    const orderItems = items.map(item => ({
-      order_id: data.id,
-      product_id: item.product_id,
-      quantity: item.quantity,
-      price: item.price
-    }))
-
-    await supabase.from('order_items').insert(orderItems)
-
-    // Update stock in database
+    // Update stock via backend
     for (const item of items) {
-      await updateProductStock(item.product_id, item.quantity)
+      await api.products.update(item.product_id, {
+        action: 'decrease_stock',
+        quantity: item.quantity
+      })
     }
 
     return { success: true, saleId: data.id, online: true }
@@ -86,23 +77,6 @@ export async function createPOSSale({
     }
 
     return { success: true, saleId: localId, online: false }
-  }
-}
-
-// Update product stock
-async function updateProductStock(productId, quantitySold) {
-  const { data: product } = await supabase
-    .from('products')
-    .select('stock')
-    .eq('id', productId)
-    .single()
-
-  if (product) {
-    const newStock = Math.max(0, product.stock - quantitySold)
-    await supabase
-      .from('products')
-      .update({ stock: newStock })
-      .eq('id', productId)
   }
 }
 
@@ -128,39 +102,28 @@ export async function syncPendingSales() {
 
     for (const sale of pendingSales) {
       try {
-        // Create order in database
-        const { data: order, error } = await supabase
-          .from('orders')
-          .insert({
-            total_amount: sale.total,
-            payment_method: sale.payment_method,
-            payment_status: 'paid',
-            order_status: 'completed',
-            guest_name: sale.customer_name || 'Walk-in Customer',
-            guest_phone: sale.customer_phone || null,
-            guest_email: null,
-            address: null,
-            order_type: 'pos_sale',
-            created_at: new Date(sale.timestamp).toISOString()
-          })
-          .select()
-          .single()
+        const orderData = {
+          total_amount: sale.total,
+          payment_method: sale.payment_method,
+          payment_status: 'paid',
+          order_status: 'completed',
+          guest_name: sale.customer_name || 'Walk-in Customer',
+          guest_phone: sale.customer_phone || null,
+          guest_email: null,
+          address: null,
+          order_type: 'pos_sale',
+          created_at: new Date(sale.timestamp).toISOString(),
+          items: sale.items
+        }
 
-        if (error) throw error
-
-        // Insert order items
-        const orderItems = sale.items.map(item => ({
-          order_id: order.id,
-          product_id: item.product_id,
-          quantity: item.quantity,
-          price: item.price
-        }))
-
-        await supabase.from('order_items').insert(orderItems)
+        const response = await api.orders.create(orderData)
 
         // Sync stock
         for (const item of sale.items) {
-          await updateProductStock(item.product_id, item.quantity)
+          await api.products.update(item.product_id, {
+            action: 'decrease_stock',
+            quantity: item.quantity
+          })
         }
 
         // Mark as synced
@@ -186,8 +149,8 @@ export async function syncPendingSales() {
 // Check online status
 export async function checkOnlineStatus() {
   try {
-    const { error } = await supabase.from('products').select('id').limit(1)
-    return !error
+    await api.products.getAll({ limit: 1 })
+    return true
   } catch {
     return false
   }

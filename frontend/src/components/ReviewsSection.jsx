@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Star } from "lucide-react"
-import { supabase } from "../lib/supabase"
+import api from "../services/apiClient"
 import { useAuthStore } from "../store/authStore"
 import toast from "react-hot-toast"
 
@@ -74,16 +74,16 @@ export default function ReviewsSection() {
 
   useEffect(() => {
     // Only fetch approved testimonials for public display
-    supabase.from("testimonials")
-      .select("*")
-      .eq("is_approved", true)
-      .eq("is_active", true)
-      .order("created_at", { ascending: false })
-      .then(({ data, error }) => { 
-        if (error) {
-          console.error('Error loading reviews:', error)
-        }
-        setReviews(data || [])
+    api.content.getTestimonials()
+      .then(response => {
+        // Filter for approved and active testimonials
+        const approved = (response.data || []).filter(t => t.is_approved && t.is_active)
+        setReviews(approved)
+        setLoading(false)
+      })
+      .catch(error => {
+        console.error('Error loading reviews:', error)
+        setReviews([])
         setLoading(false)
       })
   }, [])
@@ -136,10 +136,7 @@ export default function ReviewsSection() {
         reviewData.guest_email = guestEmail.trim()
       }
       
-      const { error } = await supabase.from("testimonials")
-        .insert(reviewData)
-      
-      if (error) throw error
+      await api.content.createTestimonial(reviewData)
       
       // Don't add to display list immediately - needs admin approval first
       toast.success("Review submitted! It will be visible after admin approval.")

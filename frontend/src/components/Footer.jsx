@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { Mail, Phone, MapPin, Globe } from 'lucide-react'
 import { CONTACT_INFO } from '../config/contact'
-import { supabase } from '../lib/supabase'
+import api from '../services/apiClient'
 
 // TODO: replace with the real Facebook community URL when provided
 const FACEBOOK_COMMUNITY_URL = 'https://facebook.com/'
@@ -46,13 +46,8 @@ export default function Footer() {
   useEffect(() => {
     const loadFooterLinks = async () => {
       try {
-        const { data, error } = await supabase
-          .from('footer_links')
-          .select('*')
-          .eq('is_active', true)
-          .order('sort_order', { ascending: true })
-
-        if (error) throw error
+        const response = await api.content.getFooterLinks()
+        const data = response.data
         if (data && data.length > 0) {
           const categories = data.filter(l => l.section === 'product_categories')
           const quick = data.filter(l => l.section === 'quick_links')

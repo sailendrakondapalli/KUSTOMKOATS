@@ -257,6 +257,9 @@ export const contentAPI = {
   
   // Categories
   getCategories: () => apiCall('/content/categories'),
+  createCategory: (data) => apiCall('/content/categories', { method: 'POST', body: JSON.stringify(data) }),
+  updateCategory: (id, data) => apiCall(`/content/categories/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  deleteCategory: (name) => apiCall(`/content/categories/${encodeURIComponent(name)}`, { method: 'DELETE' }),
   
   // Settings
   getSetting: (key) => apiCall(`/content/settings/${key}`),
@@ -281,6 +284,49 @@ export const wishlistAPI = {
   }),
 };
 
+// Bundles API
+export const bundlesAPI = {
+  getAll: (params = {}) => {
+    const queryString = new URLSearchParams(params).toString();
+    return apiCall(`/bundles${queryString ? `?${queryString}` : ''}`);
+  },
+  
+  getById: (id) => apiCall(`/bundles/${id}`),
+  
+  create: (bundleData) => apiCall('/bundles', {
+    method: 'POST',
+    body: JSON.stringify(bundleData),
+  }),
+  
+  update: (id, updates) => apiCall(`/bundles/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(updates),
+  }),
+  
+  delete: (id) => apiCall(`/bundles/${id}`, {
+    method: 'DELETE',
+  }),
+};
+
+// Reviews API
+export const reviewsAPI = {
+  getAll: (productId) => apiCall(`/reviews${productId ? `?product_id=${productId}` : ''}`),
+  
+  create: (reviewData) => apiCall('/reviews', {
+    method: 'POST',
+    body: JSON.stringify(reviewData),
+  }),
+  
+  update: (id, updates) => apiCall(`/reviews/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(updates),
+  }),
+  
+  delete: (id) => apiCall(`/reviews/${id}`, {
+    method: 'DELETE',
+  }),
+};
+
 // Export default client
 export default {
   products: productsAPI,
@@ -293,4 +339,6 @@ export default {
   storage: storageAPI,
   content: contentAPI,
   wishlist: wishlistAPI,
+  bundles: bundlesAPI,
+  reviews: reviewsAPI,
 };

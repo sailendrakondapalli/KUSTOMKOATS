@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Package, ShoppingCart } from 'lucide-react'
-import { productsAPI } from '../services/apiClient'
-import { supabase } from '../lib/supabase'
+import api from '../services/apiClient'
 import { useCartStore } from '../store/cartStore'
 import { useAuthStore } from '../store/authStore'
 import { useNavigate } from 'react-router-dom'
@@ -23,7 +22,7 @@ export default function RelatedBundles({ productId }) {
     setLoading(true)
     try {
       // Fetch bundles related to this product via API
-      const { data: productBundles } = await productsAPI.getBundles(productId)
+      const { data: productBundles } = await api.products.getBundles(productId)
 
       if (!productBundles || productBundles.length === 0) {
         setBundles([])
@@ -33,35 +32,20 @@ export default function RelatedBundles({ productId }) {
 
       const bundleIds = productBundles.map(pb => pb.bundle_id)
 
-      // Fetch full bundle details with items (still uses Supabase for complex join)
-      const { data: bundlesData, error: bundlesError } = await supabase
-        .from('bundles')
-        .select(`
-          *,
-          bundle_items (
-            id,
-            quantity,
-            products (
-              id,
-              name,
-              price,
-              images,
-              custom_id,
-              stock
-            )
-          )
-        `)
-        .in('id', bundleIds)
-        .eq('is_active', true)
+      // Fetch full bundle details with items
+      const bundlePromises = bundleIds.map(id => api.bundles.getById(id))
+      const bundleResponses = await Promise.all(bundlePromises)
+      const bundlesData = bundleResponses
+        .map(res => res.data)
+        .filter(b => b && b.is_active)
 
-      if (bundlesError) throw bundlesError
       setBundles(bundlesData || [])
     } catch (error) {
       console.error('Error loading bundles:', error)
     } finally {
       setLoading(false)
     }
-  }
+  },
 
   const handleAddBundle = async (bundle) => {
     if (!user) {
