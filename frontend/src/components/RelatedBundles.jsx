@@ -45,7 +45,7 @@ export default function RelatedBundles({ productId }) {
     } finally {
       setLoading(false)
     }
-  },
+  }
 
   const handleAddBundle = async (bundle) => {
     if (!user) {
