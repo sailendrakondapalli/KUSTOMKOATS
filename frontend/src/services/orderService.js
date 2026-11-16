@@ -26,7 +26,7 @@ export async function createRazorpayOrder(amount, receipt = null) {
 }
 
 /**
- * Verify Razorpay payment signature via backend API
+ * Verify Razorpay payment signature via Supabase Edge Function
  */
 export async function verifyRazorpayPayment({ 
   razorpay_order_id, 
@@ -35,18 +35,20 @@ export async function verifyRazorpayPayment({
   order_id 
 }) {
   try {
-    const response = await api.orders.update(order_id, {
-      action: 'verify_payment',
-      razorpay_order_id,
-      razorpay_payment_id,
-      razorpay_signature
+    const { data, error } = await supabase.functions.invoke('verify-razorpay-payment', {
+      body: {
+        razorpay_order_id,
+        razorpay_payment_id,
+        razorpay_signature,
+        order_id
+      }
     })
     
-    if (!response.success) {
-      throw new Error(response.error || 'Payment verification failed')
+    if (error) {
+      throw new Error(error.message || 'Payment verification failed')
     }
     
-    return response
+    return data
   } catch (error) {
     console.error('Error verifying payment:', error)
     throw new Error(error.message || 'Payment verification failed')
@@ -54,7 +56,7 @@ export async function verifyRazorpayPayment({
 }
 
 /**
- * Create order in database (before payment)
+ * Create order in database (before payment) - Direct Supabase
  */
 export async function createPendingOrder({ 
   userId = null, 
@@ -68,23 +70,42 @@ export async function createPendingOrder({
   orderNotes = null
 }) {
   try {
-    const orderData = {
-      user_id: userId,
-      guest_email: guestEmail,
-      guest_name: guestName,
-      guest_phone: guestPhone,
-      items,
-      total_amount: total,
-      payment_status: 'pending',
-      order_status: 'pending',
-      payment_method: 'razorpay',
-      address,
-      razorpay_order_id: razorpayOrderId,
-      order_notes: orderNotes
-    }
+    // Insert order into Supabase
+    const { data: order, error: orderError } = await supabase
+      .from('orders')
+      .insert({
+        user_id: userId,
+        guest_email: guestEmail,
+        guest_name: guestName,
+        guest_phone: guestPhone,
+        total_amount: total,
+        payment_status: 'pending',
+        order_status: 'pending',
+        payment_method: 'razorpay',
+        address: JSON.stringify(address),
+        razorpay_order_id: razorpayOrderId,
+        order_notes: orderNotes
+      })
+      .select()
+      .single()
     
-    const response = await api.orders.create(orderData)
-    return response.data
+    if (orderError) throw orderError
+    
+    // Insert order items
+    const orderItems = items.map(item => ({
+      order_id: order.id,
+      product_id: item.product_id,
+      quantity: item.quantity,
+      price: item.products?.price || 0
+    }))
+    
+    const { error: itemsError } = await supabase
+      .from('order_items')
+      .insert(orderItems)
+    
+    if (itemsError) throw itemsError
+    
+    return order
   } catch (error) {
     console.error('Error creating order:', error)
     throw new Error(error.message || 'Failed to create order')
@@ -92,23 +113,43 @@ export async function createPendingOrder({
 }
 
 /**
- * Save order after successful payment
+ * Save order after successful payment - Direct Supabase
  */
 export async function saveOrder({ userId, items, total, address, paymentId, orderId }) {
   try {
-    const orderData = {
-      user_id: userId,
-      items,
-      total_amount: total,
-      payment_status: 'paid',
-      order_status: 'confirmed',
-      address,
-      razorpay_payment_id: paymentId,
-      razorpay_order_id: orderId
-    }
+    // Insert order into Supabase
+    const { data: order, error: orderError } = await supabase
+      .from('orders')
+      .insert({
+        user_id: userId,
+        total_amount: total,
+        payment_status: 'paid',
+        order_status: 'confirmed',
+        payment_method: 'razorpay',
+        address: JSON.stringify(address),
+        razorpay_payment_id: paymentId,
+        razorpay_order_id: orderId
+      })
+      .select()
+      .single()
     
-    const response = await api.orders.create(orderData)
-    return response.data
+    if (orderError) throw orderError
+    
+    // Insert order items
+    const orderItems = items.map(item => ({
+      order_id: order.id,
+      product_id: item.product_id,
+      quantity: item.quantity,
+      price: item.products?.price || 0
+    }))
+    
+    const { error: itemsError } = await supabase
+      .from('order_items')
+      .insert(orderItems)
+    
+    if (itemsError) throw itemsError
+    
+    return order
   } catch (error) {
     console.error('Error saving order:', error)
     throw error
