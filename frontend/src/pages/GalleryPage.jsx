@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { X, Play } from 'lucide-react'
-import { supabase } from '../lib/supabase'
+import api from '../services/apiClient'
 import toast from 'react-hot-toast'
 
 export default function GalleryPage() {
@@ -18,20 +18,11 @@ export default function GalleryPage() {
   const loadGalleryItems = async () => {
     setLoading(true)
     try {
-      const { data, error } = await supabase
-        .from('gallery')
-        .select('*')
-        .eq('is_active', true)
-        .order('display_order', { ascending: true })
-
-      if (error) {
-        console.error('Supabase error loading gallery:', error)
-        toast.error(`Failed to load gallery: ${error.message}`)
-        throw error
-      }
+      const response = await api.gallery.getAll()
+      const data = response.data || []
 
       console.log('Loaded gallery items from database:', data)
-      setGalleryItems(data || [])
+      setGalleryItems(data)
     } catch (error) {
       console.error('Error loading gallery:', error)
       // Fallback to sample data if database is not set up

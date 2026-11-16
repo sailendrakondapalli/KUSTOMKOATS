@@ -2,7 +2,7 @@ import { useState } from "react"
 import { Helmet } from "react-helmet-async"
 import { Link, useNavigate } from "react-router-dom"
 import { ArrowLeft, CheckCircle, Building, User, Mail, Phone, MapPin, MessageSquare } from "lucide-react"
-import { supabase } from "../../lib/supabase"
+import api from "../../services/apiClient"
 import toast from "react-hot-toast"
 
 export default function ApplicationPage() {
@@ -33,15 +33,10 @@ export default function ApplicationPage() {
     setLoading(true)
 
     try {
-      const { error } = await supabase
-        .from('wholesale_applications')
-        .insert([{
-          ...formData,
-          status: 'pending',
-          created_at: new Date().toISOString()
-        }])
-
-      if (error) throw error
+      await api.wholesale.submit({
+        ...formData,
+        status: 'pending'
+      })
 
       setSubmitted(true)
       toast.success('Application submitted successfully!')

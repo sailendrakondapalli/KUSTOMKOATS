@@ -2,7 +2,7 @@ import { useState, useEffect } from "react"
 import { useParams, Link, useNavigate } from "react-router-dom"
 import { Helmet } from "react-helmet-async"
 import { Calendar, User, Heart, Eye, ArrowLeft, Share2 } from "lucide-react"
-import { supabase } from "../lib/supabase"
+import api from "../services/apiClient"
 
 export default function BlogPostPage() {
   const { slug } = useParams()
@@ -17,14 +17,8 @@ export default function BlogPostPage() {
 
   const loadPost = async () => {
     try {
-      const { data, error } = await supabase
-        .from("blog_posts")
-        .select("*")
-        .eq("slug", slug)
-        .eq("published", true)
-        .single()
-
-      if (error) throw error
+      const response = await api.content.getBlogPost(slug)
+      const data = response.data
       
       if (data) {
         setPost(data)

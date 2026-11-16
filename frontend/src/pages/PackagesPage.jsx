@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { Check, Star } from 'lucide-react'
 import toast from 'react-hot-toast'
-import { supabase } from '../lib/supabase'
+import api from '../services/apiClient'
 
 const WHATSAPP_NUMBER = "919043700776"
 
@@ -19,17 +19,8 @@ export default function PackagesPage() {
   const loadPackages = async () => {
     setLoading(true)
     try {
-      const { data, error } = await supabase
-        .from('packages')
-        .select('*')
-        .eq('is_active', true)
-        .order('display_order', { ascending: true })
-
-      if (error) {
-        console.error('Supabase error loading packages:', error)
-        toast.error(`Failed to load packages: ${error.message}`)
-        throw error
-      }
+      const response = await api.packages.getAll()
+      const data = response.data || []
 
       console.log('Loaded packages from database:', data)
       

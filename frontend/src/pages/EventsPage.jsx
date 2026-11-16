@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { Calendar, MapPin, Clock, Users } from 'lucide-react'
 import toast from 'react-hot-toast'
-import { supabase } from '../lib/supabase'
+import api from '../services/apiClient'
 
 const WHATSAPP_NUMBER = "919043700776"
 
@@ -20,17 +20,8 @@ export default function EventsPage() {
   const loadEvents = async () => {
     setLoading(true)
     try {
-      const { data, error } = await supabase
-        .from('events')
-        .select('*')
-        .eq('is_active', true)
-        .order('event_date', { ascending: true })
-
-      if (error) {
-        console.error('Supabase error loading events:', error)
-        toast.error(`Failed to load events: ${error.message}`)
-        throw error
-      }
+      const response = await api.events.getAll()
+      const data = response.data || []
 
       console.log('Loaded events from database:', data)
 

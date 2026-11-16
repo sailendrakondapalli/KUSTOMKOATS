@@ -342,6 +342,19 @@ export const enquiryAPI = {
   }),
 };
 
+// Events/Gallery/Packages API (Note: Backend endpoints may need implementation)
+export const eventsAPI = {
+  getAll: () => apiCall('/content/events'),
+};
+
+export const galleryAPI = {
+  getAll: () => apiCall('/content/gallery'),
+};
+
+export const packagesAPI = {
+  getAll: () => apiCall('/content/packages'),
+};
+
 // Export default client
 export default {
   products: productsAPI,
@@ -358,4 +371,7 @@ export default {
   reviews: reviewsAPI,
   contact: contactAPI,
   enquiry: enquiryAPI,
+  events: eventsAPI,
+  gallery: galleryAPI,
+  packages: packagesAPI,
 };
