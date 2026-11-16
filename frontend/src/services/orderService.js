@@ -1,22 +1,24 @@
 import api from './apiClient'
+import { supabase } from '../lib/supabase'
 
 /**
- * Create a Razorpay order via backend API
+ * Create a Razorpay order via Supabase Edge Function
  */
 export async function createRazorpayOrder(amount, receipt = null) {
   try {
-    const response = await api.orders.create({
-      amount,
-      currency: 'INR',
-      receipt: receipt || `receipt_${Date.now()}`,
-      action: 'create_razorpay'
+    const { data, error } = await supabase.functions.invoke('create-razorpay-order', {
+      body: {
+        amount,
+        currency: 'INR',
+        receipt: receipt || `receipt_${Date.now()}`
+      }
     })
     
-    if (!response.success) {
-      throw new Error(response.error || 'Failed to create Razorpay order')
+    if (error) {
+      throw new Error(error.message || 'Failed to create Razorpay order')
     }
     
-    return response.data
+    return data
   } catch (error) {
     console.error('Error creating Razorpay order:', error)
     throw new Error(error.message || 'Failed to create payment order')
