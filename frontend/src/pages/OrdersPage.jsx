@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Helmet } from 'react-helmet-async'
 import { Package, ChevronDown, ChevronUp, Search, Truck, Download } from 'lucide-react'
 import { useAuthStore } from '../store/authStore'
-import { supabase } from '../lib/supabase'
+import api from '../services/apiClient'
 import { formatINR, formatDate } from '../utils/format'
 import { generateBrandedInvoice } from '../utils/brandedInvoiceGenerator'
 import toast from 'react-hot-toast'
@@ -185,13 +185,13 @@ export default function OrdersPage() {
 
   useEffect(() => {
     if (!user) return
-    supabase
-      .from('orders')
-      .select('*, order_items(*, products(name, images, custom_id))')
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false })
-      .then(({ data }) => {
-        setOrders(data || [])
+    api.orders.getAll({ include: 'items,products' })
+      .then(response => {
+        setOrders(response.data || [])
+        setLoading(false)
+      })
+      .catch(error => {
+        console.error('Failed to load orders:', error)
         setLoading(false)
       })
   }, [user])

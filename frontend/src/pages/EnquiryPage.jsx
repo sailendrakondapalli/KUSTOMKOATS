@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Helmet } from 'react-helmet-async'
 import toast from 'react-hot-toast'
 import { Calendar, User, Mail, Phone, MessageSquare } from 'lucide-react'
-import { supabase } from '../lib/supabase'
+import api from '../services/apiClient'
 
 const WHATSAPP_NUMBER = "919043700776"
 
@@ -36,20 +36,14 @@ export default function EnquiryPage() {
     setSubmittingEnquiry(true)
     try {
       // Save to database
-      const { error } = await supabase
-        .from('enquiries')
-        .insert([
-          {
-            name: enquiryForm.name.trim(),
-            email: enquiryForm.email.trim() || null,
-            phone: enquiryForm.phone.trim(),
-            message: enquiryForm.message.trim(),
-            enquiry_type: 'general',
-            status: 'new'
-          }
-        ])
-
-      if (error) throw error
+      await api.enquiry.submit({
+        name: enquiryForm.name.trim(),
+        email: enquiryForm.email.trim() || null,
+        phone: enquiryForm.phone.trim(),
+        message: enquiryForm.message.trim(),
+        enquiry_type: 'general',
+        status: 'new'
+      })
 
       toast.success('Your enquiry has been submitted successfully! We will contact you soon.')
       
@@ -81,22 +75,16 @@ export default function EnquiryPage() {
     setSubmittingDemo(true)
     try {
       // Save to database
-      const { error } = await supabase
-        .from('enquiries')
-        .insert([
-          {
-            name: demoForm.name.trim(),
-            email: demoForm.email.trim() || null,
-            phone: demoForm.phone.trim(),
-            message: demoForm.notes.trim() || 'Free demo session request',
-            enquiry_type: 'demo',
-            status: 'new',
-            preferred_date: demoForm.date,
-            preferred_time: demoForm.time || null
-          }
-        ])
-
-      if (error) throw error
+      await api.enquiry.submit({
+        name: demoForm.name.trim(),
+        email: demoForm.email.trim() || null,
+        phone: demoForm.phone.trim(),
+        message: demoForm.notes.trim() || 'Free demo session request',
+        enquiry_type: 'demo',
+        status: 'new',
+        preferred_date: demoForm.date,
+        preferred_time: demoForm.time || null
+      })
 
       toast.success('Your demo request has been submitted successfully! We will contact you soon.')
       

@@ -1,6 +1,6 @@
 # Frontend Supabase to Backend API Migration Progress
 
-## ✅ Completed Files (18/35)
+## ✅ Completed Files (25/35)
 
 ### Services (7/9) ✅
 - ✅ `services/addressService.js` - Migrated to use api.profile methods
@@ -23,21 +23,21 @@
 - ✅ `components/RelatedBundles.jsx` - Migrated to api.products.getBundles() and api.bundles.getById()
 - ✅ `components/ReviewsSection.jsx` - Migrated to api.content.getTestimonials() and createTestimonial()
 
-### Pages (4/17) 
+### Pages (11/17) 
 - ✅ `pages/FAQPage.jsx` - Migrated to api.content.getFAQs()
 - ✅ `pages/TestimonialsPage.jsx` - Migrated to api.content.getTestimonials()
 - ✅ `pages/PolicyPage.jsx` - Migrated to api.content.getPolicyPage()
 - ✅ `pages/KustomKultorPage.jsx` - Migrated to api.content.getBlogPosts() and getCategories()
+- ✅ `pages/OrderDetailPage.jsx` - Migrated to api.orders.get()
+- ✅ `pages/OrdersPage.jsx` - Migrated to api.orders.getAll()
+- ✅ `pages/OrderSuccessPage.jsx` - Migrated to api.orders.get()
+- ✅ `pages/ContactPage.jsx` - Migrated to api.contact.submit()
+- ✅ `pages/EnquiryPage.jsx` - Migrated to api.enquiry.submit()
 - ⚠️ `pages/AuthCallbackPage.jsx` - Keep as-is (auth flow)
 - ❌ `pages/BlogPostPage.jsx` - Needs api.content.getBlogPost()
 - ❌ `pages/CheckoutPage.jsx` - Complex migration needed
-- ❌ `pages/ContactPage.jsx` - Needs backend contact endpoint
-- ❌ `pages/EnquiryPage.jsx` - Needs backend enquiry endpoint
 - ❌ `pages/EventsPage.jsx` - Needs backend events endpoint
 - ❌ `pages/GalleryPage.jsx` - Needs backend gallery endpoint
-- ❌ `pages/OrderDetailPage.jsx` - Use api.orders.get()
-- ❌ `pages/OrdersPage.jsx` - Use api.orders.getAll()
-- ❌ `pages/OrderSuccessPage.jsx` - Use api.orders.get()
 - ❌ `pages/PackagesPage.jsx` - Needs backend packages endpoint
 - ❌ `pages/ProductDetailPage.jsx` - Use api.products.getById()
 - ❌ `pages/wholesale/ApplicationPage.jsx` - Use api.wholesale.submit()
@@ -81,8 +81,8 @@ These services need new backend endpoints:
 3. Migrate 2 util files
 4. Final cleanup and testing
 
-## 📊 Progress: 18/35 files (51.4%)
+## 📊 Progress: 25/35 files (71.4%)
 
-Files remaining: 17
-- Pages: 13 (13 more to migrate)
-- Utils: 2
+Files remaining: 10
+- Pages: 6 (ProductDetailPage, CheckoutPage, EventsPage, GalleryPage, PackagesPage, BlogPostPage, wholesale/ApplicationPage)
+- Utils: 2 (wholesaleUtils, testRazorpay)

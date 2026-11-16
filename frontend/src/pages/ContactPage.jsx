@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Mail, Phone, Clock, MapPin } from 'lucide-react'
 import { Helmet } from 'react-helmet-async'
 import toast from 'react-hot-toast'
-import { supabase } from '../lib/supabase'
+import api from '../services/apiClient'
 
 const WHATSAPP_NUMBER = "919043700776"
 
@@ -30,18 +30,13 @@ export default function ContactPage() {
 
     setSubmitting(true)
     try {
-      const { error } = await supabase
-        .from('enquiries')
-        .insert([{
-          name: name.trim(),
-          email: email.trim() || null,
-          phone: phone.trim(),
-          message: message.trim(),
-          enquiry_type: 'general',
-          status: 'new'
-        }])
-
-      if (error) throw error
+      await api.contact.submit({
+        name: name.trim(),
+        email: email.trim() || null,
+        phone: phone.trim(),
+        message: message.trim(),
+        status: 'new'
+      })
 
       toast.success('Message sent! We will get back to you soon.')
 

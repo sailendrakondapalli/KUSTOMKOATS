@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { CheckCircle, Package, Home, List } from 'lucide-react'
 import { motion } from 'framer-motion'
-import { supabase } from '../lib/supabase'
+import api from '../services/apiClient'
 import { formatINR } from '../utils/format'
 
 export default function OrderSuccessPage() {
@@ -24,14 +24,8 @@ export default function OrderSuccessPage() {
   
   const loadOrder = async () => {
     try {
-      const { data, error } = await supabase
-        .from('orders')
-        .select('*, order_items(*, products(name, images))')
-        .eq('id', orderId)
-        .single()
-        
-      if (error) throw error
-      setOrder(data)
+      const response = await api.orders.get(orderId)
+      setOrder(response.data)
     } catch (error) {
       console.error('Failed to load order:', error)
     } finally {

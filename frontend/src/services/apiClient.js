@@ -327,6 +327,21 @@ export const reviewsAPI = {
   }),
 };
 
+// Contact/Enquiry API (Note: Backend endpoints needed)
+export const contactAPI = {
+  submit: (contactData) => apiCall('/enquiries', {
+    method: 'POST',
+    body: JSON.stringify({ ...contactData, enquiry_type: 'contact' }),
+  }),
+};
+
+export const enquiryAPI = {
+  submit: (enquiryData) => apiCall('/enquiries', {
+    method: 'POST',
+    body: JSON.stringify(enquiryData),
+  }),
+};
+
 // Export default client
 export default {
   products: productsAPI,
@@ -341,4 +356,6 @@ export default {
   wishlist: wishlistAPI,
   bundles: bundlesAPI,
   reviews: reviewsAPI,
+  contact: contactAPI,
+  enquiry: enquiryAPI,
 };

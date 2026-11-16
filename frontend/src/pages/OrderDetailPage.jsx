@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
 import { ArrowLeft, Package, MapPin, CreditCard, Calendar, Truck, CheckCircle, XCircle, Clock, Download } from 'lucide-react'
-import { supabase } from '../lib/supabase'
+import api from '../services/apiClient'
 import { useAuthStore } from '../store/authStore'
 import toast from 'react-hot-toast'
 import { generateBrandedInvoice } from '../utils/brandedInvoiceGenerator'
@@ -25,27 +25,8 @@ export default function OrderDetailPage() {
   const fetchOrderDetails = async () => {
     setLoading(true)
     try {
-      const { data, error } = await supabase
-        .from('orders')
-        .select(`
-          *,
-          order_items (
-            id,
-            quantity,
-            price,
-            products (
-              id,
-              name,
-              images,
-              custom_id
-            )
-          )
-        `)
-        .eq('id', id)
-        .eq('user_id', user.id)
-        .single()
-
-      if (error) throw error
+      const response = await api.orders.get(id)
+      const data = response.data
       
       // Parse address from JSON string
       if (data && data.address) {
