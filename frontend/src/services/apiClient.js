@@ -1,12 +1,14 @@
 // API client for backend communication
 // This replaces direct Supabase calls from the frontend
 
+import { supabase } from '../lib/supabase';
+
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 
-// Get auth token from localStorage
-const getAuthToken = () => {
+// Get auth token from Supabase session
+const getAuthToken = async () => {
   try {
-    const session = JSON.parse(localStorage.getItem('sb-gozoxlueuwnyujvvafdl-auth-token'));
+    const { data: { session } } = await supabase.auth.getSession();
     return session?.access_token;
   } catch {
     return null;
@@ -15,7 +17,7 @@ const getAuthToken = () => {
 
 // Generic API call function
 async function apiCall(endpoint, options = {}) {
-  const token = getAuthToken();
+  const token = await getAuthToken();
   
   const headers = {
     'Content-Type': 'application/json',
@@ -204,12 +206,12 @@ export const promoAPI = {
 
 // Storage/Upload API
 export const storageAPI = {
-  upload: (file, bucket = 'products') => {
+  upload: async (file, bucket = 'products') => {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('bucket', bucket);
     
-    const token = getAuthToken();
+    const token = await getAuthToken();
     return fetch(`${API_BASE_URL}/storage/upload`, {
       method: 'POST',
       headers: {
