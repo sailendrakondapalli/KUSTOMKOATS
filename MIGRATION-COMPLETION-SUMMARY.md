@@ -6,6 +6,15 @@
 **Date**: Completed  
 **Commits**: All changes committed and pushed to GitHub
 
+### 🔧 Critical Fix: Auth Token Retrieval (Latest Update)
+**Issue**: Payment flow was failing with "401 no token provided" error  
+**Root Cause**: apiClient.js was trying to parse a hardcoded localStorage key instead of using Supabase session  
+**Solution**: 
+- Changed `getAuthToken()` to use `supabase.auth.getSession()` 
+- Made token retrieval async throughout apiClient
+- Now correctly reads token from active Supabase session
+**Status**: ✅ Fixed and deployed (commit d62f9c2)
+
 ---
 
 ## ✅ What Was Migrated (31 Files)
