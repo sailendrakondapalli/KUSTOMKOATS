@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { Link } from 'react-router-dom'
 import { Star, Quote } from 'lucide-react'
-import { supabase } from '../lib/supabase'
+import api from '../services/apiClient'
 
 export default function TestimonialsPage() {
   const [testimonials, setTestimonials] = useState([])
@@ -11,16 +11,10 @@ export default function TestimonialsPage() {
   useEffect(() => {
     const fetchTestimonials = async () => {
       try {
-        const { data, error } = await supabase
-          .from('testimonials')
-          .select('*')
-          .eq('is_approved', true)
-          .eq('is_active', true)
-          .order('display_order', { ascending: true })
-          .order('created_at', { ascending: false })
-        
-        if (error) throw error
-        setTestimonials(data || [])
+        const response = await api.content.getTestimonials()
+        // Filter for approved and active testimonials
+        const approved = (response.data || []).filter(t => t.is_approved && t.is_active)
+        setTestimonials(approved)
       } catch (error) {
         console.error('Error fetching testimonials:', error)
       } finally {

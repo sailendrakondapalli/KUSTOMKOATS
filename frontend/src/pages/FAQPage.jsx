@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { ChevronDown, Search } from 'lucide-react'
-import { supabase } from '../lib/supabase'
+import api from '../services/apiClient'
 
 export default function FAQPage() {
   const [searchTerm, setSearchTerm] = useState('')
@@ -13,15 +13,8 @@ export default function FAQPage() {
     const loadFaqs = async () => {
       setLoading(true)
       try {
-        const { data, error } = await supabase
-          .from('faqs')
-          .select('*')
-          .eq('is_published', true)
-          .order('category', { ascending: true })
-          .order('sort_order', { ascending: true })
-
-        if (error) throw error
-        setFaqs(data || [])
+        const response = await api.content.getFAQs()
+        setFaqs(response.data || [])
       } catch (err) {
         console.error('Failed to load FAQs:', err)
       }

@@ -1,6 +1,6 @@
 # Frontend Supabase to Backend API Migration Progress
 
-## ✅ Completed Files (14/35)
+## ✅ Completed Files (18/35)
 
 ### Services (7/9) ✅
 - ✅ `services/addressService.js` - Migrated to use api.profile methods
@@ -23,8 +23,24 @@
 - ✅ `components/RelatedBundles.jsx` - Migrated to api.products.getBundles() and api.bundles.getById()
 - ✅ `components/ReviewsSection.jsx` - Migrated to api.content.getTestimonials() and createTestimonial()
 
-### Pages (0/17)
-- ❌ All 17 page files pending
+### Pages (4/17) 
+- ✅ `pages/FAQPage.jsx` - Migrated to api.content.getFAQs()
+- ✅ `pages/TestimonialsPage.jsx` - Migrated to api.content.getTestimonials()
+- ✅ `pages/PolicyPage.jsx` - Migrated to api.content.getPolicyPage()
+- ✅ `pages/KustomKultorPage.jsx` - Migrated to api.content.getBlogPosts() and getCategories()
+- ⚠️ `pages/AuthCallbackPage.jsx` - Keep as-is (auth flow)
+- ❌ `pages/BlogPostPage.jsx` - Needs api.content.getBlogPost()
+- ❌ `pages/CheckoutPage.jsx` - Complex migration needed
+- ❌ `pages/ContactPage.jsx` - Needs backend contact endpoint
+- ❌ `pages/EnquiryPage.jsx` - Needs backend enquiry endpoint
+- ❌ `pages/EventsPage.jsx` - Needs backend events endpoint
+- ❌ `pages/GalleryPage.jsx` - Needs backend gallery endpoint
+- ❌ `pages/OrderDetailPage.jsx` - Use api.orders.get()
+- ❌ `pages/OrdersPage.jsx` - Use api.orders.getAll()
+- ❌ `pages/OrderSuccessPage.jsx` - Use api.orders.get()
+- ❌ `pages/PackagesPage.jsx` - Needs backend packages endpoint
+- ❌ `pages/ProductDetailPage.jsx` - Use api.products.getById()
+- ❌ `pages/wholesale/ApplicationPage.jsx` - Use api.wholesale.submit()
 
 ### Utils (0/2)
 - ❌ `utils/wholesaleUtils.js`
@@ -65,8 +81,8 @@ These services need new backend endpoints:
 3. Migrate 2 util files
 4. Final cleanup and testing
 
-## 📊 Progress: 14/35 files (40.0%)
+## 📊 Progress: 18/35 files (51.4%)
 
-Files remaining: 21
-- Pages: 17 (minus auth callback - keep as-is)
+Files remaining: 17
+- Pages: 13 (13 more to migrate)
 - Utils: 2

@@ -2,7 +2,7 @@ import { useState, useEffect } from "react"
 import { Link } from "react-router-dom"
 import { Helmet } from "react-helmet-async"
 import { Calendar, User, Heart, Eye, ArrowRight } from "lucide-react"
-import { supabase } from "../lib/supabase"
+import api from "../services/apiClient"
 import ScrollReveal from "../components/ScrollReveal"
 
 export default function KustomKultorPage() {
@@ -18,20 +18,15 @@ export default function KustomKultorPage() {
 
   const loadPosts = async () => {
     try {
-      let query = supabase
-        .from("blog_posts")
-        .select("*")
-        .eq("published", true)
-        .order("published_at", { ascending: false })
-
+      const response = await api.content.getBlogPosts()
+      let data = response.data || []
+      
+      // Filter by category if needed
       if (selectedCategory !== "all") {
-        query = query.eq("category", selectedCategory)
+        data = data.filter(post => post.category === selectedCategory)
       }
 
-      const { data, error } = await query
-
-      if (error) throw error
-      setPosts(data || [])
+      setPosts(data)
     } catch (error) {
       console.error("Error loading posts:", error)
     } finally {
@@ -41,13 +36,9 @@ export default function KustomKultorPage() {
 
   const loadCategories = async () => {
     try {
-      const { data, error } = await supabase
-        .from("blog_categories")
-        .select("*")
-        .order("name")
-
-      if (error) throw error
-      setCategories(data || [])
+      // Get categories - may need to add this endpoint to backend if it doesn't exist
+      const response = await api.content.getCategories()
+      setCategories(response.data || [])
     } catch (error) {
       console.error("Error loading categories:", error)
     }

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
-import { supabase } from '../lib/supabase'
+import api from '../services/apiClient'
 
 const VALID_SLUGS = [
   'shipping-policy', 'refund-policy', 'privacy-policy',
@@ -26,13 +26,8 @@ export default function PolicyPage() {
       setLoading(true)
       setNotFound(false)
       try {
-        const { data, error } = await supabase
-          .from('site_pages_content')
-          .select('*')
-          .eq('page_key', slug)
-          .maybeSingle()
-
-        if (error) throw error
+        const response = await api.content.getPolicyPage(slug)
+        const data = response.data
         if (!data || !data.hero_title) {
           setNotFound(true)
         } else {
