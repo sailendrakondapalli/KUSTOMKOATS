@@ -1,8 +1,11 @@
 import { useState, useEffect } from 'react';
 import { Image as ImageIcon, Upload, X, Eye } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
+import axios from 'axios';
 import KKAdminLayout from '../../components/admin/KKAdminLayout';
 import toast from 'react-hot-toast';
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
 export default function AdminCategoryShowcasePage() {
   const [categories, setCategories] = useState([]);
@@ -69,19 +72,19 @@ export default function AdminCategoryShowcasePage() {
 
       console.log('Image uploaded successfully. Public URL:', publicUrl);
 
-      // Update category in database with new image URL
-      const { error: updateError, data: updateData } = await supabase
-        .from('categories')
-        .update({ image_url: publicUrl })
-        .eq('id', categoryId)
-        .select();
-
-      if (updateError) {
-        console.error('Database update error:', updateError);
-        throw updateError;
+      // Update category via backend API (bypasses RLS)
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError || !session) {
+        throw new Error('Please log in to perform this action');
       }
 
-      console.log('Database updated successfully:', updateData);
+      const updateRes = await axios.put(
+        `${API_BASE_URL}/api/categories/${categoryId}`,
+        { image_url: publicUrl },
+        { headers: { Authorization: `Bearer ${session.access_token}` } }
+      );
+
+      console.log('Database updated successfully:', updateRes.data);
 
       toast.success('Image uploaded and saved!');
       
@@ -104,18 +107,22 @@ export default function AdminCategoryShowcasePage() {
 
     setSaving(prev => ({ ...prev, [categoryId]: true }));
     try {
-      const { error } = await supabase
-        .from('categories')
-        .update({ name: newName.trim() })
-        .eq('id', categoryId);
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError || !session) {
+        throw new Error('Please log in to perform this action');
+      }
 
-      if (error) throw error;
+      await axios.put(
+        `${API_BASE_URL}/api/categories/${categoryId}`,
+        { name: newName.trim() },
+        { headers: { Authorization: `Bearer ${session.access_token}` } }
+      );
 
       toast.success('Category name updated!');
       fetchCategories();
     } catch (error) {
       console.error('Error updating category:', error);
-      toast.error('Failed to update category name');
+      toast.error(error.response?.data?.error || 'Failed to update category name');
     } finally {
       setSaving(prev => ({ ...prev, [categoryId]: false }));
     }
