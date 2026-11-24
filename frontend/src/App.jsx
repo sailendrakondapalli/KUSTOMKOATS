@@ -8,6 +8,7 @@ import ErrorBoundary from './components/ErrorBoundary'
 import IntroAnimation from './components/IntroAnimation'
 import IntroVideo from './components/IntroVideo'
 import AnimatedRoutes from './components/AnimatedRoutes'
+import ProtectedAdminRoute from './components/ProtectedAdminRoute'
 import { useAuthStore } from './store/authStore'
 import { useCartStore } from './store/cartStore'
 import { useWishlistStore } from './store/wishlistStore'
@@ -32,6 +33,7 @@ const AdminTransactionsPage = lazy(() => import('./pages/admin/AdminTransactions
 const AdminBundlesPage = lazy(() => import('./pages/admin/AdminBundlesPage'))
 const AdminEWayBillPage = lazy(() => import('./pages/admin/AdminEWayBillPage'))
 const AdminSettingsPage = lazy(() => import('./pages/admin/AdminSettingsPage'))
+const AdminCategoryShowcasePage = lazy(() => import('./pages/admin/AdminCategoryShowcasePage'))
 
 const PageLoader = () => (
   <div className="min-h-screen flex items-center justify-center" style={{ background: '#FFFFFF' }}>
@@ -122,18 +124,22 @@ export default function App() {
           <Routes>
             {/* ── ADMIN ROUTES — full-screen, no Navbar/Footer ── */}
             <Route path="/admin" element={
-              <ErrorBoundary>
-                <Suspense fallback={<AdminLoader />}>
-                  <AdminProductsPage />
-                </Suspense>
-              </ErrorBoundary>
+              <ProtectedAdminRoute>
+                <ErrorBoundary>
+                  <Suspense fallback={<AdminLoader />}>
+                    <AdminProductsPage />
+                  </Suspense>
+                </ErrorBoundary>
+              </ProtectedAdminRoute>
             } />
             <Route path="/admin/products" element={
-              <ErrorBoundary>
-                <Suspense fallback={<AdminLoader />}>
-                  <AdminProductsPage />
-                </Suspense>
-              </ErrorBoundary>
+              <ProtectedAdminRoute>
+                <ErrorBoundary>
+                  <Suspense fallback={<AdminLoader />}>
+                    <AdminProductsPage />
+                  </Suspense>
+                </ErrorBoundary>
+              </ProtectedAdminRoute>
             } />
             <Route path="/admin/orders" element={
               <ErrorBoundary>
@@ -251,6 +257,13 @@ export default function App() {
               <ErrorBoundary>
                 <Suspense fallback={<AdminLoader />}>
                   <AdminSettingsPage />
+                </Suspense>
+              </ErrorBoundary>
+            } />
+            <Route path="/admin/category-showcase" element={
+              <ErrorBoundary>
+                <Suspense fallback={<AdminLoader />}>
+                  <AdminCategoryShowcasePage />
                 </Suspense>
               </ErrorBoundary>
             } />

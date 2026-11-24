@@ -145,10 +145,18 @@ The frontend now calls these endpoints (added to apiClient):
 - `shiprocketService.js` - Uses Supabase edge function for Shiprocket API
 - **Reason**: These are serverless functions for external API integrations, not database calls.
 
+### Payment Operations (Architectural Decision)
+- `orderService.js` payment functions use **direct Supabase** instead of backend API:
+  - `createRazorpayOrder()` → Supabase edge function
+  - `verifyRazorpayPayment()` → Supabase edge function
+  - `createPendingOrder()` → Direct Supabase insert
+  - `saveOrder()` → Direct Supabase insert
+- **Reason**: Payment operations need direct database access for performance and reliability. Backend API is bypassed for payment flow to maintain consistency with the original architecture.
+
 ### Complex Pages (Deferred)
-- `CheckoutPage.jsx` - Uses api.storage (already migrated), complex payment flow
+- `CheckoutPage.jsx` - Uses direct Supabase for payment operations
 - `ProductDetailPage.jsx` - May have some direct technical bar/spec queries
-- **Reason**: Working as-is, can be fully migrated in future if needed
+- **Reason**: Working as-is, payment flow requires direct Supabase access.
 
 ---
 

@@ -253,20 +253,60 @@ function FeaturedCategoriesSection() {
     const loadCategoryProducts = async () => {
       setLoading(true)
       try {
-        // Fetch one product from each category
-        const [wrapProducts, kolorzProducts, accessoryProducts] = await Promise.all([
-          fetchProducts({ category: 'Xtreme Wrap', limit: 1 }),
-          fetchProducts({ category: 'Xtreme Kolorz', limit: 1 }),
-          fetchProducts({ category: 'Accessories', limit: 1 })
-        ])
+        // First, try to fetch admin-selected showcase products
+        const showcaseRes = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001'}/api/category-showcase`)
+        const showcaseData = await showcaseRes.json()
         
-        setCategoryProducts({
-          'Xtreme Wrap': wrapProducts[0] || null,
-          'Xtreme Kolorz': kolorzProducts[0] || null,
-          'Accessories': accessoryProducts[0] || null
+        const showcaseMap = {}
+        if (showcaseData.success && showcaseData.data) {
+          showcaseData.data.forEach(item => {
+            if (item.products) {
+              showcaseMap[item.category] = item.products
+            }
+          })
+        }
+
+        // For categories without admin selection, fetch the most recent product
+        const categoriesToFetch = []
+        const categoryNames = ['Xtreme Wrap', 'Xtreme Kolorz', 'Accessories']
+        
+        categoryNames.forEach(cat => {
+          if (!showcaseMap[cat]) {
+            categoriesToFetch.push(cat)
+          }
         })
+
+        // Fetch products for categories without showcases
+        if (categoriesToFetch.length > 0) {
+          const productPromises = categoriesToFetch.map(cat =>
+            fetchProducts({ category: cat, limit: 1 })
+          )
+          const productResults = await Promise.all(productPromises)
+          
+          categoriesToFetch.forEach((cat, index) => {
+            showcaseMap[cat] = productResults[index][0] || null
+          })
+        }
+        
+        setCategoryProducts(showcaseMap)
       } catch (error) {
         console.error('Failed to load category products:', error)
+        // Fallback to original behavior
+        try {
+          const [wrapProducts, kolorzProducts, accessoryProducts] = await Promise.all([
+            fetchProducts({ category: 'Xtreme Wrap', limit: 1 }),
+            fetchProducts({ category: 'Xtreme Kolorz', limit: 1 }),
+            fetchProducts({ category: 'Accessories', limit: 1 })
+          ])
+          
+          setCategoryProducts({
+            'Xtreme Wrap': wrapProducts[0] || null,
+            'Xtreme Kolorz': kolorzProducts[0] || null,
+            'Accessories': accessoryProducts[0] || null
+          })
+        } catch (fallbackError) {
+          console.error('Fallback fetch also failed:', fallbackError)
+        }
       } finally {
         setLoading(false)
       }
@@ -589,8 +629,8 @@ function SignatureSeriesSection() {
   useEffect(() => {
     const loadProducts = async () => {
       try {
-        // Fetch products - you can filter by a specific tag or just get recent products
-        const data = await fetchProducts({ limit: 8 })
+        // Fetch 6 latest products
+        const data = await fetchProducts({ limit: 6 })
         setProducts(data)
       } catch (error) {
         console.error('Failed to load signature products:', error)
@@ -617,8 +657,8 @@ function SignatureSeriesSection() {
 
           {/* Products List - Image + Text Layout */}
           {loading ? (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 md:gap-8 lg:gap-12">
-              {Array(8).fill(0).map((_, i) => (
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-6 md:gap-8 lg:gap-12">
+              {Array(6).fill(0).map((_, i) => (
                 <div key={i} className="animate-pulse">
                   <div className="aspect-square bg-gray-200 rounded-lg mb-4"></div>
                   <div className="h-6 bg-gray-200 rounded mb-2 w-3/4"></div>
@@ -628,7 +668,7 @@ function SignatureSeriesSection() {
               ))}
             </div>
           ) : products.length > 0 ? (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 md:gap-8 lg:gap-12">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-6 md:gap-8 lg:gap-12">
               {products.map((product) => (
                 <ScrollReveal key={product.id}>
                   <Link to={`/products/${product.id}`} className="group block">
@@ -723,18 +763,26 @@ function SignatureSeriesSection() {
   )
 }
 
-/* --- Featured Products Section --- */
-function FeaturedProductsSection() {
+/* --- Real Candy Section --- */
+function RealCandySection() {
   const [products, setProducts] = useState([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetchProducts({ limit: 8 })
-      .then(data => {
+    const loadCandyProducts = async () => {
+      try {
+        // Fetch 6 candy products - you can filter by tag or subcategory
+        const data = await fetchProducts({ limit: 6, category: 'Xtreme Kolorz' })
+        // Filter for candy products if you have a specific tag/subcategory
+        // For now, just get 6 products from Xtreme Kolorz
         setProducts(data)
+      } catch (error) {
+        console.error('Failed to load candy products:', error)
+      } finally {
         setLoading(false)
-      })
-      .catch(() => setLoading(false))
+      }
+    }
+    loadCandyProducts()
   }, [])
 
   return (
@@ -743,11 +791,11 @@ function FeaturedProductsSection() {
         <div className="flex items-center justify-between mb-12">
           <div>
             <p className="text-sm font-bold mb-2 tracking-wider uppercase" style={{ color: "#CA2A31", fontFamily: "'Inter', sans-serif" }}>
-              ORIGINAL CANDY KOLORZ
+              REAL CANDY
             </p>
             <h2 className="text-3xl md:text-4xl font-bold"
               style={{ fontFamily: "'Rajdhani', 'Inter', sans-serif", color: "#000000" }}>
-              Signature Candy Finishes
+              Authentic Candy Finishes
             </h2>
           </div>
           <Link to="/shop/xtreme-kolorz?category=candy" 
@@ -757,16 +805,85 @@ function FeaturedProductsSection() {
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-6 md:gap-8 lg:gap-12">
           {loading ? (
-            Array(8).fill(0).map((_, i) => <SkeletonCard key={i} />)
+            Array(6).fill(0).map((_, i) => (
+              <div key={i} className="animate-pulse">
+                <div className="aspect-square bg-gray-200 rounded-lg mb-4"></div>
+                <div className="h-6 bg-gray-200 rounded mb-2 w-3/4"></div>
+                <div className="h-4 bg-gray-200 rounded mb-3 w-1/2"></div>
+                <div className="h-4 bg-gray-200 rounded w-1/3"></div>
+              </div>
+            ))
           ) : products.length > 0 ? (
             products.map(product => (
-              <ProductCard key={product.id} product={product} />
+              <ScrollReveal key={product.id}>
+                <Link to={`/products/${product.id}`} className="group block">
+                  {/* Product Image */}
+                  <div className="relative aspect-square overflow-hidden rounded-lg mb-4">
+                    <img 
+                      src={product.images?.[0] || '/categories/image.png'}
+                      alt={product.name}
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                      onError={(e) => {
+                        e.target.src = '/categories/image.png'
+                      }}
+                    />
+                  </div>
+                  
+                  {/* Product Name */}
+                  <h3 
+                    className="text-base md:text-lg lg:text-xl font-bold mb-2 transition-colors group-hover:text-[#CA2A31]"
+                    style={{ 
+                      fontFamily: "'Inter', sans-serif", 
+                      color: "#000000",
+                      lineHeight: "1.4"
+                    }}
+                  >
+                    {product.name}
+                  </h3>
+                  
+                  {/* Category */}
+                  <p 
+                    className="text-xs md:text-sm mb-3"
+                    style={{ 
+                      fontFamily: "'Inter', sans-serif", 
+                      color: "#666666"
+                    }}
+                  >
+                    {product.category}
+                  </p>
+                  
+                  {/* Price */}
+                  {product.price && (
+                    <p 
+                      className="text-base md:text-lg font-bold mb-3"
+                      style={{ 
+                        fontFamily: "'Inter', sans-serif", 
+                        color: "#000000"
+                      }}
+                    >
+                      ₹{product.price.toLocaleString('en-IN')}
+                    </p>
+                  )}
+                  
+                  {/* Read More Link */}
+                  <div
+                    className="inline-flex items-center gap-2 text-xs md:text-sm font-medium transition-all group-hover:gap-3"
+                    style={{ 
+                      fontFamily: "'Inter', sans-serif", 
+                      color: "#CA2A31"
+                    }}
+                  >
+                    Know More
+                    <ArrowRight size={14} />
+                  </div>
+                </Link>
+              </ScrollReveal>
             ))
           ) : (
             <div className="col-span-full text-center py-12">
-              <p style={{ color: "#666666", fontFamily: "'Inter', sans-serif" }}>No products available</p>
+              <p style={{ color: "#666666", fontFamily: "'Inter', sans-serif" }}>No candy products available</p>
             </div>
           )}
         </div>
@@ -1529,6 +1646,7 @@ export default function HomePage() {
         <HeroSection />
         <FeaturedCategoriesSection />
         <SignatureSeriesSection />
+        <RealCandySection />
         <WhyKustomKoatsNeon />
         <NewsletterSection />
         <FollowUsSection />

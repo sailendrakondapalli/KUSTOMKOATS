@@ -160,10 +160,18 @@ export default function ProductDetailPage() {
       return
     }
     
-    // Enforce minimum quantity for 50ML
-    const is50ML = selectedSize && (parseFloat(selectedSize) === 50 || parseFloat(selectedSize) === 0.05)
+    // Enforce minimum quantity based on size
+    const sizeNum = parseFloat(selectedSize)
+    const sizeInMl = sizeNum >= 1 ? sizeNum : sizeNum * 1000
+    const is50ML = sizeInMl === 50
+    const is100ML = sizeInMl === 100
+    
     if (is50ML && quantity < 3) {
       toast.error('Minimum 3 units required for 50ML variant')
+      return
+    }
+    if (is100ML && quantity < 2) {
+      toast.error('Minimum 2 units required for 100ML variant')
       return
     }
     
@@ -198,10 +206,18 @@ export default function ProductDetailPage() {
       return
     }
     
-    // Enforce minimum quantity for 50ML
-    const is50ML = selectedSize && (parseFloat(selectedSize) === 50 || parseFloat(selectedSize) === 0.05)
+    // Enforce minimum quantity based on size
+    const sizeNum = parseFloat(selectedSize)
+    const sizeInMl = sizeNum >= 1 ? sizeNum : sizeNum * 1000
+    const is50ML = sizeInMl === 50
+    const is100ML = sizeInMl === 100
+    
     if (is50ML && quantity < 3) {
       toast.error('Minimum 3 units required for 50ML variant')
+      return
+    }
+    if (is100ML && quantity < 2) {
+      toast.error('Minimum 2 units required for 100ML variant')
       return
     }
     
@@ -390,9 +406,6 @@ export default function ProductDetailPage() {
               style={{ fontFamily: "'Rajdhani', sans-serif", color: '#000000' }}>
               {product.name}
             </h1>
-            {product.custom_id && (
-              <p className="text-gray-400 text-xs font-mono mb-4">SKU: {product.custom_id}</p>
-            )}
 
             {/* Rating */}
             <div className="flex items-center gap-2 mb-6">
@@ -494,26 +507,6 @@ export default function ProductDetailPage() {
                     <span className="text-sm font-semibold text-gray-900" style={{ fontFamily: "'Inter', sans-serif" }}>{product.finish}</span>
                   </div>
                 )}
-                {product.size && (
-                  <div className="flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition-colors">
-                    <span className="text-sm text-gray-600" style={{ fontFamily: "'Inter', sans-serif" }}>Size Options</span>
-                    <span className="text-sm font-semibold text-gray-900 text-right" style={{ fontFamily: "'Inter', sans-serif" }}>
-                      {product.size.split(',').map(s => s.trim()).filter(Boolean).join(', ')}
-                    </span>
-                  </div>
-                )}
-                {product.sku && (
-                  <div className="flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition-colors">
-                    <span className="text-sm text-gray-600" style={{ fontFamily: "'Inter', sans-serif" }}>SKU</span>
-                    <span className="text-sm font-semibold text-gray-900 font-mono" style={{ fontFamily: "'Inter', sans-serif" }}>{product.sku}</span>
-                  </div>
-                )}
-                {product.custom_id && (
-                  <div className="flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition-colors">
-                    <span className="text-sm text-gray-600" style={{ fontFamily: "'Inter', sans-serif" }}>Product ID</span>
-                    <span className="text-sm font-semibold text-gray-900 font-mono" style={{ fontFamily: "'Inter', sans-serif" }}>{product.custom_id}</span>
-                  </div>
-                )}
                 {product.status && (
                   <div className="flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition-colors">
                     <span className="text-sm text-gray-600" style={{ fontFamily: "'Inter', sans-serif" }}>Status</span>
@@ -541,7 +534,15 @@ export default function ProductDetailPage() {
                   Available Variants
                 </p>
                 <div className="flex flex-wrap gap-2">
-                  {product.size.split(',').map(s => s.trim()).filter(Boolean).map(s => {
+                  {product.size.split(',').map(s => s.trim()).filter(size => {
+                    // Only show 50ml, 100ml, 500ml, 1000ml (or 0.05L, 0.1L, 0.5L, 1L)
+                    const num = parseFloat(size)
+                    if (isNaN(num)) return false
+                    
+                    // Convert to ml for comparison
+                    const sizeInMl = num >= 1 ? num : num * 1000
+                    return [50, 100, 500, 1000].includes(sizeInMl)
+                  }).map(s => {
                     // Format size with proper units
                     const formatSize = (size) => {
                       const num = parseFloat(size)
@@ -558,19 +559,29 @@ export default function ProductDetailPage() {
                     }
                     
                     const isSelected = selectedSize === s
-                    const is50ML = parseFloat(s) === 50 || parseFloat(s) === 0.05
+                    const sizeNum = parseFloat(s)
+                    const sizeInMl = sizeNum >= 1 ? sizeNum : sizeNum * 1000
+                    const is50ML = sizeInMl === 50
+                    const is100ML = sizeInMl === 100
+                    
+                    // Determine minimum quantity
+                    let minQty = 1
+                    let minLabel = ''
+                    if (is50ML) {
+                      minQty = 3
+                      minLabel = '(Min: 3)'
+                    } else if (is100ML) {
+                      minQty = 2
+                      minLabel = '(Min: 2)'
+                    }
                     
                     return (
                       <button
                         key={s}
                         onClick={() => {
                           setSelectedSize(s)
-                          // Set minimum quantity to 3 for 50ML variants
-                          if (is50ML) {
-                            setQuantity(3)
-                          } else {
-                            setQuantity(1)
-                          }
+                          // Set minimum quantity based on size
+                          setQuantity(minQty)
                         }}
                         className={`px-4 py-2 bg-white border-2 text-sm font-medium rounded-lg transition-all ${
                           isSelected 
@@ -579,7 +590,7 @@ export default function ProductDetailPage() {
                         }`}
                         style={{ color: isSelected ? '#CA2A31' : '#000000', fontFamily: "'Inter', sans-serif" }}>
                         {formatSize(s)}
-                        {is50ML && <span className="ml-1 text-xs">(Min: 3)</span>}
+                        {minLabel && <span className="ml-1 text-xs">{minLabel}</span>}
                       </button>
                     )
                   })}
@@ -595,8 +606,11 @@ export default function ProductDetailPage() {
                     <div className="flex items-center gap-3">
                       <button
                         onClick={() => {
-                          const is50ML = parseFloat(selectedSize) === 50 || parseFloat(selectedSize) === 0.05
-                          const minQty = is50ML ? 3 : 1
+                          const sizeNum = parseFloat(selectedSize)
+                          const sizeInMl = sizeNum >= 1 ? sizeNum : sizeNum * 1000
+                          const is50ML = sizeInMl === 50
+                          const is100ML = sizeInMl === 100
+                          const minQty = is50ML ? 3 : is100ML ? 2 : 1
                           setQuantity(Math.max(minQty, quantity - 1))
                         }}
                         className="w-10 h-10 rounded-lg border-2 border-gray-300 flex items-center justify-center hover:border-[#CA2A31] transition-colors"

@@ -11,6 +11,7 @@ const NAV_ITEMS = [
   { path: '/admin/products',   label: 'Products',    icon: Package },
   { path: '/admin/bundles',    label: 'Bundles',     icon: Box },
   { path: '/admin/categories', label: 'Categories',  icon: Tag },
+  { path: '/admin/category-showcase', label: 'Category Showcase', icon: Tag },
   { path: '/admin/orders',     label: 'Orders',      icon: ShoppingBag },
   { path: '/admin/payment-failures', label: 'Payment Failures', icon: AlertCircle },
   { path: '/admin/transactions', label: 'All Transactions', icon: ArrowLeftRight },

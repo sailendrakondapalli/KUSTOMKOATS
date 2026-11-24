@@ -16,6 +16,7 @@ import profileRoutes from './routes/profile.js';
 import contentRoutes from './routes/content.js';
 import wishlistRoutes from './routes/wishlist.js';
 import paymentFailuresRoutes from './routes/payment-failures.js';
+import categoryShowcaseRoutes from './routes/category-showcase.js';
 
 // Load environment variables
 dotenv.config();
@@ -101,6 +102,7 @@ app.use('/api/profile', profileRoutes);
 app.use('/api/content', contentRoutes);
 app.use('/api/wishlist', wishlistRoutes);
 app.use('/api/payment-failures', paymentFailuresRoutes);
+app.use('/api/category-showcase', categoryShowcaseRoutes);
 
 // 404 handler
 app.use((req, res) => {
