@@ -2,8 +2,9 @@ import { useState, useEffect } from 'react';
 import { Check, X, Search, AlertCircle } from 'lucide-react';
 import axios from 'axios';
 import KKAdminLayout from '../../components/admin/KKAdminLayout';
+import { supabase } from '../../lib/supabase';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
 export default function AdminCategoryShowcasePage() {
   const [showcases, setShowcases] = useState({});
@@ -53,18 +54,24 @@ export default function AdminCategoryShowcasePage() {
     try {
       setSaving(prev => ({ ...prev, [category]: true }));
       
-      const token = localStorage.getItem('token');
+      // Get the current session token from Supabase
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError || !session) {
+        showMessage('Please log in to perform this action', 'error');
+        return;
+      }
+
       await axios.post(
         `${API_BASE_URL}/api/category-showcase`,
         { category, product_id: productId },
-        { headers: { Authorization: `Bearer ${token}` } }
+        { headers: { Authorization: `Bearer ${session.access_token}` } }
       );
 
       showMessage(`Successfully set showcase for ${category}`, 'success');
       await fetchData();
     } catch (error) {
       console.error('Error setting showcase:', error);
-      showMessage('Failed to set showcase', 'error');
+      showMessage(error.response?.data?.message || 'Failed to set showcase', 'error');
     } finally {
       setSaving(prev => ({ ...prev, [category]: false }));
     }
@@ -74,17 +81,23 @@ export default function AdminCategoryShowcasePage() {
     try {
       setSaving(prev => ({ ...prev, [category]: true }));
       
-      const token = localStorage.getItem('token');
+      // Get the current session token from Supabase
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError || !session) {
+        showMessage('Please log in to perform this action', 'error');
+        return;
+      }
+
       await axios.delete(
         `${API_BASE_URL}/api/category-showcase/${category}`,
-        { headers: { Authorization: `Bearer ${token}` } }
+        { headers: { Authorization: `Bearer ${session.access_token}` } }
       );
 
       showMessage(`Removed showcase for ${category}, reverted to automatic`, 'success');
       await fetchData();
     } catch (error) {
       console.error('Error removing showcase:', error);
-      showMessage('Failed to remove showcase', 'error');
+      showMessage(error.response?.data?.message || 'Failed to remove showcase', 'error');
     } finally {
       setSaving(prev => ({ ...prev, [category]: false }));
     }
