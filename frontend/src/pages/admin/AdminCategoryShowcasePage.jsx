@@ -1,119 +1,125 @@
 import { useState, useEffect } from 'react';
-import { Check, X, Search, AlertCircle } from 'lucide-react';
-import axios from 'axios';
-import KKAdminLayout from '../../components/admin/KKAdminLayout';
+import { Image as ImageIcon, Upload, X, Eye } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
-
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+import KKAdminLayout from '../../components/admin/KKAdminLayout';
+import toast from 'react-hot-toast';
 
 export default function AdminCategoryShowcasePage() {
-  const [showcases, setShowcases] = useState({});
-  const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState({});
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('');
-  const [message, setMessage] = useState(null);
-
-  const categories = ['Xtreme Kolorz', 'Xtreme Wrap', 'Accessories'];
+  const [uploadingImage, setUploadingImage] = useState(null);
+  const [viewingProducts, setViewingProducts] = useState(null);
+  const [categoryProducts, setCategoryProducts] = useState([]);
 
   useEffect(() => {
-    fetchData();
+    fetchCategories();
   }, []);
 
-  const fetchData = async () => {
+  const fetchCategories = async () => {
+    setLoading(true);
     try {
-      setLoading(true);
-      
-      // Fetch existing showcases
-      try {
-        const showcaseRes = await axios.get(`${API_BASE_URL}/api/category-showcase`);
-        const showcaseMap = {};
-        (showcaseRes.data.data || []).forEach(item => {
-          showcaseMap[item.category] = item;
-        });
-        setShowcases(showcaseMap);
-      } catch (err) {
-        // category_showcase table doesn't exist - that's okay, show message
-        console.warn('category_showcase table not ready:', err);
-        showMessage('Category showcase table not found. Run migration037.sql to enable featured products.', 'error');
-      }
+      const { data, error } = await supabase
+        .from('categories')
+        .select('*')
+        .order('sort_order', { ascending: true });
 
-      // Fetch all products
-      const productsRes = await axios.get(`${API_BASE_URL}/api/products`);
-      setProducts(productsRes.data.data || []);
+      if (error) throw error;
+      setCategories(data || []);
     } catch (error) {
-      console.error('Error fetching data:', error);
-      showMessage('Failed to load data', 'error');
+      console.error('Error fetching categories:', error);
+      toast.error('Failed to load categories');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleSetShowcase = async (category, productId) => {
+  const handleImageUpload = async (e, categoryId) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      return toast.error('Only image files are allowed');
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      return toast.error('Image must be less than 5MB');
+    }
+
+    setUploadingImage(categoryId);
     try {
-      setSaving(prev => ({ ...prev, [category]: true }));
-      
-      // Get the current session token from Supabase
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-      if (sessionError || !session) {
-        showMessage('Please log in to perform this action', 'error');
-        return;
-      }
+      const ext = file.name.split('.').pop();
+      const fileName = `category-${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+      const filePath = `categories/${fileName}`;
 
-      await axios.post(
-        `${API_BASE_URL}/api/category-showcase`,
-        { category, product_id: productId },
-        { headers: { Authorization: `Bearer ${session.access_token}` } }
-      );
+      const { error: uploadError } = await supabase.storage
+        .from('product-images')
+        .upload(filePath, file, { upsert: false });
 
-      showMessage(`Successfully set showcase for ${category}`, 'success');
-      await fetchData();
-    } catch (error) {
-      console.error('Error setting showcase:', error);
-      showMessage(error.response?.data?.message || 'Failed to set showcase', 'error');
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('product-images')
+        .getPublicUrl(filePath);
+
+      // Update category with new image
+      const { error: updateError } = await supabase
+        .from('categories')
+        .update({ image_url: publicUrl })
+        .eq('id', categoryId);
+
+      if (updateError) throw updateError;
+
+      toast.success('Image uploaded successfully!');
+      fetchCategories();
+    } catch (err) {
+      console.error('Upload error:', err);
+      toast.error(err.message || 'Failed to upload image');
     } finally {
-      setSaving(prev => ({ ...prev, [category]: false }));
+      setUploadingImage(null);
     }
   };
 
-  const handleRemoveShowcase = async (category) => {
+  const handleUpdateName = async (categoryId, newName) => {
+    if (!newName.trim()) {
+      return toast.error('Category name cannot be empty');
+    }
+
+    setSaving(prev => ({ ...prev, [categoryId]: true }));
     try {
-      setSaving(prev => ({ ...prev, [category]: true }));
-      
-      // Get the current session token from Supabase
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-      if (sessionError || !session) {
-        showMessage('Please log in to perform this action', 'error');
-        return;
-      }
+      const { error } = await supabase
+        .from('categories')
+        .update({ name: newName.trim() })
+        .eq('id', categoryId);
 
-      await axios.delete(
-        `${API_BASE_URL}/api/category-showcase/${category}`,
-        { headers: { Authorization: `Bearer ${session.access_token}` } }
-      );
+      if (error) throw error;
 
-      showMessage(`Removed showcase for ${category}, reverted to automatic`, 'success');
-      await fetchData();
+      toast.success('Category name updated!');
+      fetchCategories();
     } catch (error) {
-      console.error('Error removing showcase:', error);
-      showMessage(error.response?.data?.message || 'Failed to remove showcase', 'error');
+      console.error('Error updating category:', error);
+      toast.error('Failed to update category name');
     } finally {
-      setSaving(prev => ({ ...prev, [category]: false }));
+      setSaving(prev => ({ ...prev, [categoryId]: false }));
     }
   };
 
-  const showMessage = (text, type) => {
-    setMessage({ text, type });
-    setTimeout(() => setMessage(null), 5000);
-  };
+  const handleViewProducts = async (category) => {
+    setViewingProducts(category.name);
+    try {
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .eq('category', category.name)
+        .order('created_at', { ascending: false });
 
-  const filteredProducts = products.filter(product => {
-    const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          product.category?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = !selectedCategory || product.category === selectedCategory;
-    return matchesSearch && matchesCategory;
-  });
+      if (error) throw error;
+      setCategoryProducts(data || []);
+    } catch (error) {
+      console.error('Error fetching products:', error);
+      toast.error('Failed to load products');
+    }
+  };
 
   if (loading) {
     return (
@@ -130,170 +136,151 @@ export default function AdminCategoryShowcasePage() {
 
   return (
     <KKAdminLayout>
-      <div className="max-w-7xl mx-auto">{/* Header */}
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Category Showcase Management</h1>
           <p className="text-gray-600">
-            Select which products to display in the homepage category showcase section. 
-            If no product is selected, the most recent product from each category will be shown automatically.
+            Manage category names and images. Click "View Products" to see all products in each category.
           </p>
         </div>
 
-        {/* Message */}
-        {message && (
-          <div className={`mb-6 p-4 rounded-lg flex items-center gap-3 ${
-            message.type === 'success' ? 'bg-green-50 text-green-800 border border-green-200' : 
-            'bg-red-50 text-red-800 border border-red-200'
-          }`}>
-            <AlertCircle size={20} />
-            <span>{message.text}</span>
-          </div>
-        )}
-
-        {/* Current Showcases */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          {categories.map(category => {
-            const showcase = showcases[category];
-            const product = showcase?.products;
-            
-            return (
-              <div key={category} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-                <div className="p-4 bg-gray-50 border-b border-gray-200">
-                  <h3 className="font-bold text-lg">{category}</h3>
-                  <p className="text-sm text-gray-500">
-                    {product ? 'Custom Selection' : 'Automatic (Most Recent)'}
-                  </p>
-                </div>
-                
-                {product ? (
-                  <div>
-                    <div className="aspect-square bg-gray-100">
-                      <img 
-                        src={product.images?.[0] || '/categories/image.png'}
-                        alt={product.name}
-                        className="w-full h-full object-cover"
-                        onError={(e) => {
-                          e.target.src = '/categories/image.png';
-                        }}
-                      />
-                    </div>
-                    <div className="p-4">
-                      <h4 className="font-semibold text-gray-900 mb-1">{product.name}</h4>
-                      <p className="text-sm text-gray-500 mb-2">{product.category}</p>
-                      {product.price && (
-                        <p className="text-lg font-bold text-gray-900 mb-3">
-                          ₹{product.price.toLocaleString('en-IN')}
-                        </p>
-                      )}
-                      <button
-                        onClick={() => handleRemoveShowcase(category)}
-                        disabled={saving[category]}
-                        className="w-full py-2 px-4 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
-                      >
-                        <X size={16} />
-                        {saving[category] ? 'Removing...' : 'Revert to Automatic'}
-                      </button>
-                    </div>
-                  </div>
+        {/* Categories Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {categories.map(category => (
+            <div key={category.id} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+              {/* Image Section */}
+              <div className="relative aspect-square bg-gray-100">
+                {category.image_url ? (
+                  <img 
+                    src={category.image_url} 
+                    alt={category.name}
+                    className="w-full h-full object-cover"
+                  />
                 ) : (
-                  <div className="p-4">
-                    <p className="text-gray-500 text-center py-8">
-                      No custom product selected.<br />
-                      Showing most recent product automatically.
-                    </p>
+                  <div className="w-full h-full flex items-center justify-center">
+                    <ImageIcon size={48} className="text-gray-300" />
                   </div>
                 )}
+                
+                {/* Upload Button Overlay */}
+                <label className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-0 hover:bg-opacity-50 transition-all cursor-pointer group">
+                  <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-white rounded-full p-3">
+                    {uploadingImage === category.id ? (
+                      <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                    ) : (
+                      <Upload size={24} className="text-blue-600" />
+                    )}
+                  </div>
+                  <input 
+                    type="file" 
+                    accept="image/*" 
+                    onChange={(e) => handleImageUpload(e, category.id)}
+                    disabled={uploadingImage === category.id}
+                    className="hidden"
+                  />
+                </label>
               </div>
-            );
-          })}
-        </div>
 
-        {/* Product Selection */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">Select Products</h2>
-          
-          {/* Filters */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
-              <input
-                type="text"
-                placeholder="Search products..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-            </div>
-            
-            <select
-              value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option value="">All Categories</option>
-              {categories.map(cat => (
-                <option key={cat} value={cat}>{cat}</option>
-              ))}
-            </select>
-          </div>
-
-          {/* Products Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-            {filteredProducts.map(product => (
-              <div key={product.id} className="border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow">
-                <div className="aspect-square bg-gray-100">
-                  <img 
-                    src={product.images?.[0] || '/categories/image.png'}
-                    alt={product.name}
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      e.target.src = '/categories/image.png';
+              {/* Info Section */}
+              <div className="p-4">
+                {/* Category Name (Editable) */}
+                <div className="mb-3">
+                  <input
+                    type="text"
+                    value={category.name}
+                    onChange={(e) => {
+                      const newCategories = categories.map(cat => 
+                        cat.id === category.id ? { ...cat, name: e.target.value } : cat
+                      );
+                      setCategories(newCategories);
                     }}
+                    onBlur={(e) => {
+                      if (e.target.value !== category.name) {
+                        handleUpdateName(category.id, e.target.value);
+                      }
+                    }}
+                    disabled={saving[category.id]}
+                    className="w-full text-lg font-bold text-gray-900 border-b-2 border-transparent hover:border-blue-300 focus:border-blue-500 outline-none px-2 py-1 transition-colors"
                   />
                 </div>
-                <div className="p-3">
-                  <h4 className="font-medium text-sm text-gray-900 mb-1 line-clamp-2">{product.name}</h4>
-                  <p className="text-xs text-gray-500 mb-2">{product.category}</p>
-                  {product.price && (
-                    <p className="text-sm font-bold text-gray-900 mb-2">
-                      ₹{product.price.toLocaleString('en-IN')}
-                    </p>
-                  )}
-                  
-                  {/* Action Buttons */}
-                  <div className="space-y-1">
-                    {categories.map(category => {
-                      const isSelected = showcases[category]?.product_id === product.id;
-                      
-                      return (
-                        <button
-                          key={category}
-                          onClick={() => handleSetShowcase(category, product.id)}
-                          disabled={saving[category] || isSelected}
-                          className={`w-full py-1.5 px-2 text-xs rounded transition-colors flex items-center justify-center gap-1 ${
-                            isSelected
-                              ? 'bg-green-100 text-green-700 cursor-default'
-                              : 'bg-blue-50 text-blue-600 hover:bg-blue-100 disabled:opacity-50'
-                          }`}
-                        >
-                          {isSelected && <Check size={12} />}
-                          {isSelected ? `Selected for ${category}` : `Set for ${category}`}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
 
-          {filteredProducts.length === 0 && (
-            <div className="text-center py-12 text-gray-500">
-              No products found matching your criteria.
+                {/* View Products Button */}
+                <button
+                  onClick={() => handleViewProducts(category)}
+                  className="w-full py-2 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 font-medium"
+                >
+                  <Eye size={16} />
+                  View Products
+                </button>
+              </div>
             </div>
-          )}
+          ))}
         </div>
       </div>
+
+      {/* Products Modal */}
+      {viewingProducts && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
+          onClick={() => setViewingProducts(null)}
+        >
+          <div 
+            className="bg-white rounded-lg max-w-6xl w-full max-h-[90vh] overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="p-6 border-b border-gray-200 flex items-center justify-between">
+              <h2 className="text-2xl font-bold text-gray-900">{viewingProducts} - Products</h2>
+              <button
+                onClick={() => setViewingProducts(null)}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <X size={24} />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
+              {categoryProducts.length === 0 ? (
+                <div className="text-center py-12 text-gray-500">
+                  No products found in this category.
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                  {categoryProducts.map(product => (
+                    <div key={product.id} className="border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow">
+                      <div className="aspect-square bg-gray-100">
+                        <img 
+                          src={product.images?.[0] || '/categories/image.png'}
+                          alt={product.name}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            e.target.src = '/categories/image.png';
+                          }}
+                        />
+                      </div>
+                      <div className="p-3">
+                        <h4 className="font-medium text-sm text-gray-900 mb-1 line-clamp-2">{product.name}</h4>
+                        {product.price && (
+                          <p className="text-sm font-bold text-gray-900">
+                            ₹{product.price.toLocaleString('en-IN')}
+                          </p>
+                        )}
+                        {product.stock !== undefined && (
+                          <p className="text-xs text-gray-500 mt-1">
+                            Stock: {product.stock}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </KKAdminLayout>
   );
 }
