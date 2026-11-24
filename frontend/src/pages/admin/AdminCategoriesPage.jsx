@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Helmet } from 'react-helmet-async'
-import { Plus, Edit2, Trash2, Save, X, Tag } from 'lucide-react'
+import { Plus, Edit2, Trash2, Save, X, Tag, Upload, Image as ImageIcon } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import KKAdminLayout from '../../components/admin/KKAdminLayout'
 import toast from 'react-hot-toast'
@@ -17,6 +17,7 @@ export default function AdminCategoriesPage() {
   const [form, setForm] = useState(emptyForm())
   const [saving, setSaving] = useState(false)
   const [deleting, setDeleting] = useState(null)
+  const [uploadingImage, setUploadingImage] = useState(false)
 
   const load = async () => {
     setLoading(true)
@@ -92,6 +93,44 @@ export default function AdminCategoriesPage() {
     if (error) toast.error(error.message)
     else { toast.success('Category deleted'); load() }
     setDeleting(null)
+  }
+
+  const handleImageUpload = async (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    
+    if (!file.type.startsWith('image/')) {
+      return toast.error('Only image files are allowed')
+    }
+    
+    if (file.size > 5 * 1024 * 1024) {
+      return toast.error('Image must be less than 5MB')
+    }
+
+    setUploadingImage(true)
+    try {
+      const ext = file.name.split('.').pop()
+      const fileName = `category-${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
+      const filePath = `categories/${fileName}`
+
+      const { error: uploadError } = await supabase.storage
+        .from('product-images')
+        .upload(filePath, file, { upsert: false })
+
+      if (uploadError) throw uploadError
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('product-images')
+        .getPublicUrl(filePath)
+
+      setForm(f => ({ ...f, image_url: publicUrl }))
+      toast.success('Image uploaded successfully!')
+    } catch (err) {
+      console.error('Upload error:', err)
+      toast.error(err.message || 'Failed to upload image')
+    } finally {
+      setUploadingImage(false)
+    }
   }
 
   const S = {
@@ -214,8 +253,29 @@ export default function AdminCategoriesPage() {
                     <textarea style={{ ...S.input, height: 72, resize: 'vertical' }} value={form.description || ''} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} placeholder="Short description (optional)" />
                   </div>
                   <div>
-                    <label style={S.label}>Image URL</label>
-                    <input style={S.input} value={form.image_url || ''} onChange={e => setForm(f => ({ ...f, image_url: e.target.value }))} placeholder="https://... (optional)" />
+                    <label style={S.label}>Category Image</label>
+                    {form.image_url && (
+                      <div style={{ marginBottom: 10, position: 'relative', width: 'fit-content' }}>
+                        <img src={form.image_url} alt="Category preview" 
+                          style={{ width: 120, height: 120, objectFit: 'cover', borderRadius: 8, border: '1px solid #E5E5E5' }} />
+                        <button type="button" onClick={() => setForm(f => ({ ...f, image_url: '' }))}
+                          style={{ position: 'absolute', top: -8, right: -8, background: '#EF4444', border: 'none', borderRadius: '50%', width: 24, height: 24, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#FFFFFF' }}
+                          title="Remove image">
+                          <X size={14} />
+                        </button>
+                      </div>
+                    )}
+                    <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+                      <label style={{ flex: 1, padding: '10px 14px', border: '1px dashed #CCCCCC', borderRadius: 7, background: uploadingImage ? '#F5F5F5' : '#FAFAFA', cursor: uploadingImage ? 'not-allowed' : 'pointer', fontSize: '0.8125rem', fontFamily: "'Inter', sans-serif", color: '#666666', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+                        <Upload size={16} />
+                        {uploadingImage ? 'Uploading...' : form.image_url ? 'Change Image' : 'Upload Image'}
+                        <input type="file" accept="image/*" onChange={handleImageUpload} disabled={uploadingImage}
+                          style={{ display: 'none' }} />
+                      </label>
+                    </div>
+                    <input style={{ ...S.input, marginTop: 8, fontSize: '0.75rem' }} value={form.image_url || ''} 
+                      onChange={e => setForm(f => ({ ...f, image_url: e.target.value }))} 
+                      placeholder="Or paste image URL here" />
                   </div>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                     <div>

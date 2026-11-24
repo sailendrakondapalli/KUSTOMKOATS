@@ -25,12 +25,18 @@ export default function AdminCategoryShowcasePage() {
       setLoading(true);
       
       // Fetch existing showcases
-      const showcaseRes = await axios.get(`${API_BASE_URL}/api/category-showcase`);
-      const showcaseMap = {};
-      (showcaseRes.data.data || []).forEach(item => {
-        showcaseMap[item.category] = item;
-      });
-      setShowcases(showcaseMap);
+      try {
+        const showcaseRes = await axios.get(`${API_BASE_URL}/api/category-showcase`);
+        const showcaseMap = {};
+        (showcaseRes.data.data || []).forEach(item => {
+          showcaseMap[item.category] = item;
+        });
+        setShowcases(showcaseMap);
+      } catch (err) {
+        // category_showcase table doesn't exist - that's okay, show message
+        console.warn('category_showcase table not ready:', err);
+        showMessage('Category showcase table not found. Run migration037.sql to enable featured products.', 'error');
+      }
 
       // Fetch all products
       const productsRes = await axios.get(`${API_BASE_URL}/api/products`);
