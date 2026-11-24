@@ -10,6 +10,8 @@ const router = express.Router();
  */
 router.get('/', async (req, res) => {
   try {
+    console.log('Fetching category showcases...');
+    
     const { data, error } = await supabase
       .from('category_showcase')
       .select(`
@@ -27,7 +29,12 @@ router.get('/', async (req, res) => {
         updated_at
       `);
 
-    if (error) throw error;
+    if (error) {
+      console.error('Supabase error fetching category showcases:', error);
+      throw error;
+    }
+
+    console.log('Category showcases fetched successfully:', data);
 
     res.json({
       success: true,
@@ -37,7 +44,8 @@ router.get('/', async (req, res) => {
     console.error('Error fetching category showcases:', error);
     res.status(500).json({
       success: false,
-      error: 'Failed to fetch category showcases'
+      error: 'Failed to fetch category showcases',
+      details: error.message
     });
   }
 });

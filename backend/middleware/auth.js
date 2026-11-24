@@ -53,6 +53,11 @@ export const requireAdmin = async (req, res, next) => {
       });
     }
 
+    // Allow specific admin email (matches frontend ProtectedAdminRoute logic)
+    if (req.user.email === 'sailendrakondapalli@gmail.com') {
+      return next();
+    }
+
     // Check if user is admin in profiles table
     const { data: profile, error } = await supabase
       .from('profiles')

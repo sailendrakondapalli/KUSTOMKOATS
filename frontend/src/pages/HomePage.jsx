@@ -5,6 +5,7 @@ import { Helmet } from "react-helmet-async"
 import { createPortal } from "react-dom"
 import { ArrowRight, Shield, CheckCircle, Star, Palette, Sparkles, Zap, Award, TrendingUp, Package, Droplet, Clock, Globe } from "lucide-react"
 import { fetchProducts } from "../services/productService"
+import { supabase } from "../lib/supabase"
 import ProductCard from "../components/ProductCard"
 import SkeletonCard from "../components/SkeletonCard"
 import ScrollReveal from "../components/ScrollReveal"
@@ -244,27 +245,52 @@ function FeaturedCategoriesSection() {
     'Xtreme Kolorz': null,
     'Accessories': null
   })
+  const [categoryImages, setCategoryImages] = useState({}) // Store category images from database
   const [loading, setLoading] = useState(true)
   const scrollRef = useRef(null)
   const isPausedRef = useRef(false)
   const activeIndexRef = useRef(0)
 
   useEffect(() => {
-    const loadCategoryProducts = async () => {
+    const loadCategoryData = async () => {
       setLoading(true)
       try {
+        // Load category images from categories table
+        console.log('HomePage: Fetching category images from Supabase');
+        const { data: categoriesData, error: categoriesError } = await supabase
+          .from('categories')
+          .select('name, image_url')
+          .in('name', ['Xtreme Kolorz', 'Xtreme Wrap', 'Accessories']);
+        
+        if (categoriesError) {
+          console.error('HomePage: Error fetching categories:', categoriesError);
+        } else {
+          const imagesMap = {};
+          categoriesData?.forEach(cat => {
+            imagesMap[cat.name] = cat.image_url;
+          });
+          console.log('HomePage: Category images loaded:', imagesMap);
+          setCategoryImages(imagesMap);
+        }
+
         // First, try to fetch admin-selected showcase products
-        const showcaseRes = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001'}/api/category-showcase`)
+        console.log('HomePage: Fetching showcase products from API');
+        const showcaseRes = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/category-showcase`)
         const showcaseData = await showcaseRes.json()
+        
+        console.log('HomePage: Showcase API response:', showcaseData);
         
         const showcaseMap = {}
         if (showcaseData.success && showcaseData.data) {
           showcaseData.data.forEach(item => {
+            console.log('HomePage: Processing showcase item:', item);
             if (item.products) {
               showcaseMap[item.category] = item.products
             }
           })
         }
+
+        console.log('HomePage: Showcase map before fallback:', showcaseMap);
 
         // For categories without admin selection, fetch the most recent product
         const categoriesToFetch = []
@@ -278,16 +304,20 @@ function FeaturedCategoriesSection() {
 
         // Fetch products for categories without showcases
         if (categoriesToFetch.length > 0) {
+          console.log('HomePage: Fetching fallback products for:', categoriesToFetch);
           const productPromises = categoriesToFetch.map(cat =>
             fetchProducts({ category: cat, limit: 1 })
           )
           const productResults = await Promise.all(productPromises)
+          
+          console.log('HomePage: Fallback products fetched:', productResults);
           
           categoriesToFetch.forEach((cat, index) => {
             showcaseMap[cat] = productResults[index][0] || null
           })
         }
         
+        console.log('HomePage: Final showcase map:', showcaseMap);
         setCategoryProducts(showcaseMap)
       } catch (error) {
         console.error('Failed to load category products:', error)
@@ -311,25 +341,25 @@ function FeaturedCategoriesSection() {
         setLoading(false)
       }
     }
-    loadCategoryProducts()
+    loadCategoryData()
   }, [])
 
   const categories = [
     {
       title: "Xtreme Kolorz",
-      image: "/categories/image.png",
+      image: categoryImages['Xtreme Kolorz'] || "/categories/image.png",
       link: "/shop/xtreme-kolorz",
       product: categoryProducts['Xtreme Kolorz']
     },
     {
       title: "Xtreme Wrap",
-      image: "/categories/image.png",
+      image: categoryImages['Xtreme Wrap'] || "/categories/image.png",
       link: "/shop/xtreme-wrap",
       product: categoryProducts['Xtreme Wrap']
     },
     {
       title: "Accessories",
-      image: "/categories/image.png",
+      image: categoryImages['Accessories'] || "/categories/image.png",
       link: "/shop/accessories",
       product: categoryProducts['Accessories']
     }
@@ -387,7 +417,8 @@ function FeaturedCategoriesSection() {
           {categories.map((category, idx) => {
             const product = category.product
             const displayImage = product?.images?.[0] || category.image
-            const targetLink = product ? `/products/${product.id}` : category.link
+            // Always link to category page, not individual product
+            const targetLink = category.link
             
             return (
               <div key={category.title} className="flex-shrink-0 w-[72vw] snap-start">
@@ -429,7 +460,7 @@ function FeaturedCategoriesSection() {
                         paddingBottom: "2px"
                       }}
                     >
-                      {product ? 'VIEW PRODUCTS' : 'SHOP NOW'}
+                      VIEW PRODUCTS
                     </div>
                   </div>
                 </Link>
@@ -443,7 +474,8 @@ function FeaturedCategoriesSection() {
           {categories.map((category, idx) => {
             const product = category.product
             const displayImage = product?.images?.[0] || category.image
-            const targetLink = product ? `/products/${product.id}` : category.link
+            // Always link to category page, not individual product
+            const targetLink = category.link
             
             return (
               <ScrollReveal key={category.title} delay={idx * 0.15}>
@@ -485,7 +517,7 @@ function FeaturedCategoriesSection() {
                         paddingBottom: "2px"
                       }}
                     >
-                      {product ? 'VIEW PRODUCTS' : 'SHOP NOW'}
+                      VIEW PRODUCTS
                     </div>
                   </div>
                 </Link>

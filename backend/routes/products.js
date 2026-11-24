@@ -17,15 +17,18 @@ router.get('/',
   async (req, res) => {
     try {
       const { category, search, limit = 50, offset = 0 } = req.query;
+      
+      console.log('📦 Fetching products with filters:', { category, search, limit, offset });
 
       let query = supabase
         .from('products')
-        .select('id, name, description, price, category, stock, images, custom_id', { count: 'exact' })
-        .ilike('status', 'active')
+        .select('id, name, description, price, category, stock, images, custom_id, status', { count: 'exact' })
+        .eq('status', 'Active')
         .range(offset, offset + limit - 1)
         .order('created_at', { ascending: false });
 
       if (category) {
+        console.log('🔍 Filtering by category:', category);
         query = query.eq('category', category);
       }
 
@@ -35,7 +38,12 @@ router.get('/',
 
       const { data, error, count } = await query;
 
-      if (error) throw error;
+      if (error) {
+        console.error('❌ Supabase error:', error);
+        throw error;
+      }
+
+      console.log('✅ Products fetched:', { count, dataLength: data?.length });
 
       res.json({ 
         data, 
@@ -66,7 +74,7 @@ router.get('/:id',
         .from('products')
         .select('id, name, description, price, category, stock, images, custom_id, technical_details')
         .eq('id', id)
-        .ilike('status', 'active')
+        .eq('status', 'Active')
         .single();
 
       if (error) {
