@@ -78,8 +78,12 @@ export default function AdminCategoryShowcasePage() {
         throw new Error('Please log in to perform this action');
       }
 
+      const updateUrl = `${API_BASE_URL}/api/categories/${categoryId}`;
+      console.log('Updating category at URL:', updateUrl);
+      console.log('With image_url:', publicUrl);
+
       const updateRes = await axios.put(
-        `${API_BASE_URL}/api/categories/${categoryId}`,
+        updateUrl,
         { image_url: publicUrl },
         { headers: { Authorization: `Bearer ${session.access_token}` } }
       );
