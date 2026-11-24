@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Check, X, Search, AlertCircle } from 'lucide-react';
 import axios from 'axios';
+import KKAdminLayout from '../../components/admin/KKAdminLayout';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
 
@@ -97,21 +98,20 @@ export default function AdminCategoryShowcasePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 p-8">
+      <KKAdminLayout>
         <div className="max-w-7xl mx-auto">
           <div className="animate-pulse space-y-4">
             <div className="h-8 bg-gray-200 rounded w-1/3"></div>
             <div className="h-64 bg-gray-200 rounded"></div>
           </div>
         </div>
-      </div>
+      </KKAdminLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
+    <KKAdminLayout>
+      <div className="max-w-7xl mx-auto">{/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Category Showcase Management</h1>
           <p className="text-gray-600">
@@ -275,6 +275,6 @@ export default function AdminCategoryShowcasePage() {
           )}
         </div>
       </div>
-    </div>
+    </KKAdminLayout>
   );
 }

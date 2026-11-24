@@ -261,11 +261,13 @@ export default function App() {
               </ErrorBoundary>
             } />
             <Route path="/admin/category-showcase" element={
-              <ErrorBoundary>
-                <Suspense fallback={<AdminLoader />}>
-                  <AdminCategoryShowcasePage />
-                </Suspense>
-              </ErrorBoundary>
+              <ProtectedAdminRoute>
+                <ErrorBoundary>
+                  <Suspense fallback={<AdminLoader />}>
+                    <AdminCategoryShowcasePage />
+                  </Suspense>
+                </ErrorBoundary>
+              </ProtectedAdminRoute>
             } />
 
             {/* ── STOREFRONT ROUTES — Navbar + Footer ── */}
