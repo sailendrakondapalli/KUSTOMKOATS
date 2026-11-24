@@ -52,31 +52,48 @@ export default function AdminCategoryShowcasePage() {
       const fileName = `category-${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
       const filePath = `categories/${fileName}`;
 
-      const { error: uploadError } = await supabase.storage
+      // Upload to Supabase storage
+      const { error: uploadError, data: uploadData } = await supabase.storage
         .from('product-images')
         .upload(filePath, file, { upsert: false });
 
-      if (uploadError) throw uploadError;
+      if (uploadError) {
+        console.error('Upload error:', uploadError);
+        throw uploadError;
+      }
 
+      // Get public URL
       const { data: { publicUrl } } = supabase.storage
         .from('product-images')
         .getPublicUrl(filePath);
 
-      // Update category with new image
-      const { error: updateError } = await supabase
+      console.log('Image uploaded successfully. Public URL:', publicUrl);
+
+      // Update category in database with new image URL
+      const { error: updateError, data: updateData } = await supabase
         .from('categories')
         .update({ image_url: publicUrl })
-        .eq('id', categoryId);
+        .eq('id', categoryId)
+        .select();
 
-      if (updateError) throw updateError;
+      if (updateError) {
+        console.error('Database update error:', updateError);
+        throw updateError;
+      }
 
-      toast.success('Image uploaded successfully!');
-      fetchCategories();
+      console.log('Database updated successfully:', updateData);
+
+      toast.success('Image uploaded and saved!');
+      
+      // Refresh categories to show the new image
+      await fetchCategories();
     } catch (err) {
-      console.error('Upload error:', err);
+      console.error('Complete upload error:', err);
       toast.error(err.message || 'Failed to upload image');
     } finally {
       setUploadingImage(null);
+      // Reset the file input
+      e.target.value = '';
     }
   };
 
@@ -153,9 +170,10 @@ export default function AdminCategoryShowcasePage() {
               <div className="relative aspect-square bg-gray-100">
                 {category.image_url ? (
                   <img 
-                    src={category.image_url} 
+                    src={`${category.image_url}?t=${Date.now()}`}
                     alt={category.name}
                     className="w-full h-full object-cover"
+                    key={category.image_url}
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">
