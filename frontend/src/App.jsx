@@ -34,6 +34,9 @@ const AdminBundlesPage = lazy(() => import('./pages/admin/AdminBundlesPage'))
 const AdminEWayBillPage = lazy(() => import('./pages/admin/AdminEWayBillPage'))
 const AdminSettingsPage = lazy(() => import('./pages/admin/AdminSettingsPage'))
 const AdminCategoryShowcasePage = lazy(() => import('./pages/admin/AdminCategoryShowcasePage'))
+const AdminSubcategoriesPage = lazy(() => import('./pages/admin/AdminSubcategoriesPage'))
+const AdminSubcategoryBannersPage = lazy(() => import('./pages/admin/AdminSubcategoryBannersPage'))
+const AdminCategoryBannersPage = lazy(() => import('./pages/admin/AdminCategoryBannersPage'))
 
 const PageLoader = () => (
   <div className="min-h-screen flex items-center justify-center" style={{ background: '#FFFFFF' }}>
@@ -265,6 +268,33 @@ export default function App() {
                 <ErrorBoundary>
                   <Suspense fallback={<AdminLoader />}>
                     <AdminCategoryShowcasePage />
+                  </Suspense>
+                </ErrorBoundary>
+              </ProtectedAdminRoute>
+            } />
+            <Route path="/admin/subcategories" element={
+              <ProtectedAdminRoute>
+                <ErrorBoundary>
+                  <Suspense fallback={<AdminLoader />}>
+                    <AdminSubcategoriesPage />
+                  </Suspense>
+                </ErrorBoundary>
+              </ProtectedAdminRoute>
+            } />
+            <Route path="/admin/subcategory-banners" element={
+              <ProtectedAdminRoute>
+                <ErrorBoundary>
+                  <Suspense fallback={<AdminLoader />}>
+                    <AdminSubcategoryBannersPage />
+                  </Suspense>
+                </ErrorBoundary>
+              </ProtectedAdminRoute>
+            } />
+            <Route path="/admin/category-banners" element={
+              <ProtectedAdminRoute>
+                <ErrorBoundary>
+                  <Suspense fallback={<AdminLoader />}>
+                    <AdminCategoryBannersPage />
                   </Suspense>
                 </ErrorBoundary>
               </ProtectedAdminRoute>

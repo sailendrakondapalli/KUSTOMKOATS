@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Link } from "react-router-dom"
 import { motion } from "framer-motion"
 import { Helmet } from "react-helmet-async"
@@ -240,12 +240,8 @@ function HeroSection() {
 
 /* --- Featured Categories Section (After Hero) --- */
 function FeaturedCategoriesSection() {
-  const [categoryProducts, setCategoryProducts] = useState({
-    'Xtreme Wrap': null,
-    'Xtreme Kolorz': null,
-    'Accessories': null
-  })
-  const [categoryImages, setCategoryImages] = useState({}) // Store category images from database
+  const [dbCategories, setDbCategories] = useState([])
+  const [categoryProducts, setCategoryProducts] = useState({})
   const [loading, setLoading] = useState(true)
   const scrollRef = useRef(null)
   const isPausedRef = useRef(false)
@@ -255,88 +251,39 @@ function FeaturedCategoriesSection() {
     const loadCategoryData = async () => {
       setLoading(true)
       try {
-        // Load category images from categories table
-        console.log('HomePage: Fetching category images from Supabase');
-        const { data: categoriesData, error: categoriesError } = await supabase
+        // Load all active categories from DB
+        const { data: catsData } = await supabase
           .from('categories')
-          .select('name, image_url')
-          .in('name', ['Xtreme Kolorz', 'Xtreme Wrap', 'Accessories']);
-        
-        if (categoriesError) {
-          console.error('HomePage: Error fetching categories:', categoriesError);
-        } else {
-          const imagesMap = {};
-          categoriesData?.forEach(cat => {
-            imagesMap[cat.name] = cat.image_url;
-          });
-          console.log('HomePage: Category images loaded:', imagesMap);
-          setCategoryImages(imagesMap);
-        }
+          .select('id, name, slug, image_url')
+          .eq('is_active', true)
+          .order('sort_order', { ascending: true })
 
-        // First, try to fetch admin-selected showcase products
-        console.log('HomePage: Fetching showcase products from API');
+        const cats = catsData || []
+        setDbCategories(cats)
+
+        // For each category, fetch showcase or fallback product
         const showcaseRes = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/category-showcase`)
-        const showcaseData = await showcaseRes.json()
-        
-        console.log('HomePage: Showcase API response:', showcaseData);
-        
+        const showcaseData = await showcaseRes.json().catch(() => ({ success: false }))
+
         const showcaseMap = {}
-        if (showcaseData.success && showcaseData.data) {
+        if (showcaseData?.success && showcaseData.data) {
           showcaseData.data.forEach(item => {
-            console.log('HomePage: Processing showcase item:', item);
-            if (item.products) {
-              showcaseMap[item.category] = item.products
-            }
+            if (item.products) showcaseMap[item.category] = item.products
           })
         }
 
-        console.log('HomePage: Showcase map before fallback:', showcaseMap);
-
-        // For categories without admin selection, fetch the most recent product
-        const categoriesToFetch = []
-        const categoryNames = ['Xtreme Wrap', 'Xtreme Kolorz', 'Accessories']
-        
-        categoryNames.forEach(cat => {
-          if (!showcaseMap[cat]) {
-            categoriesToFetch.push(cat)
+        const productsMap = {}
+        await Promise.all(cats.map(async (cat) => {
+          if (showcaseMap[cat.name]) {
+            productsMap[cat.name] = showcaseMap[cat.name]
+          } else {
+            const data = await fetchProducts({ category: cat.name, limit: 1 })
+            productsMap[cat.name] = data[0] || null
           }
-        })
-
-        // Fetch products for categories without showcases
-        if (categoriesToFetch.length > 0) {
-          console.log('HomePage: Fetching fallback products for:', categoriesToFetch);
-          const productPromises = categoriesToFetch.map(cat =>
-            fetchProducts({ category: cat, limit: 1 })
-          )
-          const productResults = await Promise.all(productPromises)
-          
-          console.log('HomePage: Fallback products fetched:', productResults);
-          
-          categoriesToFetch.forEach((cat, index) => {
-            showcaseMap[cat] = productResults[index][0] || null
-          })
-        }
-        
-        console.log('HomePage: Final showcase map:', showcaseMap);
-        setCategoryProducts(showcaseMap)
+        }))
+        setCategoryProducts(productsMap)
       } catch (error) {
-        console.error('Failed to load category products:', error)
-        // Fallback to original behavior
-        try {
-          const [wrapProducts, kolorzProducts, accessoryProducts] = await Promise.all([
-            fetchProducts({ category: 'Xtreme Wrap', limit: 1 }),
-            fetchProducts({ category: 'Xtreme Kolorz', limit: 1 }),
-            fetchProducts({ category: 'Accessories', limit: 1 })
-          ])
-          
-          setCategoryProducts({
-            'Xtreme Wrap': wrapProducts[0] || null,
-            'Xtreme Kolorz': kolorzProducts[0] || null,
-            'Accessories': accessoryProducts[0] || null
-          })
-        } catch (fallbackError) {
-          console.error('Fallback fetch also failed:', fallbackError)
-        }
+        console.error('Failed to load categories:', error)
       } finally {
         setLoading(false)
       }
@@ -344,122 +291,68 @@ function FeaturedCategoriesSection() {
     loadCategoryData()
   }, [])
 
-  const categories = useMemo(() => [
-    {
-      title: "Xtreme Kolorz",
-      image: categoryImages['Xtreme Kolorz'] || "/categories/image.png",
-      link: "/shop/xtreme-kolorz",
-      product: categoryProducts['Xtreme Kolorz']
-    },
-    {
-      title: "Xtreme Wrap",
-      image: categoryImages['Xtreme Wrap'] || "/categories/image.png",
-      link: "/shop/xtreme-wrap",
-      product: categoryProducts['Xtreme Wrap']
-    },
-    {
-      title: "Accessories",
-      image: categoryImages['Accessories'] || "/categories/image.png",
-      link: "/shop/accessories",
-      product: categoryProducts['Accessories']
-    }
-  ], [categoryImages, categoryProducts])
+  const categories = dbCategories.map(cat => ({
+    title: cat.name,
+    slug: cat.slug,
+    image: cat.image_url || '/categories/image.png',
+    link: `/category/${cat.slug}`,
+    product: categoryProducts[cat.name] || null,
+  }))
 
-  // Auto-scroll the mobile carousel to the next card every 1 second
+  // Auto-scroll the mobile carousel
   useEffect(() => {
     if (categories.length === 0) return
-
     const interval = setInterval(() => {
       if (isPausedRef.current) return
       const container = scrollRef.current
       if (!container) return
-
       const children = Array.from(container.children)
       if (children.length === 0) return
-
-      // Move to next index, loop back to 0 at the end
       const nextIndex = (activeIndexRef.current + 1) % children.length
       activeIndexRef.current = nextIndex
-
       const target = children[nextIndex]
-      if (target) {
-        container.scrollTo({ left: target.offsetLeft, behavior: 'smooth' })
-      }
+      if (target) container.scrollTo({ left: target.offsetLeft, behavior: 'smooth' })
     }, 1000)
-
     return () => clearInterval(interval)
   }, [categories.length])
 
-  // Pause auto-scroll briefly when the user manually interacts
   const pauseAutoScroll = () => {
     isPausedRef.current = true
     clearTimeout(pauseAutoScroll._timer)
-    pauseAutoScroll._timer = setTimeout(() => {
-      isPausedRef.current = false
-    }, 5000)
+    pauseAutoScroll._timer = setTimeout(() => { isPausedRef.current = false }, 5000)
   }
 
   return (
     <section className={`w-full py-16 ${PX}`} style={{ background: "#FFFFFF", position: "relative", zIndex: 5 }}>
       <div className="max-w-7xl mx-auto">
-        {/* Mobile: Horizontal Scroll - peek next item, auto-advances every 4s */}
-        <div 
+        {/* Mobile: Horizontal Scroll */}
+        <div
           ref={scrollRef}
           onTouchStart={pauseAutoScroll}
           onMouseDown={pauseAutoScroll}
           onWheel={pauseAutoScroll}
           className="md:hidden flex gap-4 overflow-x-auto pb-4 pl-1 snap-x snap-mandatory scrollbar-hide"
-          style={{ 
-            scrollbarWidth: 'none',
-            msOverflowStyle: 'none',
-            WebkitOverflowScrolling: 'touch'
-          }}>
-          {categories.map((category, idx) => {
-            const product = category.product
+          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch' }}>
+          {categories.map((category) => {
+            const product = Array.isArray(category.product) ? category.product[0] : category.product
             const displayImage = product?.images?.[0] || category.image
-            // Always link to category page, not individual product
-            const targetLink = category.link
-            
             return (
               <div key={category.title} className="flex-shrink-0 w-[72vw] snap-start">
-                <Link to={targetLink} className="relative group block">
+                <Link to={category.link} className="relative group block">
                   <div className="relative aspect-[4/3] rounded-lg mb-4 overflow-hidden">
                     {loading ? (
                       <div className="w-full h-full bg-gray-200 animate-pulse" />
                     ) : (
-                      <img 
-                        src={displayImage}
-                        alt={product?.name || category.title}
+                      <img src={displayImage} alt={category.title}
                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                        onError={(e) => {
-                          e.target.src = category.image
-                        }}
-                      />
+                        onError={e => { e.target.src = '/categories/image.png' }} />
                     )}
                   </div>
                   <div className="space-y-3">
-                    <p className="text-xs font-bold uppercase tracking-wider" 
-                      style={{ color: "#CA2A31", fontFamily: "'Inter', sans-serif" }}>
-                      {category.title}
-                    </p>
-                    <h3 
-                      className="text-2xl font-bold"
-                      style={{ 
-                        fontFamily: "'Rajdhani', 'Inter', sans-serif", 
-                        color: "#000000" 
-                      }}
-                    >
-                      {product?.name || category.title}
-                    </h3>
-                    <div
-                      className="inline-block text-sm font-bold tracking-wider uppercase transition-colors group-hover:text-[#CA2A31]"
-                      style={{ 
-                        fontFamily: "'Inter', sans-serif",
-                        color: "#000000",
-                        borderBottom: "2px solid #CA2A31",
-                        paddingBottom: "2px"
-                      }}
-                    >
+                    <p className="text-xs font-bold uppercase tracking-wider" style={{ color: "#CA2A31", fontFamily: "'Inter', sans-serif" }}>{category.title}</p>
+                    <h3 className="text-2xl font-bold" style={{ fontFamily: "'Rajdhani', 'Inter', sans-serif", color: "#000000" }}>{category.title}</h3>
+                    <div className="inline-block text-sm font-bold tracking-wider uppercase transition-colors group-hover:text-[#CA2A31]"
+                      style={{ fontFamily: "'Inter', sans-serif", color: "#000000", borderBottom: "2px solid #CA2A31", paddingBottom: "2px" }}>
                       VIEW PRODUCTS
                     </div>
                   </div>
@@ -470,53 +363,27 @@ function FeaturedCategoriesSection() {
         </div>
 
         {/* Desktop: Grid */}
-        <div className="hidden md:grid grid-cols-3 gap-8">
+        <div className="hidden md:grid gap-8" style={{ gridTemplateColumns: `repeat(${Math.min(categories.length, 4)}, 1fr)` }}>
           {categories.map((category, idx) => {
-            const product = category.product
+            const product = Array.isArray(category.product) ? category.product[0] : category.product
             const displayImage = product?.images?.[0] || category.image
-            // Always link to category page, not individual product
-            const targetLink = category.link
-            
             return (
               <ScrollReveal key={category.title} delay={idx * 0.15}>
-                <Link to={targetLink} className="relative group block">
+                <Link to={category.link} className="relative group block">
                   <div className="relative aspect-[4/3] rounded-lg mb-4 overflow-hidden">
                     {loading ? (
                       <div className="w-full h-full bg-gray-200 animate-pulse" />
                     ) : (
-                      <img 
-                        src={displayImage}
-                        alt={product?.name || category.title}
+                      <img src={displayImage} alt={category.title}
                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                        onError={(e) => {
-                          e.target.src = category.image
-                        }}
-                      />
+                        onError={e => { e.target.src = '/categories/image.png' }} />
                     )}
                   </div>
                   <div className="space-y-3">
-                    <p className="text-xs font-bold uppercase tracking-wider" 
-                      style={{ color: "#CA2A31", fontFamily: "'Inter', sans-serif" }}>
-                      {category.title}
-                    </p>
-                    <h3 
-                      className="text-2xl font-bold"
-                      style={{ 
-                        fontFamily: "'Rajdhani', 'Inter', sans-serif", 
-                        color: "#000000" 
-                      }}
-                    >
-                      {product?.name || category.title}
-                    </h3>
-                    <div
-                      className="inline-block text-sm font-bold tracking-wider uppercase transition-colors group-hover:text-[#CA2A31]"
-                      style={{ 
-                        fontFamily: "'Inter', sans-serif",
-                        color: "#000000",
-                        borderBottom: "2px solid #CA2A31",
-                        paddingBottom: "2px"
-                      }}
-                    >
+                    <p className="text-xs font-bold uppercase tracking-wider" style={{ color: "#CA2A31", fontFamily: "'Inter', sans-serif" }}>{category.title}</p>
+                    <h3 className="text-2xl font-bold" style={{ fontFamily: "'Rajdhani', 'Inter', sans-serif", color: "#000000" }}>{category.title}</h3>
+                    <div className="inline-block text-sm font-bold tracking-wider uppercase transition-colors group-hover:text-[#CA2A31]"
+                      style={{ fontFamily: "'Inter', sans-serif", color: "#000000", borderBottom: "2px solid #CA2A31", paddingBottom: "2px" }}>
                       VIEW PRODUCTS
                     </div>
                   </div>

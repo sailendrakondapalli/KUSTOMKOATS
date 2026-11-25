@@ -20,6 +20,7 @@ import contentRoutes from './routes/content.js';
 import wishlistRoutes from './routes/wishlist.js';
 import paymentFailuresRoutes from './routes/payment-failures.js';
 import categoryShowcaseRoutes from './routes/category-showcase.js';
+import subcategoriesRoutes from './routes/subcategories.js';
 
 // Load environment variables
 dotenv.config();
@@ -107,6 +108,7 @@ app.use('/api/wishlist', wishlistRoutes);
 app.use('/api/payment-failures', paymentFailuresRoutes);
 app.use('/api/category-showcase', categoryShowcaseRoutes);
 app.use('/api/categories', categoriesRoutes);
+app.use('/api/subcategories', subcategoriesRoutes);
 
 // 404 handler
 app.use((req, res) => {

@@ -8,7 +8,7 @@ import {
   DollarSign, AlertCircle, CheckCircle, BarChart2
 } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
-import { productsAPI } from '../../services/apiClient'
+import { productsAPI, subcategoriesAPI, categoriesAPI } from '../../services/apiClient'
 import { getSetting } from '../../services/settingsService'
 import KKAdminLayout from '../../components/admin/KKAdminLayout'
 import TechnicalBarEditor from '../../components/admin/TechnicalBarEditor'
@@ -22,13 +22,14 @@ const CATEGORIES_DEFAULT = ['Xtreme Kolorz', 'Xtreme Wrap', 'Accessories', 'Whol
 const emptyProduct = () => ({
   name: '', description: '', price: '', original_price: '',
   wholesale_price: '', dealer_price: '',
-  category: 'Xtreme Kolorz', stock: 10, custom_id: '',
+  category: 'Xtreme Kolorz', subcategory_id: '', subcategory: '',
+  stock: 10, custom_id: '',
   images: [], tags: [], size: '',
   sku: '', brand: '', colour: '', finish: '',
   gtin_ean: '', internal_barcode: '', barcode_type: 'Code 128',
   mrp: '', status: 'Active',
   hsn_code: '32089090',
-  display_product_id: '', // Will be auto-generated
+  display_product_id: '',
   techBars: [],
   techSpecs: [],
   techDetailsTitle: '',
@@ -408,6 +409,10 @@ function ProductFormModal({ initialData, categories, onClose, onSaved }) {
   const [selectedBundles, setSelectedBundles] = useState([])
   const [loadingBundles, setLoadingBundles] = useState(true)
   const [gstin, setGstin] = useState('')
+  // Subcategory support
+  const [allSubcategories, setAllSubcategories] = useState([])
+  const [subcategoriesForCategory, setSubcategoriesForCategory] = useState([])
+  const [dbCategories, setDbCategories] = useState([])
 
   const setField = (k, v) => setForm(f => ({ ...f, [k]: v }))
 
@@ -419,6 +424,31 @@ function ProductFormModal({ initialData, categories, onClose, onSaved }) {
     }
     loadGstin()
   }, [])
+
+  // Fetch subcategories + categories from DB
+  useEffect(() => {
+    Promise.all([
+      subcategoriesAPI.getAll({ active_only: 'false' }),
+      categoriesAPI.getAll({ active_only: 'false' }),
+    ]).then(([subRes, catRes]) => {
+      setAllSubcategories(subRes.data || [])
+      setDbCategories(catRes.data || [])
+    }).catch(() => {})
+  }, [])
+
+  // Filter subcategories when category changes
+  useEffect(() => {
+    if (!form.category) { setSubcategoriesForCategory([]); return }
+    const matchCat = dbCategories.find(c =>
+      c.name.toLowerCase() === form.category.toLowerCase() ||
+      c.slug === form.category.toLowerCase().replace(/\s+/g, '-')
+    )
+    if (matchCat) {
+      setSubcategoriesForCategory(allSubcategories.filter(s => (s.category?.id || s.category_id) === matchCat.id))
+    } else {
+      setSubcategoriesForCategory(allSubcategories)
+    }
+  }, [form.category, dbCategories, allSubcategories])
 
   // Fetch bundles and currently tagged bundles when form opens
   useEffect(() => {
@@ -513,6 +543,8 @@ function ProductFormModal({ initialData, categories, onClose, onSaved }) {
           status: form.status || 'Active',
           tech_details_title: form.techDetailsTitle || null,
           tech_details_description: form.techDetailsDescription || null,
+          subcategory_id: form.subcategory_id || null,
+          subcategory: form.subcategory || null,
         }),
       })
 
@@ -669,9 +701,25 @@ function ProductFormModal({ initialData, categories, onClose, onSaved }) {
                   </div>
                   <div>
                     <label style={S.label}>Category *</label>
-                    <select style={S.input} value={form.category} onChange={e => setField('category', e.target.value)}>
+                    <select style={S.input} value={form.category} onChange={e => { setField('category', e.target.value); setField('subcategory_id', '') }}>
                       {categories.map(c => <option key={c} value={c}>{c}</option>)}
                     </select>
+                  </div>
+                  <div>
+                    <label style={S.label}>Subcategory</label>
+                    <select style={S.input} value={form.subcategory_id || ''} onChange={e => {
+                      const sub = subcategoriesForCategory.find(s => s.id === e.target.value)
+                      setField('subcategory_id', e.target.value)
+                      setField('subcategory', sub?.name || '')
+                    }}>
+                      <option value="">— No Subcategory —</option>
+                      {subcategoriesForCategory.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                    </select>
+                    {subcategoriesForCategory.length === 0 && form.category && (
+                      <p style={{ fontSize: '0.6875rem', color: '#AAA', fontFamily: "'Inter', sans-serif", margin: '4px 0 0' }}>
+                        No subcategories for this category yet. Add them in Admin → Subcategories.
+                      </p>
+                    )}
                   </div>
                   <div>
                     <label style={S.label}>Stock Quantity</label>
