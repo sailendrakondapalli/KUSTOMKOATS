@@ -15,6 +15,7 @@ export default function AdminCategoryShowcasePage() {
   const [viewingProducts, setViewingProducts] = useState(null);
   const [categoryProducts, setCategoryProducts] = useState([]);
   const [showcaseProducts, setShowcaseProducts] = useState({}); // Maps category name to featured product
+  const [refreshKey, setRefreshKey] = useState(0); // Force re-render key
 
   useEffect(() => {
     fetchCategories();
@@ -36,6 +37,7 @@ export default function AdminCategoryShowcasePage() {
       }
       
       console.log('Categories fetched:', data);
+      console.log('Categories with images:', data?.filter(c => c.image_url).map(c => ({ name: c.name, hasImage: !!c.image_url })));
       setCategories(data || []);
     } catch (error) {
       console.error('Error fetching categories:', error);
@@ -125,35 +127,50 @@ export default function AdminCategoryShowcasePage() {
 
       console.log('Image uploaded successfully. Public URL:', publicUrl);
 
-      // Update category directly via Supabase (no backend route)
-      const { error: updateError } = await supabase
+      // Update category via authenticated Supabase call
+      console.log('Attempting to update category:', categoryId, 'with URL:', publicUrl);
+      
+      // Get current user session for authentication
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError || !session) {
+        throw new Error('Authentication required. Please log in again.');
+      }
+      
+      const { data: updateData, error: updateError } = await supabase
         .from('categories')
         .update({ image_url: publicUrl })
-        .eq('id', categoryId);
+        .eq('id', categoryId)
+        .select(); // Add select to see what was updated
 
       if (updateError) {
         console.error('Database update error:', updateError);
         throw updateError;
       }
 
-      console.log('Category updated successfully via Supabase');
+      console.log('Database update result:', updateData);
+      console.log('Update result length:', updateData?.length);
       
-      // Update the local state immediately with the new image URL
-      setCategories(prevCategories => 
-        prevCategories.map(cat => 
-          cat.id === categoryId ? { ...cat, image_url: publicUrl } : cat
-        )
-      );
+      // Check if RLS blocked the update (empty array means blocked)
+      if (!updateData || updateData.length === 0) {
+        console.error('⛔ RLS POLICY BLOCKED THE UPDATE!');
+        console.error('This means your JWT token does not have admin role.');
+        console.error('Steps to fix:');
+        console.error('1. Run FIX-ADMIN-ROLE.sql in Supabase SQL Editor');
+        console.error('2. Log out of this app completely');
+        console.error('3. Log back in to get new JWT token with admin role');
+        throw new Error('Permission denied: Admin role required. Please run FIX-ADMIN-ROLE.sql and log out/in.');
+      }
+      
+      console.log('✅ Category updated successfully via Supabase');
+      console.log('✅ Updated category has image_url:', updateData[0]?.image_url);
+      
+      // Force a complete re-render by updating the refresh key
+      setRefreshKey(prev => prev + 1);
       
       toast.success('Image uploaded and saved!');
       
-      // Also refresh from database to ensure consistency
+      // Refresh categories from database
       await fetchCategories();
-      
-      // Force a small delay to ensure the image is accessible
-      setTimeout(() => {
-        console.log('Categories refreshed, new image should be visible');
-      }, 500);
     } catch (err) {
       console.error('Complete upload error:', err);
       toast.error(err.message || 'Failed to upload image');
@@ -274,7 +291,7 @@ export default function AdminCategoryShowcasePage() {
         </div>
 
         {/* Categories Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div key={refreshKey} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {categories.map(category => (
             <div key={category.id} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
               {/* Image Section */}
@@ -297,14 +314,38 @@ export default function AdminCategoryShowcasePage() {
                         console.log('Image loaded successfully for:', category.name);
                       }}
                     />
+                    {/* Delete Button - Always visible in top-right corner */}
+                    <button
+                      type="button"
+                      onClick={async (e) => {
+                        e.preventDefault();
+                        if (confirm(`Remove image for ${category.name}?`)) {
+                          try {
+                            await supabase
+                              .from('categories')
+                              .update({ image_url: null })
+                              .eq('id', category.id);
+                            toast.success('Image removed');
+                            await fetchCategories();
+                          } catch (err) {
+                            console.error('Failed to remove image:', err);
+                            toast.error('Failed to remove image');
+                          }
+                        }
+                      }}
+                      className="absolute top-3 right-3 bg-red-600 text-white p-2 rounded-full hover:bg-red-700 transition-colors shadow-lg z-20"
+                      title="Delete Image"
+                    >
+                      <X size={18} />
+                    </button>
                     {/* Fallback for failed images */}
                     <div className="hidden absolute inset-0 flex items-center justify-center flex-col gap-2 bg-gradient-to-br from-gray-100 to-gray-200">
                       <ImageIcon size={48} className="text-gray-400" />
                       <p className="text-xs text-gray-500">Image failed to load</p>
                     </div>
                     {/* Upload Button Overlay - Only shows on hover */}
-                    <label className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-0 hover:bg-opacity-30 transition-all cursor-pointer group">
-                      <div className="opacity-0 group-hover:opacity-100 transition-opacity flex flex-col gap-2 items-center">
+                    <label className="absolute inset-0 flex items-center justify-center bg-transparent hover:bg-black hover:bg-opacity-30 transition-all cursor-pointer group pointer-events-none">
+                      <div className="opacity-0 group-hover:opacity-100 transition-opacity flex flex-col gap-2 items-center pointer-events-auto">
                         <div className="bg-white rounded-full p-3 shadow-lg">
                           {uploadingImage === category.id ? (
                             <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
@@ -315,29 +356,6 @@ export default function AdminCategoryShowcasePage() {
                         <span className="text-white text-sm font-medium bg-black bg-opacity-50 px-3 py-1 rounded-full">
                           Change Image
                         </span>
-                        {/* Remove Image Button */}
-                        <button
-                          type="button"
-                          onClick={async (e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            if (confirm('Remove this image?')) {
-                              try {
-                                await supabase
-                                  .from('categories')
-                                  .update({ image_url: null })
-                                  .eq('id', category.id);
-                                toast.success('Image removed');
-                                fetchCategories();
-                              } catch (err) {
-                                toast.error('Failed to remove image');
-                              }
-                            }
-                          }}
-                          className="bg-red-600 text-white text-xs px-3 py-1 rounded-full hover:bg-red-700 transition-colors"
-                        >
-                          Remove
-                        </button>
                       </div>
                       <input 
                         type="file" 

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useMemo } from "react"
 import { Link } from "react-router-dom"
 import { motion } from "framer-motion"
 import { Helmet } from "react-helmet-async"
@@ -344,7 +344,7 @@ function FeaturedCategoriesSection() {
     loadCategoryData()
   }, [])
 
-  const categories = [
+  const categories = useMemo(() => [
     {
       title: "Xtreme Kolorz",
       image: categoryImages['Xtreme Kolorz'] || "/categories/image.png",
@@ -363,7 +363,7 @@ function FeaturedCategoriesSection() {
       link: "/shop/accessories",
       product: categoryProducts['Accessories']
     }
-  ]
+  ], [categoryImages, categoryProducts])
 
   // Auto-scroll the mobile carousel to the next card every 1 second
   useEffect(() => {
