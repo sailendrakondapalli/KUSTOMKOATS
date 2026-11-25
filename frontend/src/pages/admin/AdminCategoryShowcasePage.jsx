@@ -137,10 +137,23 @@ export default function AdminCategoryShowcasePage() {
       }
 
       console.log('Category updated successfully via Supabase');
+      
+      // Update the local state immediately with the new image URL
+      setCategories(prevCategories => 
+        prevCategories.map(cat => 
+          cat.id === categoryId ? { ...cat, image_url: publicUrl } : cat
+        )
+      );
+      
       toast.success('Image uploaded and saved!');
       
-      // Refresh categories to show the new image
+      // Also refresh from database to ensure consistency
       await fetchCategories();
+      
+      // Force a small delay to ensure the image is accessible
+      setTimeout(() => {
+        console.log('Categories refreshed, new image should be visible');
+      }, 500);
     } catch (err) {
       console.error('Complete upload error:', err);
       toast.error(err.message || 'Failed to upload image');
@@ -265,29 +278,66 @@ export default function AdminCategoryShowcasePage() {
           {categories.map(category => (
             <div key={category.id} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
               {/* Image Section */}
-              <div className="relative aspect-square bg-gray-100">
+              <div className="relative aspect-square bg-gradient-to-br from-gray-50 to-gray-100">
                 {category.image_url ? (
                   <>
                     <img 
-                      src={category.image_url}
+                      src={`${category.image_url}?t=${Date.now()}`}
                       alt={category.name}
                       className="w-full h-full object-cover"
                       onError={(e) => {
                         console.error('Image failed to load:', category.name, category.image_url);
+                        // Hide the image and show fallback
                         e.target.style.display = 'none';
+                        // Show fallback icon
+                        const fallback = e.target.nextElementSibling;
+                        if (fallback) fallback.classList.remove('hidden');
                       }}
                       onLoad={() => {
                         console.log('Image loaded successfully for:', category.name);
                       }}
                     />
+                    {/* Fallback for failed images */}
+                    <div className="hidden absolute inset-0 flex items-center justify-center flex-col gap-2 bg-gradient-to-br from-gray-100 to-gray-200">
+                      <ImageIcon size={48} className="text-gray-400" />
+                      <p className="text-xs text-gray-500">Image failed to load</p>
+                    </div>
                     {/* Upload Button Overlay - Only shows on hover */}
-                    <label className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-0 hover:bg-opacity-50 transition-all cursor-pointer group">
-                      <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-white rounded-full p-3">
-                        {uploadingImage === category.id ? (
-                          <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-                        ) : (
-                          <Upload size={24} className="text-blue-600" />
-                        )}
+                    <label className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-0 hover:bg-opacity-30 transition-all cursor-pointer group">
+                      <div className="opacity-0 group-hover:opacity-100 transition-opacity flex flex-col gap-2 items-center">
+                        <div className="bg-white rounded-full p-3 shadow-lg">
+                          {uploadingImage === category.id ? (
+                            <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                          ) : (
+                            <Upload size={24} className="text-blue-600" />
+                          )}
+                        </div>
+                        <span className="text-white text-sm font-medium bg-black bg-opacity-50 px-3 py-1 rounded-full">
+                          Change Image
+                        </span>
+                        {/* Remove Image Button */}
+                        <button
+                          type="button"
+                          onClick={async (e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            if (confirm('Remove this image?')) {
+                              try {
+                                await supabase
+                                  .from('categories')
+                                  .update({ image_url: null })
+                                  .eq('id', category.id);
+                                toast.success('Image removed');
+                                fetchCategories();
+                              } catch (err) {
+                                toast.error('Failed to remove image');
+                              }
+                            }
+                          }}
+                          className="bg-red-600 text-white text-xs px-3 py-1 rounded-full hover:bg-red-700 transition-colors"
+                        >
+                          Remove
+                        </button>
                       </div>
                       <input 
                         type="file" 
@@ -300,12 +350,22 @@ export default function AdminCategoryShowcasePage() {
                   </>
                 ) : (
                   <>
-                    <div className="w-full h-full flex items-center justify-center flex-col gap-2">
-                      <ImageIcon size={48} className="text-gray-300" />
-                      <p className="text-xs text-gray-400">No image uploaded</p>
-                    </div>
-                    {/* Upload Button for empty state */}
-                    <label className="absolute inset-0 flex items-center justify-center cursor-pointer">
+                    <label className="w-full h-full flex items-center justify-center flex-col gap-3 cursor-pointer hover:bg-gray-200 transition-colors group">
+                      <div className="relative">
+                        {uploadingImage === category.id ? (
+                          <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                        ) : (
+                          <>
+                            <ImageIcon size={64} className="text-gray-300 group-hover:text-gray-400 transition-colors" />
+                            <div className="absolute -bottom-1 -right-1 bg-blue-600 rounded-full p-1.5 group-hover:scale-110 transition-transform">
+                              <Upload size={16} className="text-white" />
+                            </div>
+                          </>
+                        )}
+                      </div>
+                      <p className="text-sm font-medium text-gray-500 group-hover:text-gray-700 transition-colors">
+                        {uploadingImage === category.id ? 'Uploading...' : 'Click to upload image'}
+                      </p>
                       <input 
                         type="file" 
                         accept="image/*" 
