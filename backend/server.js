@@ -2,22 +2,24 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import dotenv from 'dotenv';
-import { sanitizeBody } from './middleware/validation.js';
+import { sanitizeBody } from './src/middleware/validation.js';
 
-// Import routes
-import authRoutes from './routes/auth.js';
-import productsRoutes from './routes/products.js';
-import ordersRoutes from './routes/orders.js';
+// Import routes from new MVC structure
+import authRoutes from './src/routes/auth.js';
+import productsRoutes from './src/routes/products.js';
+import cartRoutes from './src/routes/cart.js';
+import categoriesRoutes from './src/routes/categories.js';
+import ordersRoutes from './src/routes/orders.js';
+
+// Import routes still in old location (to be migrated)
 import promoRoutes from './routes/promo.js';
 import wholesaleRoutes from './routes/wholesale.js';
 import storageRoutes from './routes/storage.js';
-import cartRoutes from './routes/cart.js';
 import profileRoutes from './routes/profile.js';
 import contentRoutes from './routes/content.js';
 import wishlistRoutes from './routes/wishlist.js';
 import paymentFailuresRoutes from './routes/payment-failures.js';
 import categoryShowcaseRoutes from './routes/category-showcase.js';
-import categoriesRoutes from './routes/categories.js';
 
 // Load environment variables
 dotenv.config();
