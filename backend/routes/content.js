@@ -4,6 +4,12 @@ import rateLimit from 'express-rate-limit';
 import { supabase } from '../config/supabase.js';
 import { optionalAuth, authenticateToken, requireAdmin } from '../middleware/auth.js';
 import { handleValidationErrors, sanitizeBody } from '../middleware/validation.js';
+import {
+  sendContactEmail,
+  sendContactConfirmation,
+  sendEnquiryEmail,
+  sendEnquiryConfirmation,
+} from '../src/services/emailService.js';
 
 const router = express.Router();
 
@@ -799,6 +805,12 @@ router.post('/contact',
 
       if (error) throw error;
 
+      // Send emails (non-blocking — don't fail the request if email fails)
+      Promise.all([
+        sendContactEmail({ name, email, phone, subject, message }),
+        sendContactConfirmation({ name, email, subject }),
+      ]).catch(err => console.error('Contact email send error:', err.message));
+
       res.status(201).json({ 
         success: true, 
         message: 'Your message has been sent successfully. We will get back to you soon.',
@@ -864,6 +876,19 @@ router.post('/enquiry',
         .single();
 
       if (error) throw error;
+
+      // Fetch product name for the email (best-effort)
+      let productName = null;
+      if (product_id) {
+        const { data: prod } = await supabase.from('products').select('name').eq('id', product_id).single();
+        productName = prod?.name || null;
+      }
+
+      // Send emails (non-blocking)
+      Promise.all([
+        sendEnquiryEmail({ name, email, phone, message, productName }),
+        sendEnquiryConfirmation({ name, email, productName }),
+      ]).catch(err => console.error('Enquiry email send error:', err.message));
 
       res.status(201).json({ 
         success: true, 
