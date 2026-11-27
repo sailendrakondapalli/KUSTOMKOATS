@@ -1,4 +1,5 @@
 import * as orderService from '../services/orderService.js';
+import { sendOrderConfirmationEmail } from '../services/emailService.js';
 
 /**
  * Get user's orders
@@ -92,6 +93,28 @@ export async function createOrder(req, res) {
       payment_method,
       promo_code
     );
+
+    // Send order confirmation email (non-blocking)
+    try {
+      const userEmail = req.user.email;
+      const userName = req.user.user_metadata?.full_name || req.user.email?.split('@')[0] || 'Customer';
+      const orderId = order.display_order_id || order.id?.slice(0, 8).toUpperCase();
+      const address = typeof shipping_address === 'string'
+        ? shipping_address
+        : [shipping_address?.address, shipping_address?.city, shipping_address?.state, shipping_address?.pincode]
+            .filter(Boolean).join(', ');
+
+      sendOrderConfirmationEmail({
+        name: userName,
+        email: userEmail,
+        orderId,
+        items: items.map(i => ({ name: i.name || i.product_name || 'Product', quantity: i.quantity, price: i.price })),
+        total: order.total_amount,
+        address,
+      }).catch(err => console.error('Order email error:', err.message));
+    } catch (emailErr) {
+      console.error('Order email setup error:', emailErr.message);
+    }
 
     res.status(201).json({
       success: true,
