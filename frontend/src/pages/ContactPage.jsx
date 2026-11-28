@@ -17,7 +17,8 @@ export default function ContactPage() {
   const validate = () => {
     const e = {}
     if (name.trim().length < 3) e.name = "Name must be at least 3 characters"
-    if (email && !email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) e.email = "Enter a valid email address"
+    if (!email.trim()) e.email = "Email address is required"
+    else if (!email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) e.email = "Enter a valid email address"
     if (!phone.trim()) e.phone = "Phone number is required"
     if (!message.trim()) e.message = "Message is required"
     setErrors(e)
@@ -34,21 +35,16 @@ export default function ContactPage() {
         name: name.trim(),
         email: email.trim() || null,
         phone: phone.trim(),
+        subject: 'Website Contact Form',
         message: message.trim(),
         status: 'new'
       })
 
-      toast.success('Message sent! We will get back to you soon.')
-
-      const text = `Hi Kustom Koats!\n\nName: ${name}\nEmail: ${email}\nPhone: ${phone}\n\nMessage:\n${message}`
-      window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}`, "_blank")
-
+      toast.success('Message sent! We will get back to you within 24 hours.')
       setName(""); setEmail(""); setPhone(""); setMessage("")
     } catch (err) {
       console.error('Error submitting contact form:', err)
-      toast.error('Could not send message. Redirecting to WhatsApp.')
-      const text = `Hi Kustom Koats!\n\nName: ${name}\nEmail: ${email}\nPhone: ${phone}\n\nMessage:\n${message}`
-      window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}`, "_blank")
+      toast.error('Could not send message. Please try again or call us directly.')
     } finally {
       setSubmitting(false)
     }
@@ -64,8 +60,8 @@ export default function ContactPage() {
     {
       icon: <Mail size={20} />,
       label: 'Email',
-      value: 'info@kustomkoats.com',
-      href: 'mailto:info@kustomkoats.com',
+      value: 'info@kustomkoats.in',
+      href: 'mailto:info@kustomkoats.in',
     },
     {
       icon: <Clock size={20} />,

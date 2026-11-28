@@ -163,7 +163,13 @@ export async function sendEnquiryConfirmation({ name, email, productName }) {
 
 // ── Order confirmation email
 export async function sendOrderConfirmationEmail({ name, email, orderId, items, total, address }) {
-  const itemRows = (items || []).map(item => `
+  const safeItems = (items || []).map(item => ({
+    name: item.name || item.product_name || 'Product',
+    quantity: item.quantity || 1,
+    price: parseFloat(item.price) || 0,
+  }));
+
+  const itemRows = safeItems.map(item => `
     <tr>
       <td style="padding: 10px 0; border-bottom: 1px solid #f0f0f0; font-size: 14px; color: #000;">${item.name}</td>
       <td style="padding: 10px 0; border-bottom: 1px solid #f0f0f0; font-size: 14px; color: #555; text-align: center;">×${item.quantity}</td>
@@ -197,7 +203,7 @@ export async function sendOrderConfirmationEmail({ name, email, orderId, items, 
           <tfoot>
             <tr>
               <td colspan="2" style="padding: 14px 0 0; font-weight: 700; font-size: 15px;">Total</td>
-              <td style="padding: 14px 0 0; font-weight: 700; font-size: 15px; text-align: right; color: #CA2A31;">₹${Number(total).toLocaleString('en-IN')}</td>
+              <td style="padding: 14px 0 0; font-weight: 700; font-size: 15px; text-align: right; color: #CA2A31;">₹${Number(total || 0).toLocaleString('en-IN')}</td>
             </tr>
           </tfoot>
         </table>
