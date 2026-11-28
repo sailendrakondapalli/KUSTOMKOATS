@@ -329,16 +329,16 @@ export const reviewsAPI = {
   }),
 };
 
-// Contact/Enquiry API (Note: Backend endpoints needed)
+// Contact/Enquiry API
 export const contactAPI = {
-  submit: (contactData) => apiCall('/enquiries', {
+  submit: (contactData) => apiCall('/content/contact', {
     method: 'POST',
-    body: JSON.stringify({ ...contactData, enquiry_type: 'contact' }),
+    body: JSON.stringify(contactData),
   }),
 };
 
 export const enquiryAPI = {
-  submit: (enquiryData) => apiCall('/enquiries', {
+  submit: (enquiryData) => apiCall('/content/enquiry', {
     method: 'POST',
     body: JSON.stringify(enquiryData),
   }),
@@ -355,6 +355,48 @@ export const galleryAPI = {
 
 export const packagesAPI = {
   getAll: () => apiCall('/content/packages'),
+};
+
+// ── Categories API (full CRUD + banners)
+export const categoriesAPI = {
+  getAll: (params = {}) => {
+    const q = new URLSearchParams(params).toString();
+    return apiCall(`/categories${q ? `?${q}` : ''}`);
+  },
+  getBySlug: (slug) => apiCall(`/categories/${slug}`),
+  create: (data) => apiCall('/categories', { method: 'POST', body: JSON.stringify(data) }),
+  update: (id, data) => apiCall(`/categories/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  delete: (id) => apiCall(`/categories/${id}`, { method: 'DELETE' }),
+
+  // Banners
+  getBanners: (categoryId) => apiCall(`/categories/${categoryId}/banners`),
+  createBanner: (categoryId, data) =>
+    apiCall(`/categories/${categoryId}/banners`, { method: 'POST', body: JSON.stringify(data) }),
+  updateBanner: (categoryId, bannerId, data) =>
+    apiCall(`/categories/${categoryId}/banners/${bannerId}`, { method: 'PUT', body: JSON.stringify(data) }),
+  deleteBanner: (categoryId, bannerId) =>
+    apiCall(`/categories/${categoryId}/banners/${bannerId}`, { method: 'DELETE' }),
+};
+
+// ── Subcategories API (full CRUD + banners)
+export const subcategoriesAPI = {
+  getAll: (params = {}) => {
+    const q = new URLSearchParams(params).toString();
+    return apiCall(`/subcategories${q ? `?${q}` : ''}`);
+  },
+  getBySlug: (slug) => apiCall(`/subcategories/${slug}`),
+  create: (data) => apiCall('/subcategories', { method: 'POST', body: JSON.stringify(data) }),
+  update: (id, data) => apiCall(`/subcategories/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  delete: (id) => apiCall(`/subcategories/${id}`, { method: 'DELETE' }),
+
+  // Banners
+  getBanners: (subcategoryId) => apiCall(`/subcategories/${subcategoryId}/banners`),
+  createBanner: (subcategoryId, data) =>
+    apiCall(`/subcategories/${subcategoryId}/banners`, { method: 'POST', body: JSON.stringify(data) }),
+  updateBanner: (subcategoryId, bannerId, data) =>
+    apiCall(`/subcategories/${subcategoryId}/banners/${bannerId}`, { method: 'PUT', body: JSON.stringify(data) }),
+  deleteBanner: (subcategoryId, bannerId) =>
+    apiCall(`/subcategories/${subcategoryId}/banners/${bannerId}`, { method: 'DELETE' }),
 };
 
 // Export default client
@@ -376,4 +418,6 @@ export default {
   events: eventsAPI,
   gallery: galleryAPI,
   packages: packagesAPI,
+  categories: categoriesAPI,
+  subcategories: subcategoriesAPI,
 };

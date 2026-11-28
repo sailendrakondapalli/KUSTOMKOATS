@@ -5,6 +5,10 @@ import ProtectedRoute from './ProtectedRoute'
 import ErrorBoundary from './ErrorBoundary'
 import PageTransition from './PageTransition'
 
+// Dynamic category/subcategory pages
+const CategoryPage = lazy(() => import('../pages/CategoryPage'))
+const SubcategoryPage = lazy(() => import('../pages/SubcategoryPage'))
+
 // Lazy loaded pages
 const HomePage = lazy(() => import('../pages/HomePage'))
 const ColorsPage = lazy(() => import('../pages/ColorsPage'))
@@ -77,6 +81,26 @@ export default function AnimatedRoutes() {
   return (
     <AnimatePresence mode="wait">
       <Routes location={location} key={location.pathname}>
+        {/* Dynamic Category & Subcategory Routes */}
+        <Route path="/category/:categorySlug" element={
+          <PageTransition>
+            <ErrorBoundary>
+              <Suspense fallback={<PageLoader />}>
+                <CategoryPage />
+              </Suspense>
+            </ErrorBoundary>
+          </PageTransition>
+        } />
+        <Route path="/category/:categorySlug/:subcategorySlug" element={
+          <PageTransition>
+            <ErrorBoundary>
+              <Suspense fallback={<PageLoader />}>
+                <SubcategoryPage />
+              </Suspense>
+            </ErrorBoundary>
+          </PageTransition>
+        } />
+
         {/* Home */}
         <Route path="/" element={
           <PageTransition>

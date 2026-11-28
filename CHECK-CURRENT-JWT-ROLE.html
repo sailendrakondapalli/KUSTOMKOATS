@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Check JWT Role</title>
+</head>
+<body>
+    <h1>Check Your Current JWT Token Role</h1>
+    <button onclick="checkRole()">Check My Role</button>
+    <div id="result" style="margin-top: 20px; padding: 20px; border: 1px solid #ccc;"></div>
+
+    <script type="module">
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
+        const supabaseUrl = 'https://gozoxlueuwnyujvvafdl.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdvem94bHVldXdueXVqdnZhZmRsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzUxMzE1MjQsImV4cCI6MjA1MDcwNzUyNH0.twBiHC2zxJqYRoI2hPv0XE8w3a-H8U5lC-e2PnMEDWo';
+        
+        const supabase = createClient(supabaseUrl, supabaseKey);
+
+        window.checkRole = async function() {
+            const resultDiv = document.getElementById('result');
+            
+            try {
+                const { data: { session }, error } = await supabase.auth.getSession();
+                
+                if (error || !session) {
+                    resultDiv.innerHTML = '<h2 style="color: red;">❌ Not logged in</h2>';
+                    return;
+                }
+
+                const user = session.user;
+                const accessToken = session.access_token;
+                
+                // Decode JWT to check role
+                const payload = JSON.parse(atob(accessToken.split('.')[1]));
+                
+                resultDiv.innerHTML = `
+                    <h2>Current User Info:</h2>
+                    <p><strong>Email:</strong> ${user.email}</p>
+                    <p><strong>User ID:</strong> ${user.id}</p>
+                    <hr>
+                    <h2>JWT Token Claims:</h2>
+                    <p><strong>Role from JWT:</strong> ${payload.role || '❌ NO ROLE'}</p>
+                    <p><strong>App Metadata:</strong> ${JSON.stringify(payload.app_metadata || {})}</p>
+                    <hr>
+                    <h2>Diagnosis:</h2>
+                    ${payload.role === 'admin' 
+                        ? '<p style="color: green; font-weight: bold;">✅ YOU HAVE ADMIN ROLE - Image upload should work!</p>' 
+                        : '<p style="color: red; font-weight: bold;">❌ NO ADMIN ROLE - You need to run FIX-ADMIN-ROLE.sql in Supabase SQL Editor, then log out and log back in.</p>'
+                    }
+                    <hr>
+                    <details>
+                        <summary>Full JWT Payload (click to expand)</summary>
+                        <pre>${JSON.stringify(payload, null, 2)}</pre>
+                    </details>
+                `;
+            } catch (err) {
+                resultDiv.innerHTML = `<h2 style="color: red;">Error: ${err.message}</h2>`;
+            }
+        };
+    </script>
+</body>
+</html>

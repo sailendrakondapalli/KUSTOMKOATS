@@ -3,10 +3,9 @@ import api from '../services/apiClient'
 
 // Default fallback categories (used when DB table isn't seeded yet)
 export const CATEGORIES_DEFAULT = [
-  'Xtreme Kolorz',
-  'Xtreme Wrap',
+  'Kustom Kolors',
+  'Kustom Wrap',
   'Accessories',
-  'Wholesale',
 ]
 
 export const useCategoryStore = create((set, get) => ({

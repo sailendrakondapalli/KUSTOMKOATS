@@ -5,7 +5,7 @@ import { supabase } from '../../lib/supabase'
 import KKAdminLayout from '../../components/admin/KKAdminLayout'
 import toast from 'react-hot-toast'
 
-const DEFAULT_CATEGORIES = ['Xtreme Kolorz', 'Xtreme Wrap', 'Accessories', 'Wholesale']
+const DEFAULT_CATEGORIES = ['Kustom Kolors', 'Kustom Wrap', 'Accessories']
 
 const emptyForm = () => ({ name: '', slug: '', description: '', image_url: '', sort_order: 0, is_active: true })
 

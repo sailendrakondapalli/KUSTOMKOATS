@@ -4,6 +4,12 @@ import rateLimit from 'express-rate-limit';
 import { supabase } from '../config/supabase.js';
 import { optionalAuth, authenticateToken, requireAdmin } from '../middleware/auth.js';
 import { handleValidationErrors, sanitizeBody } from '../middleware/validation.js';
+import {
+  sendContactEmail,
+  sendContactConfirmation,
+  sendEnquiryEmail,
+  sendEnquiryConfirmation,
+} from '../src/services/emailService.js';
 
 const router = express.Router();
 
@@ -775,43 +781,43 @@ router.post('/contact',
   sanitizeBody,
   body('name').isString().notEmpty().trim().withMessage('Name is required'),
   body('email').isEmail().normalizeEmail().withMessage('Valid email is required'),
-  body('phone').optional().isString().trim().matches(/^[\d\s\-\+\(\)]+$/).withMessage('Invalid phone number format'),
-  body('subject').isString().notEmpty().trim().withMessage('Subject is required'),
-  body('message').isString().notEmpty().trim().isLength({ min: 10, max: 5000 }).withMessage('Message must be between 10 and 5000 characters'),
+  body('phone').optional().isString().trim(),
+  body('subject').optional().isString().trim(),
+  body('message').isString().notEmpty().trim().isLength({ min: 2, max: 5000 }).withMessage('Message is required'),
   handleValidationErrors,
   async (req, res) => {
     try {
       const { name, email, phone, subject, message } = req.body;
 
-      // Insert contact submission
-      const { data, error } = await supabase
-        .from('contact_submissions')
-        .insert([{
+      // Try to save to database (graceful — don't fail if table missing)
+      try {
+        await supabase.from('contact_submissions').insert([{
           name,
           email,
           phone: phone || null,
-          subject,
+          subject: subject || 'Website Contact Form',
           message,
           status: 'new'
-        }])
-        .select()
-        .single();
+        }]);
+      } catch (dbErr) {
+        console.warn('contact_submissions table may not exist:', dbErr.message);
+      }
 
-      if (error) throw error;
+      // Send emails (non-blocking)
+      Promise.all([
+        sendContactEmail({ name, email, phone, subject: subject || 'Website Contact Form', message }),
+        sendContactConfirmation({ name, email, subject: subject || 'Website Contact Form' }),
+      ]).catch(err => console.error('Contact email send error:', err.message));
 
-      res.status(201).json({ 
-        success: true, 
+      res.status(201).json({
+        success: true,
         message: 'Your message has been sent successfully. We will get back to you soon.',
-        data: {
-          id: data.id,
-          created_at: data.created_at
-        }
       });
     } catch (error) {
       console.error('Error submitting contact form:', error);
-      res.status(500).json({ 
-        error: 'Failed to submit contact form', 
-        message: 'An error occurred while processing your submission. Please try again later.' 
+      res.status(500).json({
+        error: 'Failed to submit contact form',
+        message: 'An error occurred while processing your submission. Please try again later.'
       });
     }
   }
@@ -825,9 +831,9 @@ router.post('/enquiry',
   sanitizeBody,
   body('name').isString().notEmpty().trim().withMessage('Name is required'),
   body('email').isEmail().normalizeEmail().withMessage('Valid email is required'),
-  body('phone').isString().notEmpty().trim().matches(/^[\d\s\-\+\(\)]+$/).withMessage('Valid phone number is required'),
+  body('phone').isString().notEmpty().trim().withMessage('Phone number is required'),
   body('product_id').optional().isUUID().withMessage('Invalid product ID'),
-  body('message').isString().notEmpty().trim().isLength({ min: 10, max: 5000 }).withMessage('Message must be between 10 and 5000 characters'),
+  body('message').isString().notEmpty().trim().isLength({ min: 2, max: 5000 }).withMessage('Message is required'),
   handleValidationErrors,
   async (req, res) => {
     try {
@@ -849,29 +855,34 @@ router.post('/enquiry',
         }
       }
 
-      // Insert enquiry submission
-      const { data, error } = await supabase
-        .from('enquiry_submissions')
-        .insert([{
-          name,
-          email,
-          phone,
+      // Insert enquiry submission (graceful — don't fail if table missing)
+      try {
+        await supabase.from('enquiry_submissions').insert([{
+          name, email, phone,
           product_id: product_id || null,
           message,
           status: 'new'
-        }])
-        .select()
-        .single();
+        }]);
+      } catch (dbErr) {
+        console.warn('enquiry_submissions table may not exist:', dbErr.message);
+      }
 
-      if (error) throw error;
+      // Fetch product name for the email (best-effort)
+      let productName = null;
+      if (product_id) {
+        const { data: prod } = await supabase.from('products').select('name').eq('id', product_id).single();
+        productName = prod?.name || null;
+      }
 
-      res.status(201).json({ 
-        success: true, 
+      // Send emails (non-blocking)
+      Promise.all([
+        sendEnquiryEmail({ name, email, phone, message, productName }),
+        sendEnquiryConfirmation({ name, email, productName }),
+      ]).catch(err => console.error('Enquiry email send error:', err.message));
+
+      res.status(201).json({
+        success: true,
         message: 'Your enquiry has been submitted successfully. We will contact you shortly.',
-        data: {
-          id: data.id,
-          created_at: data.created_at
-        }
       });
     } catch (error) {
       console.error('Error submitting enquiry form:', error);
