@@ -3,15 +3,17 @@ import cors from 'cors';
 import helmet from 'helmet';
 import dotenv from 'dotenv';
 import { sanitizeBody } from './src/middleware/validation.js';
+import { errorHandler } from './src/middleware/errorHandler.js';
 
-// Import routes from new MVC structure
+// ── v1 router (new layered architecture) ─────────────────────
+import v1Router from './src/routes/v1/index.js';
+
+// ── Legacy routes (preserved for frontend backwards-compat) ──
 import authRoutes from './src/routes/auth.js';
 import productsRoutes from './src/routes/products.js';
 import cartRoutes from './src/routes/cart.js';
 import categoriesRoutes from './src/routes/categories.js';
 import ordersRoutes from './src/routes/orders.js';
-
-// Import routes still in old location (to be migrated)
 import promoRoutes from './routes/promo.js';
 import wholesaleRoutes from './routes/wholesale.js';
 import storageRoutes from './routes/storage.js';
@@ -94,7 +96,10 @@ app.get('/health', (req, res) => {
   });
 });
 
-// API routes
+// API routes — v1 (new layered architecture)
+app.use('/api/v1', v1Router);
+
+// API routes — legacy (backwards-compatible)
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productsRoutes);
 app.use('/api/orders', ordersRoutes);
@@ -112,23 +117,16 @@ app.use('/api/subcategories', subcategoriesRoutes);
 
 // 404 handler
 app.use((req, res) => {
-  res.status(404).json({ 
+  res.status(404).json({
+    success: false,
     error: 'Not Found',
     message: 'The requested endpoint does not exist',
-    path: req.path
+    path: req.path,
   });
 });
 
-// Global error handler
-app.use((err, req, res, next) => {
-  console.error('Unhandled error:', err);
-  
-  res.status(err.status || 500).json({ 
-    error: 'Internal Server Error',
-    message: process.env.NODE_ENV === 'development' ? err.message : 'Something went wrong',
-    ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
-  });
-});
+// Global error handler (must be last)
+app.use(errorHandler);
 
 // Start server
 app.listen(PORT, () => {

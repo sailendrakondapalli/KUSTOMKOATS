@@ -1,81 +1,68 @@
-import * as productModel from '../models/productModel.js';
+import uow from '../db/uow.js';
 
-/**
- * Fetch products with filters and pagination
- */
-export async function fetchProducts({ category, search, limit, offset }) {
-  const filters = {};
-  if (category) filters.category = category;
-  if (search) filters.search = search;
+const SAFE_FIELDS = [
+  'id', 'name', 'description', 'price', 'original_price',
+  'category', 'subcategory', 'subcategory_id', 'stock',
+  'images', 'custom_id', 'status', 'is_featured', 'tags', 'size',
+];
 
-  console.log('📦 Fetching products with filters:', { category, search, limit, offset });
-
-  const { products, count } = await productModel.getProducts(filters, limit, offset);
-
-  console.log('✅ Products fetched:', { count, dataLength: products?.length });
-
-  return { products, count };
-}
-
-/**
- * Fetch single product by ID
- */
-export async function fetchProduct(id) {
-  const product = await productModel.getProductById(id);
-
-  if (!product) {
-    throw new Error('Product not found');
+function shape(product, includePrivate = false) {
+  if (!product) return null;
+  if (!includePrivate) {
+    return Object.fromEntries(
+      SAFE_FIELDS.filter(k => k in product).map(k => [k, product[k]])
+    );
   }
-
   return product;
 }
 
-/**
- * Create a new product
- */
-export async function createNewProduct(productData, userId) {
-  const product = await productModel.createProduct(productData, userId);
-  return product;
-}
+export const ProductService = {
+  async list(filters, user) {
+    const { products, count } = await uow.products.findAll(filters);
+    return { products: products.map(p => shape(p)), count };
+  },
 
-/**
- * Update an existing product
- */
-export async function updateExistingProduct(id, updates) {
-  const product = await productModel.updateProduct(id, updates);
+  async get(id) {
+    const product = await uow.products.findById(id);
+    if (!product) throw Object.assign(new Error('Product not found'), { status: 404 });
+    return shape(product, true);
+  },
 
-  if (!product) {
-    throw new Error('Product not found');
-  }
+  async create(payload, user) {
+    if (user.role !== 'admin' && user.email !== process.env.ADMIN_EMAIL) {
+      throw Object.assign(new Error('Admin access required'), { status: 403 });
+    }
+    const product = await uow.products.create({ ...payload, created_by: user.id });
+    return product;
+  },
 
-  return product;
-}
+  async update(id, payload, user) {
+    if (user.role !== 'admin' && user.email !== process.env.ADMIN_EMAIL) {
+      throw Object.assign(new Error('Admin access required'), { status: 403 });
+    }
+    const product = await uow.products.update(id, payload);
+    if (!product) throw Object.assign(new Error('Product not found'), { status: 404 });
+    return product;
+  },
 
-/**
- * Delete a product
- */
-export async function removeProduct(id) {
-  const product = await productModel.deleteProduct(id);
+  async remove(id, user) {
+    if (user.role !== 'admin' && user.email !== process.env.ADMIN_EMAIL) {
+      throw Object.assign(new Error('Admin access required'), { status: 403 });
+    }
+    const result = await uow.products.delete(id);
+    if (!result) throw Object.assign(new Error('Product not found'), { status: 404 });
+    return true;
+  },
 
-  if (!product) {
-    throw new Error('Product not found');
-  }
+  async getBundles(productId) {
+    return uow.products.getBundles(productId);
+  },
 
-  return true;
-}
-
-/**
- * Fetch product bundles
- */
-export async function fetchProductBundles(productId) {
-  const bundles = await productModel.getProductBundles(productId);
-  return bundles;
-}
-
-/**
- * Update product bundles
- */
-export async function updateBundles(productId, bundleIds) {
-  await productModel.updateProductBundles(productId, bundleIds);
-  return true;
-}
+  async replaceBundles(productId, bundleIds, user) {
+    if (user.role !== 'admin' && user.email !== process.env.ADMIN_EMAIL) {
+      throw Object.assign(new Error('Admin access required'), { status: 403 });
+    }
+    await uow.products.replaceBundles(productId, bundleIds);
+    return true;
+  },
+};
