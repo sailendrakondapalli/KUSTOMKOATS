@@ -329,16 +329,16 @@ export const reviewsAPI = {
   }),
 };
 
-// Contact/Enquiry API (Note: Backend endpoints needed)
+// Contact/Enquiry API
 export const contactAPI = {
-  submit: (contactData) => apiCall('/enquiries', {
+  submit: (contactData) => apiCall('/content/contact', {
     method: 'POST',
-    body: JSON.stringify({ ...contactData, enquiry_type: 'contact' }),
+    body: JSON.stringify(contactData),
   }),
 };
 
 export const enquiryAPI = {
-  submit: (enquiryData) => apiCall('/enquiries', {
+  submit: (enquiryData) => apiCall('/content/enquiry', {
     method: 'POST',
     body: JSON.stringify(enquiryData),
   }),

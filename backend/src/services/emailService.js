@@ -226,3 +226,49 @@ export async function sendOrderConfirmationEmail({ name, email, orderId, items, 
     html,
   });
 }
+
+// ── Order delivered email
+export async function sendOrderDeliveredEmail({ name, email, orderId, total }) {
+  const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #fff; border: 1px solid #e5e5e5; border-radius: 8px; overflow: hidden;">
+      <div style="background: #000; padding: 24px 32px;">
+        <h1 style="color: #fff; margin: 0; font-size: 22px; letter-spacing: 1px;">KUSTOM KOATS</h1>
+      </div>
+      <div style="padding: 32px;">
+        <div style="text-align: center; margin-bottom: 24px;">
+          <div style="width: 64px; height: 64px; background: #F0FDF4; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 16px;">
+            <span style="font-size: 28px;">✅</span>
+          </div>
+          <h2 style="color: #000; margin: 0 0 8px; font-size: 22px;">Your Order Has Been Delivered!</h2>
+          <p style="color: #555; margin: 0; font-size: 14px;">Hi ${name}, your order has been successfully delivered.</p>
+        </div>
+
+        <div style="background: #f8f8f8; padding: 16px; border-radius: 6px; margin-bottom: 24px; text-align: center;">
+          <p style="margin: 0; font-size: 13px; color: #888;">Order ID</p>
+          <p style="margin: 4px 0 0; font-size: 16px; font-weight: 700; color: #CA2A31;">#${orderId}</p>
+          ${total ? `<p style="margin: 8px 0 0; font-size: 14px; color: #555;">Order Total: <strong>₹${Number(total).toLocaleString('en-IN')}</strong></p>` : ''}
+        </div>
+
+        <p style="color: #555; line-height: 1.6; margin: 0 0 16px; font-size: 14px;">
+          We hope you love your Kustom Koats products! If you have any questions about your order or the products, please don't hesitate to reach out.
+        </p>
+
+        <div style="text-align: center; margin: 24px 0;">
+          <a href="https://kustomkoats.in/products" 
+            style="display: inline-block; padding: 12px 28px; background: #CA2A31; color: #fff; border-radius: 6px; text-decoration: none; font-family: Arial, sans-serif; font-size: 14px; font-weight: 600;">
+            Shop More Products
+          </a>
+        </div>
+      </div>
+      <div style="background: #CA2A31; padding: 16px 32px;">
+        <p style="color: rgba(255,255,255,0.8); font-size: 12px; margin: 0;">© Kustom Koats — kustomkoats.in | Questions? Email us at ${process.env.SMTP_USER || 'orders@kustomkoats.in'}</p>
+      </div>
+    </div>
+  `;
+
+  return sendEmail({
+    to: email,
+    subject: `Your Order #${orderId} Has Been Delivered — Kustom Koats`,
+    html,
+  });
+}

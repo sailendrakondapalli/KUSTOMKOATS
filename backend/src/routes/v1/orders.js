@@ -3,7 +3,7 @@ import { body, param, query } from 'express-validator';
 import { handleValidationErrors } from '../../middleware/validation.js';
 import { authenticateToken, requireAdmin } from '../../middleware/auth.js';
 import { OrderService } from '../../services/orderService.js';
-import { sendOrderConfirmationEmail } from '../../services/emailService.js';
+import { sendOrderConfirmationEmail, sendOrderDeliveredEmail } from '../../services/emailService.js';
 
 const router = express.Router();
 
@@ -97,6 +97,30 @@ router.patch('/:order_id/status',
   async (req, res, next) => {
     try {
       const order = await OrderService.updateStatus(req.params.order_id, req.body.status, req.user);
+
+      // Send delivery email when admin marks as delivered
+      if (req.body.status === 'delivered' && order) {
+        try {
+          const { supabase } = await import('../../config/supabase.js');
+          const { data: userData } = await supabase
+            .from('users')
+            .select('email, name')
+            .eq('id', order.user_id)
+            .single();
+
+          if (userData?.email) {
+            sendOrderDeliveredEmail({
+              name: userData.name || userData.email.split('@')[0],
+              email: userData.email,
+              orderId: order.display_order_id || order.id.slice(0, 8).toUpperCase(),
+              total: order.total_amount,
+            }).catch(e => console.error('Delivery email error:', e.message));
+          }
+        } catch (emailErr) {
+          console.error('Delivery email setup error:', emailErr.message);
+        }
+      }
+
       res.json({ success: true, data: order, message: 'Status updated' });
     } catch (err) { next(err); }
   }

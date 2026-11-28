@@ -1,5 +1,5 @@
 import * as orderService from '../services/orderService.js';
-import { sendOrderConfirmationEmail } from '../services/emailService.js';
+import { sendOrderConfirmationEmail, sendOrderDeliveredEmail } from '../services/emailService.js';
 
 /**
  * Get user's orders
@@ -138,6 +138,30 @@ export async function updateOrderStatus(req, res) {
     const { id } = req.params;
     const { status } = req.body;
     const order = await orderService.updateOrderStatus(id, status);
+
+    // Send delivery email when status changes to 'delivered'
+    if (status === 'delivered' && order) {
+      try {
+        // Fetch user email from profiles/users table
+        const { supabase } = await import('../config/supabase.js');
+        const { data: userData } = await supabase
+          .from('users')
+          .select('email, name')
+          .eq('id', order.user_id)
+          .single();
+
+        if (userData?.email) {
+          sendOrderDeliveredEmail({
+            name: userData.name || userData.email.split('@')[0],
+            email: userData.email,
+            orderId: order.display_order_id || id.slice(0, 8).toUpperCase(),
+            total: order.total_amount,
+          }).catch(err => console.error('Delivery email error:', err.message));
+        }
+      } catch (emailErr) {
+        console.error('Delivery email setup error:', emailErr.message);
+      }
+    }
 
     res.json({
       success: true,
